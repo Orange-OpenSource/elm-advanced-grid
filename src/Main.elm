@@ -90,10 +90,13 @@ gridConfig =
 
 itemView : Int -> Int -> Item -> Html Msg
 itemView idx listIdx item =
+    let
+        visibleColumns = List.filter (\column -> column.properties.visible ) columns
+    in
     div
         []
     <|
-        List.map (\config -> viewColumn config item) columns
+        List.map (\config -> viewColumn config item) visibleColumns
 
 
 viewColumn : ColumnConfig -> Item -> Html Msg
