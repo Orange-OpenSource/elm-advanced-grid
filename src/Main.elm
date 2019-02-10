@@ -23,11 +23,10 @@ type alias ColumnConfig =
     }
 
 type alias ColumnProperties =
-    { width : Int
+    { title: String
     , visible: Bool
+    , width : Int
     }
-
-
 
 
 type alias Model =
@@ -93,7 +92,7 @@ gridConfig =
 itemView : Int -> Int -> Item -> Html Msg
 itemView idx listIdx item =
     let
-        visibleColumns = List.filter (\column -> column.properties.visible ) columns
+        visibleColumns = List.filter (\column -> column.properties.visible) columns
     in
     div
         []
@@ -107,27 +106,32 @@ viewColumn config item =
 
 columns : List ColumnConfig
 columns =
-    [ { properties = { visible = True
+    [ { properties = { title = "Selected"
+                     , visible = True
                      , width = 100
                      }
        , renderer= viewBool .even
        }
-    , { properties = { visible = True
+    , { properties = { title = "Id"
+                     , visible = True
                      , width = 100
                      }
        , renderer= viewInt .id
        }
-    , { properties = { visible = True
+    , { properties = { title = "Name"
+                     , visible = True
                      , width = 100
                      }
        , renderer= viewString .name
        }
-    , { properties = { visible = False
+    , { properties = { title = "Value"
+                     , visible = False
                      , width = 100
                      }
        , renderer= viewFloat .value
        }
-    , { properties = { visible = True
+    , { properties = { title = "Progress"
+                     , visible = True
                      , width = 100
                      }
        , renderer= viewProgressBar .value
@@ -150,6 +154,7 @@ viewBool field properties item =
     div
         [ style "display" "inline-block"
         , style "margin" "5px"
+        , style "width" <| String.fromInt properties.width ++ "px"
         ]
         [ input
             [ type_ "checkbox"
@@ -197,15 +202,43 @@ viewProgressBar field properties item =
             []
         ]
 
+viewColumnTitles : List ColumnConfig -> Html Msg
+viewColumnTitles columnConfigs =
+    div [style "border" "1px solid #000"
+            , style "width" "500px"
+                 , style "margin" "auto"
+        ]
+        (columnConfigs |> List.filter (\column -> column.properties.visible)
+                      |> List.map viewColumnTitle
+                      )
+
+viewColumnTitle : ColumnConfig -> Html Msg
+viewColumnTitle columnConfig =
+     div
+         [ style "display" "inline-block"
+         , style "background-color" "#CCC"
+         , style "width" <| String.fromInt columnConfig.properties.width ++ "px"
+         ]
+         [ text columnConfig.properties.title ]
+
 
 view : Model -> Html Msg
 view model =
-    div
-        [ style "height" (String.fromInt containerHeight ++ "px")
-        , style "width" "500px"
-        , style "overflow" "auto"
-        , style "border" "1px solid #000"
-        , style "margin" "auto"
-        , IL.onScroll InfListMsg
+    div []
+        [ viewColumnTitles columns
+        , viewRows model
         ]
-        [ IL.view gridConfig model.infList model.content ]
+
+
+
+viewRows : Model -> Html Msg
+viewRows model =
+    div
+            [ style "height" (String.fromInt containerHeight ++ "px")
+            , style "width" "500px"
+            , style "overflow" "auto"
+            , style "border" "1px solid #000"
+            , style "margin" "auto"
+            , IL.onScroll InfListMsg
+            ]
+            [ IL.view gridConfig model.infList model.content ]
