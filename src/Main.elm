@@ -1,13 +1,18 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, div, input, li, text, ul)
+import Html exposing (Html, div, input, text)
 import Html.Attributes exposing (checked, style, type_)
+import Html.Events exposing (onClick)
 import InfiniteList as IL
+import Random exposing (generate)
+import Random.List exposing (shuffle)
 
 
 type Msg
     = InfListMsg IL.Model
+    | HeaderClicked ColumnConfig
+    | ShuffledList (List Item)
 
 
 type alias Item =
@@ -17,14 +22,17 @@ type alias Item =
     , even : Bool
     }
 
+
 type alias ColumnConfig =
     { properties : ColumnProperties
-    , renderer: ColumnProperties -> (Item -> Html Msg)
+    , renderer : ColumnProperties -> (Item -> Html Msg)
+    , sorter: Item -> Item -> Order
     }
 
+
 type alias ColumnProperties =
-    { title: String
-    , visible: Bool
+    { title : String
+    , visible : Bool
     , width : Int
     }
 
@@ -37,36 +45,52 @@ type alias Model =
 
 main : Program () Model Msg
 main =
-    Browser.sandbox
+    Browser.element
         { init = init
         , view = view
         , update = update
+        , subscriptions = \_ -> Sub.none
         }
 
+
 itemCount : Int
-itemCount = 25000
-
-init : Model
-init =
-    { infList = IL.init
-    , content =
-        List.range 0 itemCount
-            |> List.map
-                (\i ->
-                    { id = i
-                    , name = "name" ++ String.fromInt i
-                    , value = (toFloat i / toFloat itemCount)  * 100
-                    , even = toFloat i / 2 == toFloat (i // 2)
-                    }
-                )
-    }
+itemCount =
+    2500
 
 
-update : Msg -> Model -> Model
+init : () -> ( Model, Cmd Msg )
+init _ =
+    let
+        model =
+            { infList = IL.init
+            , content =
+                List.range 0 itemCount
+                    |> List.map
+                        (\i ->
+                            { id = i
+                            , name = "name" ++ String.fromInt i
+                            , value = (toFloat i / toFloat itemCount) * 100
+                            , even = toFloat i / 2 == toFloat (i // 2)
+                            }
+                        )
+            }
+    in
+    ( model
+    , generate ShuffledList (shuffle model.content)
+    )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         InfListMsg infList ->
-            { model | infList = infList }
+            ( { model | infList = infList }, Cmd.none )
+
+        HeaderClicked columnConfig ->
+            ( { model | content = List.sortWith columnConfig.sorter model.content }, Cmd.none )
+
+        ShuffledList items ->
+            ( { model | content = items }, Cmd.none )
 
 
 itemHeight : Int
@@ -92,7 +116,8 @@ gridConfig =
 itemView : Int -> Int -> Item -> Html Msg
 itemView idx listIdx item =
     let
-        visibleColumns = List.filter (\column -> column.properties.visible) columns
+        visibleColumns =
+            List.filter (\column -> column.properties.visible) columns
     in
     div
         []
@@ -104,38 +129,49 @@ viewColumn : ColumnConfig -> Item -> Html Msg
 viewColumn config item =
     config.renderer config.properties item
 
+
 columns : List ColumnConfig
 columns =
-    [ { properties = { title = "Selected"
-                     , visible = True
-                     , width = 100
-                     }
-       , renderer= viewBool .even
-       }
-    , { properties = { title = "Id"
-                     , visible = True
-                     , width = 100
-                     }
-       , renderer= viewInt .id
-       }
-    , { properties = { title = "Name"
-                     , visible = True
-                     , width = 100
-                     }
-       , renderer= viewString .name
-       }
-    , { properties = { title = "Value"
-                     , visible = False
-                     , width = 100
-                     }
-       , renderer= viewFloat .value
-       }
-    , { properties = { title = "Progress"
-                     , visible = True
-                     , width = 100
-                     }
-       , renderer= viewProgressBar .value
-       }
+    [ { properties =
+            { title = "Selected"
+            , visible = True
+            , width = 100
+            }
+      , renderer = viewBool .even
+      , sorter = sortBool .even
+      }
+    , { properties =
+            { title = "Id"
+            , visible = True
+            , width = 100
+            }
+      , renderer = viewInt .id
+      , sorter = sortInt .id
+      }
+    , { properties =
+            { title = "Name"
+            , visible = False
+            , width = 100
+            }
+      , renderer = viewString .name
+      , sorter = sortString .name
+      }
+    , { properties =
+            { title = "Progress"
+            , visible = True
+            , width = 100
+            }
+      , renderer = viewProgressBar .value
+      , sorter = sortFloat .value
+      }
+    , { properties =
+            { title = "Value"
+            , visible = True
+            , width = 100
+            }
+      , renderer = viewFloat .value
+      , sorter = sortFloat .value
+      }
     ]
 
 
