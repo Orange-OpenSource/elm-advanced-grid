@@ -208,20 +208,14 @@ columns =
 viewInt : (Item -> Int) -> ColumnProperties -> Item -> Html Msg
 viewInt field properties item =
     div
-        [ style "display" "inline-block"
-        , style "margin" "5px"
-        , style "width" <| String.fromInt properties.width ++ "px"
-        ]
+        (cellStyles properties)
         [ text <| String.fromInt (field item) ]
 
 
 viewBool : (Item -> Bool) -> ColumnProperties -> Item -> Html Msg
 viewBool field properties item =
     div
-        [ style "display" "inline-block"
-        , style "margin" "5px"
-        , style "width" <| String.fromInt properties.width ++ "px"
-        ]
+        (cellStyles properties)
         [ input
             [ type_ "checkbox"
             , checked (field item)
@@ -233,39 +227,45 @@ viewBool field properties item =
 viewFloat : (Item -> Float) -> ColumnProperties -> Item -> Html Msg
 viewFloat field properties item =
     div
-        [ style "display" "inline-block"
-        , style "margin" "5px"
-        , style "width" <| String.fromInt properties.width ++ "px"
-        ]
+        (cellStyles properties)
         [ text <| String.fromFloat (field item) ]
 
 
 viewString : (Item -> String) -> ColumnProperties -> Item -> Html Msg
 viewString field properties item =
     div
-        [ style "display" "inline-block"
-        , style "margin" "5px"
-        , style "width" <| String.fromInt properties.width ++ "px"
-        ]
+        (cellStyles properties)
         [ text <| field item ]
 
 
 viewProgressBar : (Item -> Float) -> ColumnProperties -> Item -> Html Msg
 viewProgressBar field properties item =
     div
-        [ style "display" "inline-block"
-        , style "background-color" "white"
-        , style "border-radius" "5px"
+        [ style "display" "inline"
         , style "border" "1px solid #CCC"
-        , style "width" <| String.fromInt properties.width ++ "px"
+        , style "vertical-align" "top"
+        , style "height" <| String.fromInt itemHeight ++ "px"
         ]
         [ div
-            [ style "background-color" "#4d4"
-            , style "width" <| String.fromFloat (field item) ++ "px"
-            , style "height" "10px"
-            , style "border-radius" "4px"
+            [ style "display" "inline-block"
+            , style "background-color" "white"
+            , style "border-radius" "5px"
+            , style "margin" "3px"
+            , style "vertical-align" "middle"
+            , style "border" "1px solid #CCC"
+            , style "width" <| String.fromInt properties.width ++ "px"
             ]
-            []
+            [ div
+                [ style "background-color" "#4d4"
+                , style "width" <| String.fromFloat (field item) ++ "px"
+                , style "height" "10px"
+                , style "border-radius" "4px"
+                ]
+                []
+            ]
+        ]
+
+
 viewHeaders : Model -> List ColumnConfig -> Html Msg
 viewHeaders model columnConfigs =
     div
@@ -345,15 +345,25 @@ view model =
         ]
 
 
+cellStyles : ColumnProperties -> List (Html.Attribute Msg)
+cellStyles properties =
+    [ style "display" "inline-block"
+    , style "border-left" "1px solid #CCC"
+    , style "border-top" "1px solid #CCC"
+    , style "overflow" "hidden"
+    , style "padding" "1px 2px 0px 1px"
+    , style "width" <| String.fromInt properties.width ++ "px"
+    ]
+
 
 viewRows : Model -> Html Msg
 viewRows model =
     div
-            [ style "height" (String.fromInt containerHeight ++ "px")
-            , style "width" "500px"
-            , style "overflow" "auto"
-            , style "border" "1px solid #000"
-            , style "margin" "auto"
-            , IL.onScroll InfListMsg
-            ]
-            [ IL.view gridConfig model.infList model.content ]
+        [ style "height" (String.fromInt containerHeight ++ "px")
+        , style "width" "500px"
+        , style "overflow" "auto"
+        , style "border" "1px solid #000"
+        , style "margin" "auto"
+        , IL.onScroll InfListMsg
+        ]
+        [ IL.view gridConfig model.infList model.content ]
