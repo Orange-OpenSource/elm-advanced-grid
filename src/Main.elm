@@ -17,6 +17,18 @@ type alias Item =
     , even : Bool
     }
 
+type alias ColumnConfig =
+    { properties : ColumnProperties
+    , renderer: ColumnProperties -> (Item -> Html Msg)
+    }
+
+type alias ColumnProperties =
+    { width : Int
+    , visible: Bool
+    }
+
+
+
 
 type alias Model =
     { infList : IL.Model
@@ -37,12 +49,12 @@ init : Model
 init =
     { infList = IL.init
     , content =
-        List.range 0 100000
+        List.range 0 25000
             |> List.map
                 (\i ->
                     { id = i
                     , name = "name" ++ String.fromInt i
-                    , value = toFloat i / 1000
+                    , value = toFloat i / 100
                     , even = toFloat i / 2 == toFloat (i // 2)
                     }
                 )
@@ -66,8 +78,8 @@ containerHeight =
     500
 
 
-config : IL.Config Item Msg
-config =
+gridConfig : IL.Config Item Msg
+gridConfig =
     IL.config
         { itemView = itemView
         , itemHeight = IL.withConstantHeight itemHeight
@@ -81,79 +93,99 @@ itemView idx listIdx item =
     div
         []
     <|
-        List.map (\fn -> fn item) viewColumns
+        List.map (\config -> viewColumn config item) columns
 
 
-viewColumns : List (Item -> Html Msg)
-viewColumns =
-    [ viewBool .even 100
-    , viewInt .id 100
-    , viewString .name 100
-    , viewFloat .value 100
-    , viewProgressBar .value 100
+viewColumn : ColumnConfig -> Item -> Html Msg
+viewColumn config item =
+    config.renderer config.properties item
+
+columns : List ColumnConfig
+columns =
+    [ { properties = { visible = True
+                     , width = 100
+                     }
+       , renderer= viewBool .even
+       }
+    , { properties = { visible = True
+                     , width = 100
+                     }
+       , renderer= viewInt .id
+       }
+    , { properties = { visible = True
+                     , width = 100
+                     }
+       , renderer= viewString .name
+       }
+    , { properties = { visible = False
+                     , width = 100
+                     }
+       , renderer= viewFloat .value
+       }
+    , { properties = { visible = True
+                     , width = 50
+                     }
+       , renderer= viewProgressBar .value
+       }
     ]
 
 
-viewInt : (Item -> Int) -> Int -> Item -> Html Msg
-viewInt render width item =
+viewInt : (Item -> Int) -> ColumnProperties -> Item -> Html Msg
+viewInt field properties item =
     div
         [ style "display" "inline-block"
-        , style "background-color" "red"
         , style "margin" "5px"
-        , style "width" <| String.fromInt width ++ "px"
+        , style "width" <| String.fromInt properties.width ++ "px"
         ]
-        [ text <| String.fromInt (render item) ]
+        [ text <| String.fromInt (field item) ]
 
 
-viewBool : (Item -> Bool) -> Int -> Item -> Html Msg
-viewBool render width item =
+viewBool : (Item -> Bool) -> ColumnProperties -> Item -> Html Msg
+viewBool field properties item =
     div
         [ style "display" "inline-block"
-        , style "background-color" "red"
         , style "margin" "5px"
         ]
         [ input
             [ type_ "checkbox"
-            , checked (render item)
+            , checked (field item)
             ]
             []
         ]
 
 
-viewFloat : (Item -> Float) -> Int -> Item -> Html Msg
-viewFloat render width item =
+viewFloat : (Item -> Float) -> ColumnProperties -> Item -> Html Msg
+viewFloat field properties item =
     div
         [ style "display" "inline-block"
-        , style "background-color" "green"
         , style "margin" "5px"
-        , style "width" <| Debug.log "width" <| String.fromInt width ++ "px"
+        , style "width" <| String.fromInt properties.width ++ "px"
         ]
-        [ text <| String.fromFloat (render item) ]
+        [ text <| String.fromFloat (field item) ]
 
 
-viewString : (Item -> String) -> Int -> Item -> Html Msg
-viewString render width item =
+viewString : (Item -> String) -> ColumnProperties -> Item -> Html Msg
+viewString field properties item =
     div
         [ style "display" "inline-block"
-        , style "background-color" "yellow"
         , style "margin" "5px"
-        , style "width" <| Debug.log "width" <| String.fromInt width ++ "px"
+        , style "width" <| String.fromInt properties.width ++ "px"
         ]
-        [ text <| render item ]
+        [ text <| field item ]
 
 
-viewProgressBar : (Item -> Float) -> Int -> Item -> Html Msg
-viewProgressBar render width item =
+viewProgressBar : (Item -> Float) -> ColumnProperties -> Item -> Html Msg
+viewProgressBar field properties item =
     div
         [ style "display" "inline-block"
         , style "background-color" "white"
         , style "border-radius" "5px"
         , style "border" "1px solid #CCC"
-        , style "width" "50px"
+        , style "width" <| String.fromInt properties.width ++ "px"
         ]
         [ div
             [ style "background-color" "#4d4"
-            , style "width" <| String.fromFloat (render item / 2) ++ "px"
+            , style "width" <| String.fromFloat (field item / 2) ++ "px"
             , style "height" "10px"
             , style "border-radius" "4px"
             ]
@@ -171,4 +203,4 @@ view model =
         , style "margin" "auto"
         , IL.onScroll InfListMsg
         ]
-        [ IL.view config model.infList model.content ]
+        [ IL.view gridConfig model.infList model.content ]
