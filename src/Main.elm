@@ -23,15 +23,22 @@ type alias Item =
     }
 
 
+type Sorting
+    = Unsorted
+    | Ascending
+    | Descending
+
+
 type alias ColumnConfig =
     { properties : ColumnProperties
     , renderer : ColumnProperties -> (Item -> Html Msg)
-    , sorter: Item -> Item -> Order
+    , sorter : Item -> Item -> Order
     }
 
 
 type alias ColumnProperties =
-    { title : String
+    { order : Sorting
+    , title : String
     , visible : Bool
     , width : Int
     }
@@ -40,6 +47,8 @@ type alias ColumnProperties =
 type alias Model =
     { infList : IL.Model
     , content : List Item
+    , sortedBy : Maybe ColumnConfig
+    , order : Sorting
     }
 
 
@@ -73,6 +82,8 @@ init _ =
                             , even = toFloat i / 2 == toFloat (i // 2)
                             }
                         )
+            , sortedBy = Nothing
+            , order = Unsorted
             }
     in
     ( model
@@ -87,7 +98,21 @@ update msg model =
             ( { model | infList = infList }, Cmd.none )
 
         HeaderClicked columnConfig ->
-            ( { model | content = List.sortWith columnConfig.sorter model.content }, Cmd.none )
+            let
+                (sortedContent, newOrder) =
+                    case model.order of
+                       Descending ->
+                           (List.sortWith columnConfig.sorter model.content |> List.reverse, Ascending)
+                       _ ->
+                           (List.sortWith columnConfig.sorter model.content, Descending)
+            in
+            ( { model | content = sortedContent
+              , order = newOrder
+              , sortedBy = Just columnConfig
+              }
+              , Cmd.none )
+
+
 
         ShuffledList items ->
             ( { model | content = items }, Cmd.none )
@@ -133,7 +158,8 @@ viewColumn config item =
 columns : List ColumnConfig
 columns =
     [ { properties =
-            { title = "Selected"
+            { order = Unsorted
+            , title = "Selected"
             , visible = True
             , width = 100
             }
@@ -141,7 +167,8 @@ columns =
       , sorter = sortBool .even
       }
     , { properties =
-            { title = "Id"
+            { order = Unsorted
+            , title = "Id"
             , visible = True
             , width = 100
             }
@@ -149,7 +176,8 @@ columns =
       , sorter = sortInt .id
       }
     , { properties =
-            { title = "Name"
+            { order = Unsorted
+            , title = "Name"
             , visible = False
             , width = 100
             }
@@ -157,7 +185,8 @@ columns =
       , sorter = sortString .name
       }
     , { properties =
-            { title = "Progress"
+            { order = Unsorted
+            , title = "Progress"
             , visible = True
             , width = 100
             }
@@ -165,7 +194,8 @@ columns =
       , sorter = sortFloat .value
       }
     , { properties =
-            { title = "Value"
+            { order = Unsorted
+            , title = "Value"
             , visible = True
             , width = 100
             }
@@ -247,6 +277,19 @@ viewColumnTitles columnConfigs =
         (columnConfigs |> List.filter (\column -> column.properties.visible)
                       |> List.map viewColumnTitle
                       )
+sortInt : (Item -> Int) -> Item -> Item -> Order
+sortInt field item1 item2 =
+    compare (field item1) (field item2)
+
+
+sortFloat : (Item -> Float) -> Item -> Item -> Order
+sortFloat field item1 item2 =
+    compare (field item1) (field item2)
+
+
+sortString : (Item -> String) -> Item -> Item -> Order
+sortString field item1 item2 =
+    compare (field item1) (field item2)
 
 viewColumnTitle : ColumnConfig -> Html Msg
 viewColumnTitle columnConfig =
@@ -257,6 +300,20 @@ viewColumnTitle columnConfig =
          ]
          [ text columnConfig.properties.title ]
 
+sortBool : (Item -> Bool) -> Item -> Item -> Order
+sortBool field item1 item2 =
+    case ( field item1, field item2 ) of
+        ( True, True ) ->
+            EQ
+
+        ( False, False ) ->
+            EQ
+
+        ( True, False ) ->
+            GT
+
+        ( False, True ) ->
+            LT
 
 view : Model -> Html Msg
 view model =
