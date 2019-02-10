@@ -44,17 +44,19 @@ main =
         , update = update
         }
 
+itemCount : Int
+itemCount = 25000
 
 init : Model
 init =
     { infList = IL.init
     , content =
-        List.range 0 25000
+        List.range 0 itemCount
             |> List.map
                 (\i ->
                     { id = i
                     , name = "name" ++ String.fromInt i
-                    , value = toFloat i / 100
+                    , value = (toFloat i / toFloat itemCount)  * 100
                     , even = toFloat i / 2 == toFloat (i // 2)
                     }
                 )
@@ -126,7 +128,7 @@ columns =
        , renderer= viewFloat .value
        }
     , { properties = { visible = True
-                     , width = 50
+                     , width = 100
                      }
        , renderer= viewProgressBar .value
        }
@@ -188,7 +190,7 @@ viewProgressBar field properties item =
         ]
         [ div
             [ style "background-color" "#4d4"
-            , style "width" <| String.fromFloat (field item / 2) ++ "px"
+            , style "width" <| String.fromFloat (field item) ++ "px"
             , style "height" "10px"
             , style "border-radius" "4px"
             ]
