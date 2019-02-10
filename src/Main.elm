@@ -143,9 +143,18 @@ itemView idx listIdx item =
     let
         visibleColumns =
             List.filter (\column -> column.properties.visible) columns
+
+        color = if item.value > 50 then
+                    "#3182A9"
+                else
+                    if item.even then
+                        "#EEE"
+                    else
+                        "transparent"
+
     in
     div
-        []
+        [ style "background-color" color ]
     <|
         List.map (\config -> viewColumn config item) visibleColumns
 
