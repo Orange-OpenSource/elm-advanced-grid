@@ -266,17 +266,47 @@ viewProgressBar field properties item =
             , style "border-radius" "4px"
             ]
             []
+viewHeaders : Model -> List ColumnConfig -> Html Msg
+viewHeaders model columnConfigs =
+    div
+        [ style "border" "1px solid #000"
+        , style "width" "500px"
+        , style "margin" "auto"
         ]
+        (columnConfigs
+            |> List.filter (\column -> column.properties.visible)
+            |> List.map (viewHeader model)
+        )
 
-viewColumnTitles : List ColumnConfig -> Html Msg
-viewColumnTitles columnConfigs =
-    div [style "border" "1px solid #000"
-            , style "width" "500px"
-                 , style "margin" "auto"
+
+viewHeader : Model -> ColumnConfig -> Html Msg
+viewHeader model columnConfig =
+    let
+        sortingSymbol =
+            case model.sortedBy of
+                Just config ->
+                    if config == columnConfig then
+                        if model.order == Descending then
+                            " ^"
+                        else
+                            " v"
+                    else
+                        ""
+                _ ->
+                    ""
+    in
+    div
+        [ style "display" "inline-block"
+        , style "background-color" "#CCC"
+        , style "border" "1px solid #666"
+        , style "padding" "1px 2px 0px 1px"
+        , style "overflow" "hidden"
+        , style "width" <| String.fromInt columnConfig.properties.width ++ "px"
+        , onClick (HeaderClicked columnConfig)
         ]
-        (columnConfigs |> List.filter (\column -> column.properties.visible)
-                      |> List.map viewColumnTitle
-                      )
+        [ text <| columnConfig.properties.title ++ sortingSymbol]
+
+
 sortInt : (Item -> Int) -> Item -> Item -> Order
 sortInt field item1 item2 =
     compare (field item1) (field item2)
@@ -291,14 +321,6 @@ sortString : (Item -> String) -> Item -> Item -> Order
 sortString field item1 item2 =
     compare (field item1) (field item2)
 
-viewColumnTitle : ColumnConfig -> Html Msg
-viewColumnTitle columnConfig =
-     div
-         [ style "display" "inline-block"
-         , style "background-color" "#CCC"
-         , style "width" <| String.fromInt columnConfig.properties.width ++ "px"
-         ]
-         [ text columnConfig.properties.title ]
 
 sortBool : (Item -> Bool) -> Item -> Item -> Order
 sortBool field item1 item2 =
@@ -318,7 +340,7 @@ sortBool field item1 item2 =
 view : Model -> Html Msg
 view model =
     div []
-        [ viewColumnTitles columns
+        [ viewHeaders model columns
         , viewRows model
         ]
 
