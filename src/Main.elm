@@ -121,8 +121,6 @@ update msg model =
             ( { model | content = items }, Cmd.none )
 
 
-
-
 view : Model -> Html Msg
 view model =
     div []
@@ -171,12 +169,13 @@ viewRow idx listIdx item =
             else
                 backgroundColor transparent
     in
-    toUnstyled << div
-        [ css
-            [ rowColor
-            , height (px <| toFloat itemHeight)
+    toUnstyled
+        << div
+            [ css
+                [ rowColor
+                , height (px <| toFloat itemHeight)
+                ]
             ]
-        ]
     <|
         List.map (\config -> viewColumn config item) visibleColumns
 
@@ -367,27 +366,24 @@ viewHeader model columnConfig =
 
 arrowUp : Html Msg
 arrowUp =
-    div
-        [ css
-            [ width (px 0)
-            , height (px 0)
-            , borderLeft3 (px 5) solid transparent
-            , borderRight3 (px 5) solid transparent
-            , borderBottom3 (px 5) solid (hex "000")
-            ]
-        ]
-        []
+    arrow borderBottom3
 
 
 arrowDown : Html Msg
 arrowDown =
+    arrow borderTop3
+
+arrow horizontalBorder =
     div
         [ css
             [ width (px 0)
             , height (px 0)
             , borderLeft3 (px 5) solid transparent
             , borderRight3 (px 5) solid transparent
-            , borderTop3 (px 5) solid (hex "000")
+            , horizontalBorder (px 5) solid (hex "000")
+            , display inlineBlock
+            , float right
+            , margin (px 5)
             ]
         ]
         []
@@ -422,6 +418,7 @@ sortBool field item1 item2 =
 
         ( False, True ) ->
             LT
+
 
 cumulatedBorderWidth : Int
 cumulatedBorderWidth =
