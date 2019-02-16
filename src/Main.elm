@@ -7,15 +7,11 @@ import Html.Styled exposing (Html, div, input, span, styled, text, toUnstyled)
 import Html.Styled.Attributes exposing (css, fromUnstyled, style, type_)
 import Html.Styled.Events exposing (onClick)
 import InfiniteList as IL
-import Random exposing (generate)
-import Random.List exposing (shuffle)
 
 
 type Msg
     = InfListMsg IL.Model
     | HeaderClicked ColumnConfig
-    | ShuffledList (List Item)
-
 
 type alias Item =
     { id : Int
@@ -89,7 +85,7 @@ init _ =
             }
     in
     ( model
-    , generate ShuffledList (shuffle model.content)
+    , Cmd.none
     )
 
 
@@ -116,9 +112,6 @@ update msg model =
               }
             , Cmd.none
             )
-
-        ShuffledList items ->
-            ( { model | content = items }, Cmd.none )
 
 
 view : Model -> Html Msg
