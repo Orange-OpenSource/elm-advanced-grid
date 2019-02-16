@@ -1,9 +1,11 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, div, input, text)
-import Html.Attributes exposing (checked, style, type_)
-import Html.Events exposing (onClick)
+import Css exposing (..)
+import Html
+import Html.Styled exposing (Html, div, input, span, styled, text, toUnstyled)
+import Html.Styled.Attributes exposing (css, fromUnstyled, style, type_)
+import Html.Styled.Events exposing (onClick)
 import InfiniteList as IL
 import Random exposing (generate)
 import Random.List exposing (shuffle)
@@ -56,7 +58,7 @@ main : Program () Model Msg
 main =
     Browser.element
         { init = init
-        , view = view
+        , view = view >> toUnstyled
         , update = update
         , subscriptions = \_ -> Sub.none
         }
@@ -99,23 +101,34 @@ update msg model =
 
         HeaderClicked columnConfig ->
             let
-                (sortedContent, newOrder) =
+                ( sortedContent, newOrder ) =
                     case model.order of
-                       Descending ->
-                           (List.sortWith columnConfig.sorter model.content |> List.reverse, Ascending)
-                       _ ->
-                           (List.sortWith columnConfig.sorter model.content, Descending)
+                        Descending ->
+                            ( List.sortWith columnConfig.sorter model.content |> List.reverse, Ascending )
+
+                        _ ->
+                            ( List.sortWith columnConfig.sorter model.content, Descending )
             in
-            ( { model | content = sortedContent
-              , order = newOrder
-              , sortedBy = Just columnConfig
+            ( { model
+                | content = sortedContent
+                , order = newOrder
+                , sortedBy = Just columnConfig
               }
-              , Cmd.none )
-
-
+            , Cmd.none
+            )
 
         ShuffledList items ->
             ( { model | content = items }, Cmd.none )
+
+
+
+
+view : Model -> Html Msg
+view model =
+    div []
+        [ viewHeaders model columns
+        , viewRows model
+        ]
 
 
 itemHeight : Int
@@ -137,26 +150,33 @@ gridConfig =
         }
         |> IL.withOffset 300
 
+
+
 {--
 idx is the index of the visible line
 listIdx is the index in the data source
 --}
-viewRow : Int -> Int -> Item -> Html Msg
+
+
+viewRow : Int -> Int -> Item -> Html.Html Msg
 viewRow idx listIdx item =
     let
-        color = if item.value > 50 then
-                    "#3182A9"
-                else
-                    if item.even then
-                        "#EEE"
-                    else
-                        "transparent"
+        rowColor =
+            if item.value > 50 then
+                backgroundColor (hex "3182A9")
 
+            else if item.even then
+                backgroundColor (hex "EEE")
+
+            else
+                backgroundColor transparent
     in
-    div
-        [ style "background-color" color
-         , style "height" <| String.fromInt itemHeight ++ "px"
-         ]
+    toUnstyled << div
+        [ css
+            [ rowColor
+            , height (px <| toFloat itemHeight)
+            ]
+        ]
     <|
         List.map (\config -> viewColumn config item) visibleColumns
 
@@ -229,7 +249,7 @@ viewBool field properties item =
         (cellStyles properties)
         [ input
             [ type_ "checkbox"
-            , checked (field item)
+            , Html.Styled.Attributes.checked (field item)
             ]
             []
         ]
@@ -252,46 +272,58 @@ viewString field properties item =
 viewProgressBar : (Item -> Float) -> ColumnProperties -> Item -> Html Msg
 viewProgressBar field properties item =
     let
-        maxWidth = properties.width - 8 - cumulatedBorderWidth
-        actualWidth = (field item / toFloat 100) * toFloat maxWidth
+        maxWidth =
+            properties.width - 8 - cumulatedBorderWidth
 
+        actualWidth =
+            (field item / toFloat 100) * toFloat maxWidth
     in
     div
-        [ style "display" "inline-block"
-        , style "border" "1px solid #CCC"
-        , style "vertical-align" "top"
-        , style "padding-left" "3px"
-        , style "padding-right" "3px"
+        [ css
+            [ display inlineBlock
+            , border3 (px 1) solid (hex "CCC")
+            , verticalAlign top
+            , paddingLeft (px 3)
+            , paddingRight (px 3)
+            ]
         ]
         [ div
-            [ style "display" "inline-block"
-            , style "background-color" "white"
-            , style "border-radius" "5px"
-            , style "border" "1px solid #CCC"
-            , style "width" <| String.fromInt maxWidth ++ "px"
+            [ css
+                [ display inlineBlock
+                , backgroundColor (hex "fff")
+                , borderRadius (px 5)
+                , border3 (px 1) solid (hex "CCC")
+                , width (px <| toFloat maxWidth)
+                ]
             ]
             [ div
-                [ style "background-color" "#4d4"
-                , style "width" <| String.fromFloat actualWidth ++ "px"
-                , style "height" <| String.fromInt (itemHeight - 12) ++ "px"
-                , style "border-radius" "5px"
-                , style "overflow" "visible"
+                [ css
+                    [ backgroundColor (hex "4d4")
+                    , width (px actualWidth)
+                    , height (px <| toFloat itemHeight - 12)
+                    , borderRadius (px 5)
+                    , overflow visible
+                    ]
                 ]
                 []
             ]
         ]
 
+
 visibleColumns : List ColumnConfig
 visibleColumns =
-            List.filter (\column -> column.properties.visible) columns
+    List.filter (\column -> column.properties.visible) columns
+
 
 viewHeaders : Model -> List ColumnConfig -> Html Msg
 viewHeaders model columnConfigs =
     div
-        [ style "border" "1px solid #000"
-        , style "width" <| String.fromInt totalWidth ++ "px"
-        , style "margin" "auto"
-        , style "height" <| String.fromInt itemHeight ++ "px"
+        [ css
+            [ border3 (px 1) solid (hex "000")
+            , width (px <| toFloat totalWidth)
+            , margin auto
+            , height (px <| toFloat itemHeight)
+            ]
         ]
         (columnConfigs
             |> List.filter (\column -> column.properties.visible)
@@ -307,23 +339,58 @@ viewHeader model columnConfig =
                 Just config ->
                     if config == columnConfig then
                         if model.order == Descending then
-                            " ^"
+                            arrowUp
+
                         else
-                            " v"
+                            arrowDown
+
                     else
-                        ""
+                        span [] []
+
                 _ ->
-                    ""
+                    span [] []
     in
     div
-        [ style "display" "inline-block"
-        , style "background-color" "#CCC"
-        , style "border" "1px solid #666"
-        , style "overflow" "hidden"
-        , style "width" <| String.fromInt (columnConfig.properties.width - cumulatedBorderWidth) ++ "px"
+        [ css
+            [ display inlineBlock
+            , backgroundColor (hex "CCC")
+            , border3 (px 1) solid (hex "666")
+            , overflow hidden
+            , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
+            ]
         , onClick (HeaderClicked columnConfig)
         ]
-        [ text <| columnConfig.properties.title ++ sortingSymbol]
+        [ text <| columnConfig.properties.title
+        , sortingSymbol
+        ]
+
+
+arrowUp : Html Msg
+arrowUp =
+    div
+        [ css
+            [ width (px 0)
+            , height (px 0)
+            , borderLeft3 (px 5) solid transparent
+            , borderRight3 (px 5) solid transparent
+            , borderBottom3 (px 5) solid (hex "000")
+            ]
+        ]
+        []
+
+
+arrowDown : Html Msg
+arrowDown =
+    div
+        [ css
+            [ width (px 0)
+            , height (px 0)
+            , borderLeft3 (px 5) solid transparent
+            , borderRight3 (px 5) solid transparent
+            , borderTop3 (px 5) solid (hex "000")
+            ]
+        ]
+        []
 
 
 sortInt : (Item -> Int) -> Item -> Item -> Order
@@ -356,37 +423,36 @@ sortBool field item1 item2 =
         ( False, True ) ->
             LT
 
-view : Model -> Html Msg
-view model =
-    div []
-        [ viewHeaders model columns
-        , viewRows model
-        ]
-
 cumulatedBorderWidth : Int
 cumulatedBorderWidth =
-   2
+    2
 
-cellStyles : ColumnProperties -> List (Html.Attribute Msg)
+
+cellStyles : ColumnProperties -> List (Html.Styled.Attribute Msg)
 cellStyles properties =
-    [ style "display" "inline-block"
-    , style "border" "1px solid #CCC"
-    , style "overflow" "hidden"
-    , style "width" <| String.fromInt (properties.width - cumulatedBorderWidth) ++ "px"
+    [ css
+        [ display inlineBlock
+        , border3 (px 1) solid (hex "CCC")
+        , overflow hidden
+        , width (px <| toFloat (properties.width - cumulatedBorderWidth))
+        ]
     ]
 
 
 viewRows : Model -> Html Msg
 viewRows model =
     div
-        [ style "height" (String.fromInt containerHeight ++ "px")
-        , style "width" <| String.fromInt totalWidth ++ "px"
-        , style "overflow" "auto"
-        , style "border" "1px solid #000"
-        , style "margin" "auto"
-        , IL.onScroll InfListMsg
+        [ css
+            [ height (px <| toFloat containerHeight)
+            , width (px <| toFloat totalWidth)
+            , overflow auto
+            , border3 (px 1) solid (hex "CCC")
+            , margin auto
+            ]
+        , fromUnstyled <| IL.onScroll InfListMsg
         ]
-        [ IL.view gridConfig model.infList model.content ]
+        [ Html.Styled.fromUnstyled <| IL.view gridConfig model.infList model.content ]
+
 
 totalWidth : Int
 totalWidth =
