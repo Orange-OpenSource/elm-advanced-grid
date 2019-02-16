@@ -154,7 +154,9 @@ viewRow idx listIdx item =
 
     in
     div
-        [ style "background-color" color ]
+        [ style "background-color" color
+         , style "height" <| String.fromInt itemHeight ++ "px"
+         ]
     <|
         List.map (\config -> viewColumn config item) visibleColumns
 
