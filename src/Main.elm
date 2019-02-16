@@ -80,6 +80,7 @@ gridConfig =
     { columns = columns
     , containerHeight = 500
     , containerWidth = 700
+    , hasFilters = True
     , lineHeight = 20
     , rowStyle = rowColor
     }
@@ -112,7 +113,7 @@ columns =
             { order = Unsorted
             , title = "Id"
             , visible = True
-            , width = 100
+            , width = 50
             }
       , renderer = viewInt (\item -> item.id)
       , sorter = sortInt (\item -> item.id)

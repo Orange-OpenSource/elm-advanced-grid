@@ -18,6 +18,7 @@ type alias Config a =
     { columns : List (ColumnConfig a)
     , containerHeight : Int
     , containerWidth : Int
+    , hasFilters : Bool
     , lineHeight : Int
     , rowStyle : Item a -> Style
     }
@@ -112,9 +113,17 @@ view model =
             , margin auto
             ]
         ]
-        [ viewHeaders model
-        , viewRows model
-        ]
+    <|
+        if model.config.hasFilters then
+            [ viewHeaders model
+            , viewFilters model
+            , viewRows model
+            ]
+
+        else
+            [ viewHeaders model
+            , viewRows model
+            ]
 
 
 viewRows : Model a -> Html (Msg a)
@@ -235,6 +244,35 @@ viewProgressBar barHeight field properties item =
             ]
         ]
 
+sortInt : (Item a -> Int) -> Item a -> Item a -> Order
+sortInt field item1 item2 =
+    compare (field item1) (field item2)
+
+
+sortFloat : (Item a -> Float) -> Item a -> Item a -> Order
+sortFloat field item1 item2 =
+    compare (field item1) (field item2)
+
+
+sortString : (Item a -> String) -> Item a -> Item a -> Order
+sortString field item1 item2 =
+    compare (field item1) (field item2)
+
+
+sortBool : (Item a -> Bool) -> Item a -> Item a -> Order
+sortBool field item1 item2 =
+    case ( field item1, field item2 ) of
+        ( True, True ) ->
+            EQ
+
+        ( False, False ) ->
+            EQ
+
+        ( True, False ) ->
+            GT
+
+        ( False, True ) ->
+            LT
 
 visibleColumns : Model a -> List (ColumnConfig a)
 visibleColumns model =
@@ -251,10 +289,10 @@ viewHeaders model =
             , height (px <| toFloat model.config.lineHeight)
             ]
         ]
-        ( model.config.columns
-            |> List.filter (\column -> column.properties.visible)
+        (visibleColumns model
             |> List.map (viewHeader model)
         )
+
 
 viewHeader : Model a -> ColumnConfig a -> Html (Msg a)
 viewHeader model columnConfig =
@@ -316,36 +354,41 @@ arrow horizontalBorder =
         []
 
 
-sortInt : (Item a -> Int) -> Item a -> Item a -> Order
-sortInt field item1 item2 =
-    compare (field item1) (field item2)
+viewFilters : Model a -> Html (Msg a)
+viewFilters model =
+    div [css
+             [ borderLeft3 (px 1) solid (hex "666")
+             , borderRight3 (px 1) solid (hex "666")
+             , borderBottom3 (px 1) solid (hex "666")
+             , width (px <| toFloat <| totalWidth model)
+             , height (px <| toFloat model.config.lineHeight)
+             , marginBottom (px 3)
+             ]
+        ]
+        (visibleColumns model
+            |> List.map (viewFilter model)
+        )
 
 
-sortFloat : (Item a -> Float) -> Item a -> Item a -> Order
-sortFloat field item1 item2 =
-    compare (field item1) (field item2)
-
-
-sortString : (Item a -> String) -> Item a -> Item a -> Order
-sortString field item1 item2 =
-    compare (field item1) (field item2)
-
-
-sortBool : (Item a -> Bool) -> Item a -> Item a -> Order
-sortBool field item1 item2 =
-    case ( field item1, field item2 ) of
-        ( True, True ) ->
-            EQ
-
-        ( False, False ) ->
-            EQ
-
-        ( True, False ) ->
-            GT
-
-        ( False, True ) ->
-            LT
-
+viewFilter : Model a -> ColumnConfig a -> Html (Msg a)
+viewFilter model columnConfig =
+    div
+        [ css
+            [ display inlineBlock
+            , backgroundColor (hex "CCC")
+            , border3 (px 1) solid (hex "666")
+            , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
+            ]
+        ]
+        [ input
+            [ css
+                [ margin (px 3)
+                , width (px (toFloat <| columnConfig.properties.width - 13))
+                , height (px <| toFloat <|model.config.lineHeight - 10)
+                ]
+            ]
+            []
+        ]
 
 cumulatedBorderWidth : Int
 cumulatedBorderWidth =
