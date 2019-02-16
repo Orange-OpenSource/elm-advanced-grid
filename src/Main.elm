@@ -131,15 +131,15 @@ containerHeight =
 gridConfig : IL.Config Item Msg
 gridConfig =
     IL.config
-        { itemView = itemView
+        { itemView = viewRow
         , itemHeight = IL.withConstantHeight itemHeight
         , containerHeight = containerHeight
         }
         |> IL.withOffset 300
 
 
-itemView : Int -> Int -> Item -> Html Msg
-itemView idx listIdx item =
+viewRow : Int -> Int -> Item -> Html Msg
+viewRow idx listIdx item =
     let
         visibleColumns =
             List.filter (\column -> column.properties.visible) columns
