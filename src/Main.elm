@@ -123,7 +123,12 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
+    div [css
+             [ width (px <| toFloat (containerWidth + cumulatedBorderWidth))
+             , overflow auto
+             , margin auto
+             ]
+        ]
         [ viewHeaders model columns
         , viewRows model
         ]
@@ -138,6 +143,9 @@ containerHeight : Int
 containerHeight =
     500
 
+containerWidth : Int
+containerWidth =
+    700
 
 gridConfig : IL.Config Item Msg
 gridConfig =
@@ -226,6 +234,51 @@ columns =
     , { properties =
             { order = Unsorted
             , title = "Value"
+            , visible = True
+            , width = 100
+            }
+      , renderer = viewFloat .value
+      , sorter = sortFloat .value
+      }
+      ,{ properties =
+            { order = Unsorted
+            , title = "Selected2"
+            , visible = True
+            , width = 100
+            }
+      , renderer = viewBool .even
+      , sorter = sortBool .even
+      }
+    , { properties =
+            { order = Unsorted
+            , title = "Id2"
+            , visible = True
+            , width = 100
+            }
+      , renderer = viewInt .id
+      , sorter = sortInt .id
+      }
+    , { properties =
+            { order = Unsorted
+            , title = "Name2"
+            , visible = True
+            , width = 100
+            }
+      , renderer = viewString .name
+      , sorter = sortString .name
+      }
+    , { properties =
+            { order = Unsorted
+            , title = "Progres2s"
+            , visible = True
+            , width = 100
+            }
+      , renderer = viewProgressBar .value
+      , sorter = sortFloat .value
+      }
+    , { properties =
+            { order = Unsorted
+            , title = "Valu2e"
             , visible = True
             , width = 100
             }
