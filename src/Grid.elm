@@ -112,7 +112,7 @@ view model =
             , margin auto
             ]
         ]
-        [ viewHeaders model model.config.columns
+        [ viewHeaders model
         , viewRows model
         ]
 
@@ -241,8 +241,8 @@ visibleColumns model =
     List.filter (\column -> column.properties.visible) model.config.columns
 
 
-viewHeaders : Model a -> List (ColumnConfig a) -> Html (Msg a)
-viewHeaders model columnConfigs =
+viewHeaders : Model a -> Html (Msg a)
+viewHeaders model =
     div
         [ css
             [ border3 (px 1) solid (hex "000")
@@ -251,11 +251,10 @@ viewHeaders model columnConfigs =
             , height (px <| toFloat model.config.lineHeight)
             ]
         ]
-        (columnConfigs
+        ( model.config.columns
             |> List.filter (\column -> column.properties.visible)
             |> List.map (viewHeader model)
         )
-
 
 viewHeader : Model a -> ColumnConfig a -> Html (Msg a)
 viewHeader model columnConfig =
