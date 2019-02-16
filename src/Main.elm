@@ -144,9 +144,6 @@ listIdx is the index in the data source
 viewRow : Int -> Int -> Item -> Html Msg
 viewRow idx listIdx item =
     let
-        visibleColumns =
-            List.filter (\column -> column.properties.visible) columns
-
         color = if item.value > 50 then
                     "#3182A9"
                 else
@@ -192,7 +189,7 @@ columns =
     , { properties =
             { order = Unsorted
             , title = "Name"
-            , visible = False
+            , visible = True
             , width = 100
             }
       , renderer = viewString .name
@@ -255,7 +252,7 @@ viewString field properties item =
 viewProgressBar : (Item -> Float) -> ColumnProperties -> Item -> Html Msg
 viewProgressBar field properties item =
     let
-        maxWidth = properties.width - 8
+        maxWidth = properties.width - 8 - cumulatedBorderWidth
         actualWidth = (field item / toFloat 100) * toFloat maxWidth
 
     in
@@ -286,11 +283,15 @@ viewProgressBar field properties item =
             ]
         ]
 
+visibleColumns : List ColumnConfig
+visibleColumns =
+            List.filter (\column -> column.properties.visible) columns
+
 viewHeaders : Model -> List ColumnConfig -> Html Msg
 viewHeaders model columnConfigs =
     div
         [ style "border" "1px solid #000"
-        , style "width" "500px"
+        , style "width" <| String.fromInt totalWidth ++ "px"
         , style "margin" "auto"
         ]
         (columnConfigs
@@ -319,9 +320,8 @@ viewHeader model columnConfig =
         [ style "display" "inline-block"
         , style "background-color" "#CCC"
         , style "border" "1px solid #666"
-        --, style "padding" "1px 2px 0px 1px"
         , style "overflow" "hidden"
-        , style "width" <| String.fromInt columnConfig.properties.width ++ "px"
+        , style "width" <| String.fromInt (columnConfig.properties.width - cumulatedBorderWidth) ++ "px"
         , onClick (HeaderClicked columnConfig)
         ]
         [ text <| columnConfig.properties.title ++ sortingSymbol]
@@ -364,14 +364,16 @@ view model =
         , viewRows model
         ]
 
+cumulatedBorderWidth : Int
+cumulatedBorderWidth =
+   2
 
 cellStyles : ColumnProperties -> List (Html.Attribute Msg)
 cellStyles properties =
     [ style "display" "inline-block"
     , style "border" "1px solid #CCC"
     , style "overflow" "hidden"
-
-    , style "width" <| String.fromInt properties.width ++ "px"
+    , style "width" <| String.fromInt (properties.width - cumulatedBorderWidth) ++ "px"
     ]
 
 
@@ -379,10 +381,14 @@ viewRows : Model -> Html Msg
 viewRows model =
     div
         [ style "height" (String.fromInt containerHeight ++ "px")
-        , style "width" "500px"
+        , style "width" <| String.fromInt totalWidth ++ "px"
         , style "overflow" "auto"
         , style "border" "1px solid #000"
         , style "margin" "auto"
         , IL.onScroll InfListMsg
         ]
         [ IL.view gridConfig model.infList model.content ]
+
+totalWidth : Int
+totalWidth =
+    List.foldl (\columnConfig -> (+) columnConfig.properties.width) 0 visibleColumns
