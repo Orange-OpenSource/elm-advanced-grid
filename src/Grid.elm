@@ -4,7 +4,7 @@ import Css exposing (..)
 import Html
 import Html.Styled exposing (Html, div, input, span, styled, text, toUnstyled)
 import Html.Styled.Attributes exposing (css, fromUnstyled, style, type_)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Events exposing (onClick, onInput)
 import InfiniteList as IL
 
 
@@ -27,6 +27,7 @@ type alias Config a =
 type Msg a
     = InfListMsg IL.Model
     | HeaderClicked (ColumnConfig a)
+    | FilterModified (ColumnConfig a) String
 
 
 type Sorting
@@ -92,6 +93,13 @@ update msg model =
               }
             , Cmd.none
             )
+
+        FilterModified columnConfig string ->
+            let
+                _ = Debug.log "columnConfig" columnConfig
+            in
+                (model, Cmd.none)
+
 
 
 gridConfig : Model a -> IL.Config (Item a) (Msg a)
@@ -385,7 +393,9 @@ viewFilter model columnConfig =
                 [ margin (px 3)
                 , width (px (toFloat <| columnConfig.properties.width - 13))
                 , height (px <| toFloat <|model.config.lineHeight - 10)
+
                 ]
+                , onInput <| FilterModified columnConfig
             ]
             []
         ]
