@@ -249,6 +249,13 @@ viewString field properties item =
 
 viewProgressBar : (Item -> Float) -> ColumnProperties -> Item -> Html Msg
 viewProgressBar field properties item =
+    let
+        maxWidth = properties.width - 8
+        actualWidth = (field item / toFloat 100) * toFloat maxWidth
+
+    in
+
+
     div
         [ style "display" "inline-block"
         , style "border" "1px solid #CCC"
@@ -261,11 +268,11 @@ viewProgressBar field properties item =
             , style "background-color" "white"
             , style "border-radius" "5px"
             , style "border" "1px solid #CCC"
-            , style "width" <| String.fromInt (properties.width - 6) ++ "px"
+            , style "width" <| String.fromInt maxWidth ++ "px"
             ]
             [ div
                 [ style "background-color" "#4d4"
-                , style "width" <| String.fromFloat (field item) ++ "px"
+                , style "width" <| String.fromFloat actualWidth ++ "px"
                 , style "height" <| String.fromInt (itemHeight - 12) ++ "px"
                 , style "border-radius" "5px"
                 , style "overflow" "visible"
@@ -307,7 +314,7 @@ viewHeader model columnConfig =
         [ style "display" "inline-block"
         , style "background-color" "#CCC"
         , style "border" "1px solid #666"
-        , style "padding" "1px 2px 0px 1px"
+        --, style "padding" "1px 2px 0px 1px"
         , style "overflow" "hidden"
         , style "width" <| String.fromInt columnConfig.properties.width ++ "px"
         , onClick (HeaderClicked columnConfig)
