@@ -250,30 +250,29 @@ viewString field properties item =
 viewProgressBar : (Item -> Float) -> ColumnProperties -> Item -> Html Msg
 viewProgressBar field properties item =
     div
-        [ style "display" "inline"
+        [ style "display" "inline-block"
         , style "border" "1px solid #CCC"
         , style "vertical-align" "top"
-        , style "height" <| String.fromInt itemHeight ++ "px"
+        , style "padding-left" "3px"
+        , style "padding-right" "3px"
         ]
         [ div
             [ style "display" "inline-block"
             , style "background-color" "white"
             , style "border-radius" "5px"
-            , style "margin" "3px"
-            , style "vertical-align" "middle"
             , style "border" "1px solid #CCC"
-            , style "width" <| String.fromInt properties.width ++ "px"
+            , style "width" <| String.fromInt (properties.width - 6) ++ "px"
             ]
             [ div
                 [ style "background-color" "#4d4"
                 , style "width" <| String.fromFloat (field item) ++ "px"
-                , style "height" "10px"
-                , style "border-radius" "4px"
+                , style "height" <| String.fromInt (itemHeight - 12) ++ "px"
+                , style "border-radius" "5px"
+                , style "overflow" "visible"
                 ]
                 []
             ]
         ]
-
 
 viewHeaders : Model -> List ColumnConfig -> Html Msg
 viewHeaders model columnConfigs =
@@ -357,10 +356,9 @@ view model =
 cellStyles : ColumnProperties -> List (Html.Attribute Msg)
 cellStyles properties =
     [ style "display" "inline-block"
-    , style "border-left" "1px solid #CCC"
-    , style "border-top" "1px solid #CCC"
+    , style "border" "1px solid #CCC"
     , style "overflow" "hidden"
-    , style "padding" "1px 2px 0px 1px"
+
     , style "width" <| String.fromInt properties.width ++ "px"
     ]
 
