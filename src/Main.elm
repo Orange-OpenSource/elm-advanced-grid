@@ -256,8 +256,6 @@ viewProgressBar field properties item =
         actualWidth = (field item / toFloat 100) * toFloat maxWidth
 
     in
-
-
     div
         [ style "display" "inline-block"
         , style "border" "1px solid #CCC"
@@ -293,6 +291,7 @@ viewHeaders model columnConfigs =
         [ style "border" "1px solid #000"
         , style "width" <| String.fromInt totalWidth ++ "px"
         , style "margin" "auto"
+        , style "height" <| String.fromInt itemHeight ++ "px"
         ]
         (columnConfigs
             |> List.filter (\column -> column.properties.visible)
