@@ -137,7 +137,10 @@ gridConfig =
         }
         |> IL.withOffset 300
 
-
+{--
+idx is the index of the visible line
+listIdx is the index in the data source
+--}
 viewRow : Int -> Int -> Item -> Html Msg
 viewRow idx listIdx item =
     let
