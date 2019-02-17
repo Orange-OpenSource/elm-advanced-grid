@@ -107,7 +107,7 @@ columns =
             , width = 100
             }
       , renderer = viewBool (\item -> item.even)
-      , sorter = sortBool (\item -> item.even)
+      , comparator = compareToBool (\item -> item.even)
       }
     , { properties =
             { order = Unsorted
@@ -116,7 +116,7 @@ columns =
             , width = 50
             }
       , renderer = viewInt (\item -> item.id)
-      , sorter = sortInt (\item -> item.id)
+      , comparator = compareToInt (\item -> item.id)
       }
     , { properties =
             { order = Unsorted
@@ -125,7 +125,7 @@ columns =
             , width = 100
             }
       , renderer = viewString (\item -> item.name)
-      , sorter = sortString (\item -> item.name)
+      , comparator = compareToString (\item -> item.name)
       }
     , { properties =
             { order = Unsorted
@@ -134,7 +134,7 @@ columns =
             , width = 100
             }
       , renderer = viewProgressBar 8 (\item -> item.value)
-      , sorter = sortFloat (\item -> item.value)
+      , comparator = compareToFloat (\item -> item.value)
       }
     , { properties =
             { order = Unsorted
@@ -143,7 +143,7 @@ columns =
             , width = 100
             }
       , renderer = viewFloat (\item -> item.value)
-      , sorter = sortFloat (\item -> item.value)
+      , comparator = compareToFloat (\item -> item.value)
       }
     , { properties =
             { order = Unsorted
@@ -152,7 +152,7 @@ columns =
             , width = 100
             }
       , renderer = viewBool (\item -> item.even)
-      , sorter = sortBool (\item -> item.even)
+      , comparator = compareToBool (\item -> item.even)
       }
     , { properties =
             { order = Unsorted
@@ -161,7 +161,7 @@ columns =
             , width = 100
             }
       , renderer = viewInt (\item -> item.id)
-      , sorter = sortInt (\item -> item.id)
+      , comparator = compareToInt (\item -> item.id)
       }
     , { properties =
             { order = Unsorted
@@ -170,7 +170,7 @@ columns =
             , width = 100
             }
       , renderer = viewString (\item -> item.name)
-      , sorter = sortString (\item -> item.name)
+      , comparator = compareToString (\item -> item.name)
       }
     , { properties =
             { order = Unsorted
@@ -179,7 +179,7 @@ columns =
             , width = 100
             }
       , renderer = viewProgressBar 8 (\item -> item.value)
-      , sorter = sortFloat (\item -> item.value)
+      , comparator = compareToFloat (\item -> item.value)
       }
     , { properties =
             { order = Unsorted
@@ -188,6 +188,6 @@ columns =
             , width = 100
             }
       , renderer = viewFloat (\item -> item.value)
-      , sorter = sortFloat (\item -> item.value)
+      , comparator = compareToFloat (\item -> item.value)
       }
     ]

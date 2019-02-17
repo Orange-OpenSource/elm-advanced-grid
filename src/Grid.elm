@@ -1,4 +1,4 @@
-module Grid exposing (ColumnConfig, Config, Model, Msg, Sorting(..), init, sortBool, sortFloat, sortInt, sortString, update, view, viewBool, viewColumn, viewFloat, viewInt, viewProgressBar, viewString, visibleColumns)
+module Grid exposing (ColumnConfig, Config, Model, Msg, Sorting(..), init, compareToBool, compareToFloat, compareToInt, compareToString, update, view, viewBool, viewColumn, viewFloat, viewInt, viewProgressBar, viewString, visibleColumns)
 
 import Css exposing (..)
 import Html
@@ -39,7 +39,7 @@ type Sorting
 type alias ColumnConfig a =
     { properties : ColumnProperties
     , renderer : ColumnProperties -> (Item a -> Html (Msg a))
-    , sorter : Item a -> Item a -> Order
+    , comparator : Item a -> Item a -> Order
     }
 
 
@@ -81,10 +81,10 @@ update msg model =
                 ( sortedContent, newOrder ) =
                     case model.order of
                         Descending ->
-                            ( List.sortWith columnConfig.sorter model.content |> List.reverse, Ascending )
+                            ( List.sortWith columnConfig.comparator model.content |> List.reverse, Ascending )
 
                         _ ->
-                            ( List.sortWith columnConfig.sorter model.content, Descending )
+                            ( List.sortWith columnConfig.comparator model.content, Descending )
             in
             ( { model
                 | content = sortedContent
@@ -252,23 +252,23 @@ viewProgressBar barHeight field properties item =
             ]
         ]
 
-sortInt : (Item a -> Int) -> Item a -> Item a -> Order
-sortInt field item1 item2 =
+compareToInt : (Item a -> Int) -> Item a -> Item a -> Order
+compareToInt field item1 item2 =
     compare (field item1) (field item2)
 
 
-sortFloat : (Item a -> Float) -> Item a -> Item a -> Order
-sortFloat field item1 item2 =
+compareToFloat : (Item a -> Float) -> Item a -> Item a -> Order
+compareToFloat field item1 item2 =
     compare (field item1) (field item2)
 
 
-sortString : (Item a -> String) -> Item a -> Item a -> Order
-sortString field item1 item2 =
+compareToString : (Item a -> String) -> Item a -> Item a -> Order
+compareToString field item1 item2 =
     compare (field item1) (field item2)
 
 
-sortBool : (Item a -> Bool) -> Item a -> Item a -> Order
-sortBool field item1 item2 =
+compareToBool : (Item a -> Bool) -> Item a -> Item a -> Order
+compareToBool field item1 item2 =
     case ( field item1, field item2 ) of
         ( True, True ) ->
             EQ
