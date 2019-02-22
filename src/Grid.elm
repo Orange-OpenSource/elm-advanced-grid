@@ -48,6 +48,8 @@ type alias ColumnConfig a =
 
 
 type alias ColumnProperties =
+    { id: String
+    , order : Sorting
     , title : String
     , visible : Bool
     , width : Int
@@ -102,9 +104,7 @@ update msg model =
         FilterModified columnConfig string ->
             let
                 newColumnconfig = { columnConfig | filteringValue = Just string }
-
-                -- TODO: declare column id?
-                newColumns = List.Extra.setIf (\item -> item.properties.title == columnConfig.properties.title ) newColumnconfig model.config.columns
+                newColumns = List.Extra.setIf (\item -> item.properties.id == columnConfig.properties.id ) newColumnconfig model.config.columns
 
                 oldConfig = model.config
                 newConfig = { oldConfig | columns = newColumns }
@@ -495,8 +495,7 @@ viewHeader model columnConfig =
         sortingSymbol =
             case model.sortedBy of
                 Just config ->
-                    -- TODO: use an id
-                    if config.properties.title == columnConfig.properties.title then
+                    if config.properties.id == columnConfig.properties.id then
                         if model.order == Descending then
                             arrowUp
 

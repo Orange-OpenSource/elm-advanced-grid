@@ -101,7 +101,8 @@ rowColor item =
 columns : List (ColumnConfig Item)
 columns =
     [ { properties =
-            { order = Unsorted
+            { id = "Selected"
+            , order = Unsorted
             , title = "Selected"
             , visible = True
             , width = 100
@@ -112,7 +113,8 @@ columns =
       , comparator = compareBoolField (\item -> item.even)
       }
     , { properties =
-            { order = Unsorted
+            { id = "Id"
+            , order = Unsorted
             , title = "Id"
             , visible = True
             , width = 50
@@ -123,7 +125,8 @@ columns =
       , comparator = compareIntField (\item -> item.id)
       }
     , { properties =
-            { order = Unsorted
+            { id = "Name"
+            , order = Unsorted
             , title = "Name"
             , visible = True
             , width = 100
@@ -134,7 +137,8 @@ columns =
       , comparator = compareStringField (\item -> item.name)
       }
     , { properties =
-            { order = Unsorted
+            { id = "Progress"
+            , order = Unsorted
             , title = "Progress"
             , visible = True
             , width = 100
@@ -145,7 +149,8 @@ columns =
       , comparator = compareFloatField (\item -> item.value)
       }
     , { properties =
-            { order = Unsorted
+            { id = "Value"
+            , order = Unsorted
             , title = "Value"
             , visible = True
             , width = 100
@@ -156,7 +161,8 @@ columns =
       , comparator = compareFloatField (\item -> item.value)
       }
     , { properties =
-            { order = Unsorted
+            { id = "Selected2"
+            , order = Unsorted
             , title = "Selected2"
             , visible = True
             , width = 100
@@ -167,7 +173,8 @@ columns =
       , comparator = compareBoolField (\item -> item.even)
       }
     , { properties =
-            { order = Unsorted
+            { id = "Id2"
+            , order = Unsorted
             , title = "Id2"
             , visible = True
             , width = 100
@@ -178,7 +185,8 @@ columns =
       , comparator = compareIntField (\item -> item.id)
       }
     , { properties =
-            { order = Unsorted
+            { id = "Name2"
+            , order = Unsorted
             , title = "Name2"
             , visible = True
             , width = 100
@@ -189,7 +197,8 @@ columns =
       , comparator = compareStringField (\item -> item.name)
       }
     , { properties =
-            { order = Unsorted
+            { id = "Progres2s"
+            , order = Unsorted
             , title = "Progres2s"
             , visible = True
             , width = 100
@@ -200,7 +209,8 @@ columns =
       , comparator = compareFloatField (\item -> item.value)
       }
     , { properties =
-            { order = Unsorted
+            { id = "Valu2e"
+            , order = Unsorted
             , title = "Valu2e"
             , visible = True
             , width = 100
