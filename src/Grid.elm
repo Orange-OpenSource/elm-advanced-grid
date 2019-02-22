@@ -135,7 +135,9 @@ view model =
     <|
         if model.config.hasFilters then
             [ div [ css
-                        [ border3 (px 1) solid (hex "666") ]
+                        [ border3 (px 1) solid (hex "666")
+                        , paddingBottom (px 3)
+                        ]
                   ]
                 [ viewHeaders model
                 , viewFilters model
