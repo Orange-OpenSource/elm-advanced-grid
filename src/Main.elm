@@ -106,8 +106,10 @@ columns =
             , visible = True
             , width = 100
             }
+      , filters = BoolFilter <| boolFilter (\item -> item.even)
+      , filteringValue = Nothing
       , renderer = viewBool (\item -> item.even)
-      , comparator = compareToBool (\item -> item.even)
+      , comparator = compareBoolField (\item -> item.even)
       }
     , { properties =
             { order = Unsorted
@@ -115,8 +117,10 @@ columns =
             , visible = True
             , width = 50
             }
+      , filters = IntFilter <| intFilter (\item -> item.id)
+      , filteringValue = Nothing
       , renderer = viewInt (\item -> item.id)
-      , comparator = compareToInt (\item -> item.id)
+      , comparator = compareIntField (\item -> item.id)
       }
     , { properties =
             { order = Unsorted
@@ -124,8 +128,10 @@ columns =
             , visible = True
             , width = 100
             }
+      , filters = StringFilter <| stringFilter (\item -> item.name)
+      , filteringValue = Nothing
       , renderer = viewString (\item -> item.name)
-      , comparator = compareToString (\item -> item.name)
+      , comparator = compareStringField (\item -> item.name)
       }
     , { properties =
             { order = Unsorted
@@ -133,8 +139,10 @@ columns =
             , visible = True
             , width = 100
             }
+      , filters = FloatFilter <| floatFilter (\item -> item.value)
+      , filteringValue = Nothing
       , renderer = viewProgressBar 8 (\item -> item.value)
-      , comparator = compareToFloat (\item -> item.value)
+      , comparator = compareFloatField (\item -> item.value)
       }
     , { properties =
             { order = Unsorted
@@ -142,8 +150,10 @@ columns =
             , visible = True
             , width = 100
             }
+      , filters = FloatFilter <| floatFilter (\item -> item.value)
+      , filteringValue = Nothing
       , renderer = viewFloat (\item -> item.value)
-      , comparator = compareToFloat (\item -> item.value)
+      , comparator = compareFloatField (\item -> item.value)
       }
     , { properties =
             { order = Unsorted
@@ -151,8 +161,10 @@ columns =
             , visible = True
             , width = 100
             }
+      , filters = BoolFilter <| boolFilter (\item -> item.even)
+      , filteringValue = Nothing
       , renderer = viewBool (\item -> item.even)
-      , comparator = compareToBool (\item -> item.even)
+      , comparator = compareBoolField (\item -> item.even)
       }
     , { properties =
             { order = Unsorted
@@ -160,8 +172,10 @@ columns =
             , visible = True
             , width = 100
             }
+      , filters = IntFilter <| intFilter (\item -> item.id)
+      , filteringValue = Nothing
       , renderer = viewInt (\item -> item.id)
-      , comparator = compareToInt (\item -> item.id)
+      , comparator = compareIntField (\item -> item.id)
       }
     , { properties =
             { order = Unsorted
@@ -169,8 +183,10 @@ columns =
             , visible = True
             , width = 100
             }
+      , filters = StringFilter <| stringFilter (\item -> item.name)
+      , filteringValue = Nothing
       , renderer = viewString (\item -> item.name)
-      , comparator = compareToString (\item -> item.name)
+      , comparator = compareStringField (\item -> item.name)
       }
     , { properties =
             { order = Unsorted
@@ -178,8 +194,10 @@ columns =
             , visible = True
             , width = 100
             }
+      , filters = FloatFilter <| floatFilter (\item -> item.value)
+      , filteringValue = Nothing
       , renderer = viewProgressBar 8 (\item -> item.value)
-      , comparator = compareToFloat (\item -> item.value)
+      , comparator = compareFloatField (\item -> item.value)
       }
     , { properties =
             { order = Unsorted
@@ -187,7 +205,9 @@ columns =
             , visible = True
             , width = 100
             }
+      , filters = FloatFilter <| floatFilter (\item -> item.value)
+      , filteringValue = Nothing
       , renderer = viewFloat (\item -> item.value)
-      , comparator = compareToFloat (\item -> item.value)
+      , comparator = compareFloatField (\item -> item.value)
       }
     ]
