@@ -48,7 +48,6 @@ type alias ColumnConfig a =
 
 
 type alias ColumnProperties =
-    { order : Sorting
     , title : String
     , visible : Bool
     , width : Int
@@ -135,8 +134,12 @@ view model =
         ]
     <|
         if model.config.hasFilters then
-            [ viewHeaders model
-            , viewFilters model
+            [ div [ css
+                        [ border3 (px 1) solid (hex "666") ]
+                  ]
+                [ viewHeaders model
+                , viewFilters model
+                ]
             , viewRows model
             ]
 
@@ -476,8 +479,7 @@ viewHeaders : Model a -> Html (Msg a)
 viewHeaders model =
     div
         [ css
-            [ border3 (px 1) solid (hex "000")
-            , width (px <| toFloat <| totalWidth model)
+            [ width (px <| toFloat <| totalWidth model)
             , margin auto
             , height (px <| toFloat model.config.lineHeight)
             ]
@@ -551,10 +553,7 @@ arrow horizontalBorder =
 viewFilters : Model a -> Html (Msg a)
 viewFilters model =
     div [css
-             [ borderLeft3 (px 1) solid (hex "666")
-             , borderRight3 (px 1) solid (hex "666")
-             , borderBottom3 (px 1) solid (hex "666")
-             , width (px <| toFloat <| totalWidth model)
+             [ width (px <| toFloat <| totalWidth model)
              , height (px <| toFloat model.config.lineHeight)
              , marginBottom (px 3)
              ]
@@ -586,6 +585,7 @@ viewFilter model columnConfig =
             []
         ]
 
+-- Left + right cell border width, in px. Useful to take in account the borders when calculating the total grid     width
 cumulatedBorderWidth : Int
 cumulatedBorderWidth =
     2
