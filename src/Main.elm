@@ -55,7 +55,7 @@ itemCount : Int
 itemCount =
     2500
 
-
+items : List Item
 items =
     List.range 0 itemCount
         |> List.map

@@ -3,8 +3,8 @@ module Grid exposing (ColumnConfig, Config, Model, Msg, Sorting(..), compareBool
 import Css exposing (..)
 import Grid.Filters exposing (Filter, Item, parseFilteringString)
 import Html
-import Html.Styled exposing (Html, div, input, span, styled, text, toUnstyled)
-import Html.Styled.Attributes exposing (css, fromUnstyled, style, type_)
+import Html.Styled exposing (Html, div, input, span, text, toUnstyled)
+import Html.Styled.Attributes exposing (css, fromUnstyled, type_)
 import Html.Styled.Events exposing (onClick, onInput)
 import InfiniteList as IL
 import List.Extra
@@ -373,7 +373,6 @@ arrowUp =
 arrowDown : Html (Msg a)
 arrowDown =
     arrow borderTop3
-
 
 arrow horizontalBorder =
     div
