@@ -3,6 +3,7 @@ module Main exposing (main)
 import Browser
 import Css exposing (Style, backgroundColor, hex, transparent)
 import Grid exposing (..)
+import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, stringFilter)
 import Html exposing (Html)
 import Html.Styled exposing (toUnstyled)
 
