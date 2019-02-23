@@ -1,6 +1,7 @@
 module Grid exposing (ColumnConfig, Config, Model, Msg, Sorting(..), compareBoolField, compareFloatField, compareIntField, compareStringField, init, update, view, viewBool, viewColumn, viewFloat, viewInt, viewProgressBar, viewString, visibleColumns)
 
 import Css exposing (..)
+import Grid.Colors exposing (black, darkGrey, lightGreen, lightGrey, white)
 import Grid.Filters exposing (Filter, Item, parseFilteringString)
 import Html
 import Html.Styled exposing (Html, div, input, span, text, toUnstyled)
@@ -135,7 +136,7 @@ view model =
         if model.config.hasFilters then
             [ div
                 [ css
-                    [ border3 (px 1) solid (hex "666")
+                    [ border3 (px 1) solid darkGrey
                     , paddingBottom (px 3)
                     ]
                 ]
@@ -168,7 +169,7 @@ viewRows model =
                 [ height (px <| toFloat model.config.containerHeight)
                 , width (px <| toFloat <| totalWidth model)
                 , overflow auto
-                , border3 (px 1) solid (hex "CCC")
+                , border3 (px 1) solid lightGrey
                 , margin auto
                 ]
             , fromUnstyled <| IL.onScroll InfListMsg
@@ -252,7 +253,7 @@ viewProgressBar barHeight field properties item =
     div
         [ css
             [ display inlineBlock
-            , border3 (px 1) solid (hex "CCC")
+            , border3 (px 1) solid lightGrey
             , verticalAlign top
             , paddingLeft (px 3)
             , paddingRight (px 3)
@@ -261,15 +262,15 @@ viewProgressBar barHeight field properties item =
         [ div
             [ css
                 [ display inlineBlock
-                , backgroundColor (hex "fff")
+                , backgroundColor white
                 , borderRadius (px 5)
-                , border3 (px 1) solid (hex "CCC")
+                , border3 (px 1) solid lightGrey
                 , width (px <| toFloat maxWidth)
                 ]
             ]
             [ div
                 [ css
-                    [ backgroundColor (hex "4d4")
+                    [ backgroundColor lightGreen
                     , width (px actualWidth)
                     , height (px <| toFloat barHeight)
                     , borderRadius (px 5)
@@ -353,8 +354,8 @@ viewHeader model columnConfig =
     div
         [ css
             [ display inlineBlock
-            , backgroundColor (hex "CCC")
-            , border3 (px 1) solid (hex "666")
+            , backgroundColor lightGrey
+            , border3 (px 1) solid darkGrey
             , overflow hidden
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
             ]
@@ -381,7 +382,7 @@ arrow horizontalBorder =
             , height (px 0)
             , borderLeft3 (px 5) solid transparent
             , borderRight3 (px 5) solid transparent
-            , horizontalBorder (px 5) solid (hex "000")
+            , horizontalBorder (px 5) solid black
             , display inlineBlock
             , float right
             , margin (px 5)
@@ -409,8 +410,8 @@ viewFilter model columnConfig =
     div
         [ css
             [ display inlineBlock
-            , backgroundColor (hex "CCC")
-            , border3 (px 1) solid (hex "666")
+            , backgroundColor lightGrey
+            , border3 (px 1) solid darkGrey
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
             ]
         ]
@@ -439,7 +440,7 @@ cellStyles : ColumnProperties -> List (Html.Styled.Attribute (Msg a))
 cellStyles properties =
     [ css
         [ display inlineBlock
-        , border3 (px 1) solid (hex "CCC")
+        , border3 (px 1) solid lightGrey
         , overflow hidden
         , width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
