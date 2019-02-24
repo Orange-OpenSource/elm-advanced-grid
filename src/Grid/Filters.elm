@@ -15,6 +15,7 @@ import Parser exposing (Parser)
 type alias Item a =
     { a
         | selected : Bool
+        , index : Int
     }
 
 

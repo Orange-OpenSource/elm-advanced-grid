@@ -14,6 +14,7 @@ type alias Model =
 
 type alias Item =
     { id : Int
+    , index: Int
     , name : String
     , value : Float
     , even : Bool
@@ -61,6 +62,7 @@ items =
         |> List.map
             (\i ->
                 { id = i
+                , index = i
                 , name = "name" ++ String.fromInt i
                 , value = (toFloat i / toFloat itemCount) * 100
                 , even = toFloat i / 2 == toFloat (i // 2)
@@ -78,7 +80,8 @@ init _ =
 
 gridConfig : Grid.Config Item
 gridConfig =
-    { columns = columns
+    { canSelectRows = True
+    , columns = columns
     , containerHeight = 500
     , containerWidth = 700
     , hasFilters = True
@@ -90,7 +93,7 @@ gridConfig =
 rowColor : Item -> Style
 rowColor item =
     if item.value > 50 then
-        backgroundColor (hex "3182A9")
+        backgroundColor (hex "FFE3AA")
 
     else if item.even then
         backgroundColor (hex "EEE")
@@ -102,18 +105,6 @@ rowColor item =
 columns : List (ColumnConfig Item)
 columns =
     [ { properties =
-            { id = "Selected"
-            , order = Unsorted
-            , title = "Selected"
-            , visible = True
-            , width = 100
-            }
-      , filters = BoolFilter <| boolFilter (\item -> item.even)
-      , filteringValue = Nothing
-      , renderer = viewBool (\item -> item.even)
-      , comparator = compareBoolField (\item -> item.even)
-      }
-    , { properties =
             { id = "Id"
             , order = Unsorted
             , title = "Id"

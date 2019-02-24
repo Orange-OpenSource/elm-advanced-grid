@@ -30,7 +30,8 @@ import List.Extra
 
 
 type alias Config a =
-    { columns : List (ColumnConfig a)
+    { canSelectRows : Bool
+    , columns : List (ColumnConfig a)
     , containerHeight : Int
     , containerWidth : Int
     , hasFilters : Bool
@@ -44,6 +45,7 @@ type Msg a
     | HeaderClicked (ColumnConfig a)
     | FilterModified (ColumnConfig a) String
     | LineClicked (Item a)
+    | SelectionToggled (Item a) String
 
 
 type Sorting
@@ -71,33 +73,52 @@ type alias ColumnProperties =
 
 
 type alias Model a =
-    { config : Config a
     { clickedItem : Maybe (Item a)
+    , config : Config a
     , content : List (Item a)
     , infList : IL.Model
     , order : Sorting
     , sortedBy : Maybe (ColumnConfig a)
-    , debug : String
     }
 
 
+selectionColumn : ColumnConfig a
+selectionColumn =
+    { properties =
+            { id = "MultipleSelection"
+            , order = Unsorted
+            , title = "Select"
+            , visible = True
+            , width = 100
+            }
+      , filters = BoolFilter <| boolFilter (\item -> item.selected)
+      , filteringValue = Nothing
+      , renderer = viewBool (\item -> item.selected)
+      , comparator = compareBoolField (\item -> item.selected)
+      }
+
 init : Config a -> List (Item a) -> Model a
 init config items =
-    { config = config
+    let
+        newConfig = if config.canSelectRows then
+                { config | columns = selectionColumn :: config.columns }
+            else
+                config
+
+    in
     { clickedItem = Nothing
+    , config = newConfig
     , content = items
     , infList = IL.init
     , order = Unsorted
     , sortedBy = Nothing
-    , debug = ""
     }
+
 
 
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
     case msg of
-        InfListMsg infList ->
-            ( { model | infList = infList }, Cmd.none )
 
         FilterModified columnConfig string ->
             let
@@ -140,16 +161,15 @@ update msg model =
         LineClicked item ->
             ({ model | clickedItem = Just item }, Cmd.none )
 
-        SelectionToggled item newStatus ->
-            -- TODO toogle selected item
+        SelectionToggled item _ ->
             let
-                _ = Debug.log "newStatus" newStatus
-                _ = Debug.log "item" item
-
+                newContent = List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
             in
-            ( model, Cmd.none )
+            ( { model | content = newContent }, Cmd.none )
 
-
+toggleSelection : Item a -> Item a
+toggleSelection item =
+     { item | selected = not item.selected }
 
 gridConfig : Model a -> IL.Config (Item a) (Msg a)
 gridConfig model =
@@ -218,8 +238,8 @@ viewRows model =
 
 
 {--
-idx is the index of the visible line
-listIdx is the index in the data source
+idx is the index of the visible line; if there are 25 visible lines, 0 <= idx < 25
+listIdx is the index in the data source; if the total number of items is 1000, 0<= listidx < 1000
 --}
 
 
@@ -253,7 +273,6 @@ viewInt field properties item =
         (cellStyles properties)
         [ text <| String.fromInt (field item) ]
 
-
 viewBool : (Item a -> Bool) -> ColumnProperties -> Item a -> Html (Msg a)
 viewBool field properties item =
     div
@@ -261,6 +280,7 @@ viewBool field properties item =
         [ input
             [ type_ "checkbox"
             , Html.Styled.Attributes.checked (field item)
+            , Html.Styled.Events.onInput (SelectionToggled item)
             ]
             []
         ]
