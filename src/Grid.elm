@@ -2,7 +2,7 @@ module Grid exposing
     ( ColumnConfig
     , Config
     , Model
-    , Msg
+    , Msg(..)
     , Sorting(..)
     , compareBoolField
     , compareFloatField
@@ -39,7 +39,7 @@ type alias Config a =
     , rowStyle : Item a -> Style
     }
 
-
+-- TODO: hide inner messages?
 type Msg a
     = InfListMsg IL.Model
     | HeaderClicked (ColumnConfig a)

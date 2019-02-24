@@ -4,12 +4,9 @@ import Browser
 import Css exposing (Style, backgroundColor, hex, transparent)
 import Grid exposing (..)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, stringFilter)
-import Html exposing (Html)
+import Html exposing (Html, div, li, text, ul)
+import Html.Attributes exposing (style)
 import Html.Styled exposing (toUnstyled)
-
-
-type alias Model =
-    Grid.Model Item
 
 
 type alias Item =
@@ -19,6 +16,12 @@ type alias Item =
     , value : Float
     , even : Bool
     , selected : Bool
+    }
+
+type alias Model =
+    { gridModel : Grid.Model Item
+    , clickedItem : Maybe Item
+    , selectedItems : List Item
     }
 
 
@@ -38,18 +41,69 @@ main =
 
 view : Model -> Html Msg
 view model =
-    Html.map GridMsg <| (Grid.view >> toUnstyled) model
+    let
+        selectedItem =
+            case model.clickedItem of
+                Just item ->
+                    viewItem item
+                Nothing
+                    -> text "None."
+    in
+
+    div [] [ Html.map GridMsg <| (Grid.view >> toUnstyled) model.gridModel
+           , div centered [ text"Clicked Item = ", selectedItem ]
+           , div centered [ text <| if (not <| List.isEmpty model.selectedItems) then
+                                "SelectedItems:"
+                              else
+                                "Use checkboxes to select items."
+                    ]
+           , ul centered <| List.map (\it -> li [][viewItem it]) model.selectedItems
+           ]
+centered : List  (Html.Attribute msg)
+centered =
+    [ style "margin" "auto"
+    , style "width" "500px"
+    , style "padding-top" "10px"
+    ]
+
+
+
+viewItem : Item -> Html msg
+viewItem item =
+    text ("id:" ++ String.fromInt item.id ++ " - name: " ++ item.name ++ "")
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GridMsg gridMessage ->
+
+        GridMsg (LineClicked item) ->
             let
-                ( newModel, cmd ) =
-                    Grid.update gridMessage model
+                (newGridModel, cmd) = Grid.update (LineClicked item) model.gridModel
             in
-            ( newModel, Cmd.map GridMsg cmd )
+                ( { model | gridModel = newGridModel
+                          , clickedItem = Just item
+                  }
+                , Cmd.map GridMsg cmd
+                )
+
+        GridMsg (SelectionToggled item status) ->
+            let
+                (newGridModel, cmd) = Grid.update (SelectionToggled item status) model.gridModel
+
+                selectedItems = List.filter .selected newGridModel.content
+            in
+                ( { model | gridModel = newGridModel
+                          , selectedItems = selectedItems
+                  }
+                  , Cmd.map GridMsg cmd )
+
+        GridMsg message ->
+            let
+                (newGridModel, cmd) = Grid.update message model.gridModel
+            in
+                ( { model | gridModel = newGridModel }, Cmd.map GridMsg cmd )
+
 
 
 itemCount : Int
@@ -73,7 +127,10 @@ items =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Grid.init gridConfig items
+    ( { gridModel = Grid.init gridConfig items
+      , clickedItem = Nothing
+      , selectedItems = []
+      }
     , Cmd.none
     )
 
@@ -92,7 +149,7 @@ gridConfig =
 
 rowColor : Item -> Style
 rowColor item =
-    if item.value > 50 then
+    if item.selected then
         backgroundColor (hex "FFE3AA")
 
     else if item.even then
