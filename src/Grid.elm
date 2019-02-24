@@ -1,8 +1,26 @@
-module Grid exposing (ColumnConfig, Config, Model, Msg, Sorting(..), compareBoolField, compareFloatField, compareIntField, compareStringField, init, update, view, viewBool, viewColumn, viewFloat, viewInt, viewProgressBar, viewString, visibleColumns)
+module Grid exposing
+    ( ColumnConfig
+    , Config
+    , Model
+    , Msg
+    , Sorting(..)
+    , compareBoolField
+    , compareFloatField
+    , compareIntField
+    , compareStringField
+    , init
+    , update
+    , view
+    , viewBool
+    , viewFloat
+    , viewInt
+    , viewProgressBar
+    , viewString
+    )
 
 import Css exposing (..)
 import Grid.Colors exposing (black, darkGrey, lightGreen, lightGrey, white)
-import Grid.Filters exposing (Filter, Item, parseFilteringString)
+import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString)
 import Html
 import Html.Styled exposing (Html, div, input, span, text, toUnstyled)
 import Html.Styled.Attributes exposing (css, fromUnstyled, type_)

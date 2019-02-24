@@ -1,4 +1,18 @@
-module Grid.Parsers exposing (boolEqualityParser, boolParser, floatEqualityParser, greaterThanBoolParser, greaterThanFloatParser, greaterThanIntParser, greaterThanStringParser, intEqualityParser, lessThanBoolParser, lessThanFloatParser, lessThanIntParser, lessThanStringParser, stringEqualityParser, stringParser)
+module Grid.Parsers exposing
+    ( boolEqualityParser
+    , boolParser
+    , floatEqualityParser
+    , greaterThanBoolParser
+    , greaterThanFloatParser
+    , greaterThanIntParser
+    , greaterThanStringParser
+    , intEqualityParser
+    , lessThanBoolParser
+    , lessThanFloatParser
+    , lessThanIntParser
+    , lessThanStringParser
+    , stringEqualityParser
+    )
 
 import Parser exposing ((|.), (|=), Parser, chompWhile, getChompedString, keyword, oneOf, spaces, succeed, symbol)
 

@@ -1,4 +1,12 @@
-module Grid.Filters exposing (Filter(..), Item, TypedFilter, boolFilter, filterBoolFieldEqualTo, filterBoolFieldGreaterThan, filterBoolFieldLesserThan, filterFloatFieldEqualTo, filterFloatFieldGreaterThan, filterFloatFieldLesserThan, filterIntFieldEqualTo, filterIntFieldGreaterThan, filterIntFieldLesserThan, filterStringFieldEqualTo, filterStringFieldGreaterThan, filterStringFieldLesserThan, floatFilter, intFilter, parseFilteringString, stringFilter, validateFilter)
+module Grid.Filters exposing
+    ( Filter(..)
+    , Item
+    , boolFilter
+    , floatFilter
+    , intFilter
+    , parseFilteringString
+    , stringFilter
+    )
 
 import Grid.Parsers exposing (..)
 import Parser exposing (Parser)
