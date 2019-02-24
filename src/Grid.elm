@@ -43,6 +43,7 @@ type Msg a
     = InfListMsg IL.Model
     | HeaderClicked (ColumnConfig a)
     | FilterModified (ColumnConfig a) String
+    | LineClicked (Item a)
 
 
 type Sorting
@@ -71,6 +72,7 @@ type alias ColumnProperties =
 
 type alias Model a =
     { config : Config a
+    { clickedItem : Maybe (Item a)
     , content : List (Item a)
     , infList : IL.Model
     , order : Sorting
@@ -82,6 +84,7 @@ type alias Model a =
 init : Config a -> List (Item a) -> Model a
 init config items =
     { config = config
+    { clickedItem = Nothing
     , content = items
     , infList = IL.init
     , order = Unsorted
@@ -95,6 +98,23 @@ update msg model =
     case msg of
         InfListMsg infList ->
             ( { model | infList = infList }, Cmd.none )
+
+        FilterModified columnConfig string ->
+            let
+                newColumnconfig =
+                    { columnConfig | filteringValue = Just string }
+
+                newColumns =
+                    List.Extra.setIf (\item -> item.properties.id == columnConfig.properties.id) newColumnconfig model.config.columns
+
+                oldConfig =
+                    model.config
+
+                newConfig =
+                    { oldConfig | columns = newColumns }
+            in
+            ( { model | config = newConfig }, Cmd.none )
+
 
         HeaderClicked columnConfig ->
             let
@@ -114,21 +134,21 @@ update msg model =
             , Cmd.none
             )
 
-        FilterModified columnConfig string ->
+        InfListMsg infList ->
+            ( { model | infList = infList }, Cmd.none )
+
+        LineClicked item ->
+            ({ model | clickedItem = Just item }, Cmd.none )
+
+        SelectionToggled item newStatus ->
+            -- TODO toogle selected item
             let
-                newColumnconfig =
-                    { columnConfig | filteringValue = Just string }
+                _ = Debug.log "newStatus" newStatus
+                _ = Debug.log "item" item
 
-                newColumns =
-                    List.Extra.setIf (\item -> item.properties.id == columnConfig.properties.id) newColumnconfig model.config.columns
-
-                oldConfig =
-                    model.config
-
-                newConfig =
-                    { oldConfig | columns = newColumns }
             in
-            ( { model | config = newConfig }, Cmd.none )
+            ( model, Cmd.none )
+
 
 
 gridConfig : Model a -> IL.Config (Item a) (Msg a)
@@ -211,6 +231,7 @@ viewRow model idx listIdx item =
                 [ model.config.rowStyle item
                 , height (px <| toFloat model.config.lineHeight)
                 ]
+              , onClick (LineClicked item)
             ]
     <|
         List.map (\columnConfig -> viewColumn columnConfig item) (visibleColumns model)
