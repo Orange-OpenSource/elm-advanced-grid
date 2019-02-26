@@ -19,6 +19,29 @@ type alias Item a =
     }
 
 
+type Filter a
+    = StringFilter (TypedFilter a String)
+    | IntFilter (TypedFilter a Int)
+    | FloatFilter (TypedFilter a Float)
+    | BoolFilter (TypedFilter a Bool)
+
+
+type alias TypedFilter a b =
+    { equal :
+        { filter : b -> Item a -> Bool
+        , parser : Parser b
+        }
+    , lessThan :
+        { filter : b -> Item a -> Bool
+        , parser : Parser b
+        }
+    , greaterThan :
+        { filter : b -> Item a -> Bool
+        , parser : Parser b
+        }
+    }
+
+
 parseFilteringString : Maybe String -> Filter a -> Maybe (Item a -> Bool)
 parseFilteringString filteringValue filters =
     let
@@ -67,29 +90,6 @@ validateFilter filteringString filters =
 
                         _ ->
                             Nothing
-
-
-type Filter a
-    = StringFilter (TypedFilter a String)
-    | IntFilter (TypedFilter a Int)
-    | FloatFilter (TypedFilter a Float)
-    | BoolFilter (TypedFilter a Bool)
-
-
-type alias TypedFilter a b =
-    { equal :
-        { filter : b -> Item a -> Bool
-        , parser : Parser b
-        }
-    , lessThan :
-        { filter : b -> Item a -> Bool
-        , parser : Parser b
-        }
-    , greaterThan :
-        { filter : b -> Item a -> Bool
-        , parser : Parser b
-        }
-    }
 
 
 stringFilter : (Item a -> String) -> TypedFilter a String
