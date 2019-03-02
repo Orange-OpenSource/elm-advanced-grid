@@ -14,13 +14,15 @@ module Grid.Parsers exposing
     , stringEqualityParser
     )
 
-import Parser exposing ((|.), (|=), Parser, chompWhile, getChompedString, keyword, oneOf, spaces, succeed, symbol)
+import Parser exposing ((|.), (|=), Parser, chompUntilEndOr, getChompedString, keyword, oneOf, spaces, succeed, symbol)
 
 
 stringParser : Parser String
 stringParser =
-    getChompedString <| chompWhile Char.isAlphaNum
-
+    -- the input string cannot contain "\t"
+    -- another implemntation is:
+    -- getChompedString <| chompWhile (\c -> True)
+    getChompedString <| chompUntilEndOr "\u{0000}"
 
 stringEqualityParser : Parser String
 stringEqualityParser =

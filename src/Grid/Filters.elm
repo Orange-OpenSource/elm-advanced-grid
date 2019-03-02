@@ -212,9 +212,9 @@ filterBoolFieldEqualTo getter value item =
 
 filterBoolFieldLesserThan : (Item a -> Bool) -> Bool -> Item a -> Bool
 filterBoolFieldLesserThan getter value item =
-    getter item && not value
+    (not <| getter item) && value
 
 
 filterBoolFieldGreaterThan : (Item a -> Bool) -> Bool -> Item a -> Bool
 filterBoolFieldGreaterThan getter value item =
-    (not <| getter item) && value
+    getter item && not value
