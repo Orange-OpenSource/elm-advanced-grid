@@ -144,11 +144,11 @@ update msg model =
             let
                 ( sortedContent, newOrder ) =
                     case model.order of
-                        Descending ->
-                            ( List.sortWith columnConfig.comparator model.content |> List.reverse, Ascending )
+                        Ascending ->
+                            ( List.sortWith columnConfig.comparator model.content |> List.reverse, Descending )
 
                         _ ->
-                            ( List.sortWith columnConfig.comparator model.content, Descending )
+                            ( List.sortWith columnConfig.comparator model.content, Ascending )
 
                 updatedContent =
                     updateIndexes sortedContent
