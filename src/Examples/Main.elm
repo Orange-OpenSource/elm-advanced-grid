@@ -112,7 +112,7 @@ itemCount =
 
 items : List Item
 items =
-    List.range 0 itemCount
+    List.range 0 (itemCount - 1)
         |> List.map
             (\i ->
                 { id = i
