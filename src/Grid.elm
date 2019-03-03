@@ -23,7 +23,7 @@ import Grid.Colors exposing (black, darkGrey, lightGreen, lightGrey, white)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString)
 import Html
 import Html.Styled exposing (Html, div, input, span, text, toUnstyled)
-import Html.Styled.Attributes exposing (css, fromUnstyled, type_)
+import Html.Styled.Attributes exposing (class, css, fromUnstyled, id, type_)
 import Html.Styled.Events exposing (onClick, onInput)
 import InfiniteList as IL
 import List.Extra
@@ -39,7 +39,11 @@ type alias Config a =
     , rowStyle : Item a -> Style
     }
 
+
+
 -- TODO: hide inner messages?
+
+
 type Msg a
     = InfListMsg IL.Model
     | HeaderClicked (ColumnConfig a)
@@ -85,26 +89,28 @@ type alias Model a =
 selectionColumn : ColumnConfig a
 selectionColumn =
     { properties =
-            { id = "MultipleSelection"
-            , order = Unsorted
-            , title = "Select"
-            , visible = True
-            , width = 100
-            }
-      , filters = BoolFilter <| boolFilter (\item -> item.selected)
-      , filteringValue = Nothing
-      , renderer = viewBool (\item -> item.selected)
-      , comparator = compareBoolField (\item -> item.selected)
-      }
+        { id = "MultipleSelection"
+        , order = Unsorted
+        , title = "Select"
+        , visible = True
+        , width = 100
+        }
+    , filters = BoolFilter <| boolFilter (\item -> item.selected)
+    , filteringValue = Nothing
+    , renderer = viewBool (\item -> item.selected)
+    , comparator = compareBoolField (\item -> item.selected)
+    }
+
 
 init : Config a -> List (Item a) -> Model a
 init config items =
     let
-        newConfig = if config.canSelectRows then
+        newConfig =
+            if config.canSelectRows then
                 { config | columns = selectionColumn :: config.columns }
+
             else
                 config
-
     in
     { clickedItem = Nothing
     , config = newConfig
@@ -115,11 +121,9 @@ init config items =
     }
 
 
-
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
     case msg of
-
         FilterModified columnConfig string ->
             let
                 newColumnconfig =
@@ -135,7 +139,6 @@ update msg model =
                     { oldConfig | columns = newColumns }
             in
             ( { model | config = newConfig }, Cmd.none )
-
 
         HeaderClicked columnConfig ->
             let
@@ -159,17 +162,20 @@ update msg model =
             ( { model | infList = infList }, Cmd.none )
 
         LineClicked item ->
-            ({ model | clickedItem = Just item }, Cmd.none )
+            ( { model | clickedItem = Just item }, Cmd.none )
 
         SelectionToggled item _ ->
             let
-                newContent = List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
+                newContent =
+                    List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
             in
             ( { model | content = newContent }, Cmd.none )
 
+
 toggleSelection : Item a -> Item a
 toggleSelection item =
-     { item | selected = not item.selected }
+    { item | selected = not item.selected }
+
 
 gridConfig : Model a -> IL.Config (Item a) (Msg a)
 gridConfig model =
@@ -181,33 +187,34 @@ gridConfig model =
         |> IL.withOffset 300
 
 
-view : Model a -> Html (Msg a)
+view : Model a -> Html.Html (Msg a)
 view model =
-    div
-        [ css
-            [ width (px <| toFloat (model.config.containerWidth + cumulatedBorderWidth))
-            , overflow auto
-            , margin auto
+    toUnstyled <|
+        div
+            [ css
+                [ width (px <| toFloat (model.config.containerWidth + cumulatedBorderWidth))
+                , overflow auto
+                , margin auto
+                ]
             ]
-        ]
-    <|
-        if model.config.hasFilters then
-            [ div
-                [ css
-                    [ border3 (px 1) solid darkGrey
-                    , paddingBottom (px 3)
+        <|
+            if model.config.hasFilters then
+                [ div
+                    [ css
+                        [ border3 (px 1) solid darkGrey
+                        , paddingBottom (px 3)
+                        ]
                     ]
+                    [ viewHeaders model
+                    , viewFilters model
+                    ]
+                , viewRows model
                 ]
-                [ viewHeaders model
-                , viewFilters model
-                ]
-            , viewRows model
-            ]
 
-        else
-            [ viewHeaders model
-            , viewRows model
-            ]
+            else
+                [ viewHeaders model
+                , viewRows model
+                ]
 
 
 viewRows : Model a -> Html (Msg a)
@@ -251,7 +258,7 @@ viewRow model idx listIdx item =
                 [ model.config.rowStyle item
                 , height (px <| toFloat model.config.lineHeight)
                 ]
-              , onClick (LineClicked item)
+            , onClick (LineClicked item)
             ]
     <|
         List.map (\columnConfig -> viewColumn columnConfig item) (visibleColumns model)
@@ -272,6 +279,7 @@ viewInt field properties item =
     div
         (cellStyles properties)
         [ text <| String.fromInt (field item) ]
+
 
 viewBool : (Item a -> Bool) -> ColumnProperties -> Item a -> Html (Msg a)
 viewBool field properties item =
@@ -434,6 +442,7 @@ arrowDown : Html (Msg a)
 arrowDown =
     arrow borderTop3
 
+
 arrow horizontalBorder =
     div
         [ css
@@ -487,7 +496,7 @@ viewFilter model columnConfig =
 
 
 
--- Left + right cell border width, in px. Useful to take in account the borders when calculating the total grid     width
+-- Left + right cell border width, in px. Useful to take in account the borders when calculating the total grid width
 
 
 cumulatedBorderWidth : Int

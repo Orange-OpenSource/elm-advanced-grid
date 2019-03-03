@@ -6,7 +6,6 @@ import Grid exposing (..)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, stringFilter)
 import Html exposing (Html, div, li, text, ul)
 import Html.Attributes exposing (style)
-import Html.Styled exposing (toUnstyled)
 
 
 type alias Item =
@@ -50,7 +49,7 @@ view model =
                     -> text "None."
     in
 
-    div [] [ Html.map GridMsg <| (Grid.view >> toUnstyled) model.gridModel
+    div [] [ Html.map GridMsg <| Grid.view model.gridModel
            , div centered [ text"Clicked Item = ", selectedItem ]
            , div centered [ text <| if (not <| List.isEmpty model.selectedItems) then
                                 "SelectedItems:"
@@ -59,6 +58,7 @@ view model =
                     ]
            , ul centered <| List.map (\it -> li [][viewItem it]) model.selectedItems
            ]
+
 centered : List  (Html.Attribute msg)
 centered =
     [ style "margin" "auto"
