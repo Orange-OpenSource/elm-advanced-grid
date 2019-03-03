@@ -149,9 +149,12 @@ update msg model =
 
                         _ ->
                             ( List.sortWith columnConfig.comparator model.content, Descending )
+
+                updatedContent =
+                    updateIndexes sortedContent
             in
             ( { model
-                | content = sortedContent
+                | content = updatedContent
                 , order = newOrder
                 , sortedBy = Just columnConfig
               }
@@ -170,6 +173,11 @@ update msg model =
                     List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
             in
             ( { model | content = newContent }, Cmd.none )
+
+
+updateIndexes : List (Item a) -> List (Item a)
+updateIndexes content =
+    List.indexedMap (\i item -> { item | index = i }) content
 
 
 toggleSelection : Item a -> Item a
