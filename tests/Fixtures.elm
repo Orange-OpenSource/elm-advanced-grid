@@ -1,8 +1,9 @@
-module Fixtures exposing (..)
+module Fixtures exposing (Item, columns, gridConfig, isValidColumn, item1, item2, item3, item4, items, model, rowColor, scoreColumn, titleColumn)
 
+import Css exposing (Style, backgroundColor, hex, transparent)
 import Grid exposing (ColumnConfig, Sorting(..), compareBoolField, compareFloatField, compareStringField, viewBool, viewFloat, viewString)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, stringFilter)
-import Css exposing (Style, backgroundColor, hex, transparent)
+
 
 type alias Item =
     { index : Int
@@ -33,48 +34,80 @@ item2 =
     }
 
 
+item3 : Item
+item3 =
+    { index = 2
+    , isValid = True
+    , score = 4.0
+    , selected = False
+    , title = "ITEM 3"
+    }
+
+
+item4 : Item
+item4 =
+    { index = 3
+    , isValid = True
+    , score = 3.0
+    , selected = False
+    , title = "ITEM 4"
+    }
+
+
 items =
-    [ item1, item2 ]
+    [ item1, item2, item3, item4 ]
+
+
+scoreColumn =
+    { properties =
+        { id = "score"
+        , order = Unsorted
+        , title = "Score"
+        , visible = True
+        , width = 50
+        }
+    , filters = FloatFilter <| floatFilter (\item -> item.score)
+    , filteringValue = Nothing
+    , renderer = viewFloat (\item -> item.score)
+    , comparator = compareFloatField (\item -> item.score)
+    }
+
+
+titleColumn =
+    { properties =
+        { id = "title"
+        , order = Unsorted
+        , title = "Title"
+        , visible = True
+        , width = 100
+        }
+    , filters = StringFilter <| stringFilter (\item -> item.title)
+    , filteringValue = Nothing
+    , renderer = viewString (\item -> item.title)
+    , comparator = compareStringField (\item -> item.title)
+    }
+
+
+isValidColumn =
+    { properties =
+        { id = "isValid"
+        , order = Unsorted
+        , title = "is Valid?"
+        , visible = True
+        , width = 100
+        }
+    , filters = BoolFilter <| boolFilter (\item -> item.isValid)
+    , filteringValue = Nothing
+    , renderer = viewBool (\item -> item.isValid)
+    , comparator = compareBoolField (\item -> item.isValid)
+    }
 
 
 columns : List (ColumnConfig Item)
 columns =
-    [ { properties =
-            { id = "score"
-            , order = Unsorted
-            , title = "Score"
-            , visible = True
-            , width = 50
-            }
-      , filters = FloatFilter <| floatFilter (\item -> item.score)
-      , filteringValue = Nothing
-      , renderer = viewFloat (\item -> item.score)
-      , comparator = compareFloatField (\item -> item.score)
-      }
-    , { properties =
-            { id = "title"
-            , order = Unsorted
-            , title = "Title"
-            , visible = True
-            , width = 100
-            }
-      , filters = StringFilter <| stringFilter (\item -> item.title)
-      , filteringValue = Nothing
-      , renderer = viewString (\item -> item.title)
-      , comparator = compareStringField (\item -> item.title)
-      }
-    , { properties =
-            { id = "isValid"
-            , order = Unsorted
-            , title = "is Valid?"
-            , visible = True
-            , width = 100
-            }
-      , filters = BoolFilter <| boolFilter (\item -> item.isValid)
-      , filteringValue = Nothing
-      , renderer = viewBool (\item -> item.isValid)
-      , comparator = compareBoolField (\item -> item.isValid)
-      }
+    [ scoreColumn
+    , titleColumn
+    , isValidColumn
     ]
 
 
