@@ -1,11 +1,12 @@
 module GridTest exposing (suite)
 
 import Expect exposing (Expectation)
+import Fixtures exposing (..)
 import Grid exposing (..)
 import Test exposing (..)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (class, id, tag, text)
-import Fixtures exposing (..)
+
 
 suite : Test
 suite =
@@ -14,7 +15,7 @@ suite =
 
 
 
--- ++ describeHeaders
+--++ describeHeaders
 
 
 describeComparators =
@@ -68,17 +69,14 @@ describeComparators =
     ]
 
 
-
-{-
-   describeHeaders =
-       [ describe "headers"
-           [ test "should contain a container with three child divs" <|
-               \() ->
-                   view model
-                       |> Query.fromHtml
-                       |> Query.findAll [ class "header" ]
-                       |> Query.index 0
-                       |> Query.has [ text "Score" ]
-           ]
-       ]
--}
+describeHeaders =
+    [ describe "headers"
+        [ test "should contain a container with three child divs" <|
+            \() ->
+                view model
+                    |> Query.fromHtml
+                    |> Query.findAll [ class "header" ]
+                    |> Query.index 0
+                    |> Query.has [ text "Score" ]
+        ]
+    ]

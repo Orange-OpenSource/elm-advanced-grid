@@ -10,12 +10,13 @@ import Html.Attributes exposing (style)
 
 type alias Item =
     { id : Int
-    , index: Int
+    , index : Int
     , name : String
     , value : Float
     , even : Bool
     , selected : Bool
     }
+
 
 type alias Model =
     { gridModel : Grid.Model Item
@@ -45,27 +46,31 @@ view model =
             case model.clickedItem of
                 Just item ->
                     viewItem item
-                Nothing
-                    -> text "None."
+
+                Nothing ->
+                    text "None."
     in
+    div []
+        [ Html.map GridMsg <| Grid.view model.gridModel
+        , div centered [ text "Clicked Item = ", selectedItem ]
+        , div centered
+            [ text <|
+                if not <| List.isEmpty model.selectedItems then
+                    "SelectedItems:"
 
-    div [] [ Html.map GridMsg <| Grid.view model.gridModel
-           , div centered [ text"Clicked Item = ", selectedItem ]
-           , div centered [ text <| if (not <| List.isEmpty model.selectedItems) then
-                                "SelectedItems:"
-                              else
-                                "Use checkboxes to select items."
-                    ]
-           , ul centered <| List.map (\it -> li [][viewItem it]) model.selectedItems
-           ]
+                else
+                    "Use checkboxes to select items."
+            ]
+        , ul centered <| List.map (\it -> li [] [ viewItem it ]) model.selectedItems
+        ]
 
-centered : List  (Html.Attribute msg)
+
+centered : List (Html.Attribute msg)
 centered =
     [ style "margin" "auto"
     , style "width" "500px"
     , style "padding-top" "10px"
     ]
-
 
 
 viewItem : Item -> Html msg
@@ -76,39 +81,45 @@ viewItem item =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-
         GridMsg (LineClicked item) ->
             let
-                (newGridModel, cmd) = Grid.update (LineClicked item) model.gridModel
+                ( newGridModel, cmd ) =
+                    Grid.update (LineClicked item) model.gridModel
             in
-                ( { model | gridModel = newGridModel
-                          , clickedItem = Just item
-                  }
-                , Cmd.map GridMsg cmd
-                )
+            ( { model
+                | gridModel = newGridModel
+                , clickedItem = Just item
+              }
+            , Cmd.map GridMsg cmd
+            )
 
         GridMsg (SelectionToggled item status) ->
             let
-                (newGridModel, cmd) = Grid.update (SelectionToggled item status) model.gridModel
+                ( newGridModel, cmd ) =
+                    Grid.update (SelectionToggled item status) model.gridModel
 
-                selectedItems = List.filter .selected newGridModel.content
+                selectedItems =
+                    List.filter .selected newGridModel.content
             in
-                ( { model | gridModel = newGridModel
-                          , selectedItems = selectedItems
-                  }
-                  , Cmd.map GridMsg cmd )
+            ( { model
+                | gridModel = newGridModel
+                , selectedItems = selectedItems
+              }
+            , Cmd.map GridMsg cmd
+            )
 
         GridMsg message ->
             let
-                (newGridModel, cmd) = Grid.update message model.gridModel
+                ( newGridModel, cmd ) =
+                    Grid.update message model.gridModel
             in
-                ( { model | gridModel = newGridModel }, Cmd.map GridMsg cmd )
-
+            ( { model | gridModel = newGridModel }, Cmd.map GridMsg cmd )
 
 
 itemCount : Int
 itemCount =
-    2500
+    4
+
 
 items : List Item
 items =
