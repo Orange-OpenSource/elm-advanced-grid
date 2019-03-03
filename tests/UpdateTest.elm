@@ -17,67 +17,69 @@ describeHeaderClicked =
         [ test "scoreColumn msg once should order items by ascending score and update indexes" <|
             \_ ->
                 let
-                    ( newModel, _ ) =
-                        update (HeaderClicked scoreColumn) model
+                    newModel =
+                        simulateHeaderClick model
                 in
                 Expect.equalLists modelSortedByAscendingScore.content newModel.content
         , test "scoreColumn msg once should set order to Ascending" <|
             \_ ->
                 let
-                    ( newModel, _ ) =
-                        update (HeaderClicked scoreColumn) model
+                    newModel =
+                        simulateHeaderClick model
                 in
                 Expect.equal Ascending newModel.order
         , test "scoreColumn msg once should set sortedBy to scoreColumn" <|
             \_ ->
                 let
-                    ( newModel, _ ) =
-                        update (HeaderClicked scoreColumn) model
+                    newModel =
+                        simulateHeaderClick model
                 in
                 Expect.equal (Just scoreColumn) newModel.sortedBy
         , test "scoreColumn msg twice should order items by descending score and update indexes" <|
             \_ ->
                 let
-                    ( newModel, _ ) =
-                        update (HeaderClicked scoreColumn) modelSortedByAscendingScore
+                    newModel =
+                        simulateHeaderClick modelSortedByAscendingScore
                 in
                 Expect.equalLists modelSortedByDescendingScore.content newModel.content
         , test "scoreColumn msg twice should set order to Descending" <|
             \_ ->
                 let
-                    ( newModel, _ ) =
-                        update (HeaderClicked scoreColumn) modelSortedByAscendingScore
+                    newModel =
+                        simulateHeaderClick modelSortedByAscendingScore
                 in
                 Expect.equal Descending newModel.order
         , test "scoreColumn msg twice should set sortedBy to scoreColumn" <|
             \_ ->
                 let
-                    ( newModel, _ ) =
-                        update (HeaderClicked scoreColumn) modelSortedByAscendingScore
+                    newModel =
+                        simulateHeaderClick modelSortedByAscendingScore
                 in
                 Expect.equal (Just scoreColumn) newModel.sortedBy
         , test "scoreColumn msg three times should order items by ascending score and update indexes" <|
             \_ ->
                 let
-                    ( tmpModel, _ ) =
-                        update (HeaderClicked scoreColumn) modelSortedByAscendingScore
-
-                    ( newModel, _ ) =
-                        update (HeaderClicked scoreColumn) tmpModel
+                    newModel =
+                        simulateHeaderClick <| simulateHeaderClick modelSortedByAscendingScore
                 in
                 Expect.equalLists modelSortedByAscendingScore.content newModel.content
         , test "scoreColumn msg three times should set order to Ascending" <|
             \_ ->
                 let
-                    ( tmpModel, _ ) =
-                        update (HeaderClicked scoreColumn) modelSortedByAscendingScore
-
-                    ( newModel, _ ) =
-                        update (HeaderClicked scoreColumn) tmpModel
+                    newModel =
+                        simulateHeaderClick <| simulateHeaderClick modelSortedByAscendingScore
                 in
                 Expect.equal Ascending newModel.order
         ]
     ]
+
+
+simulateHeaderClick model =
+    let
+        ( newModel, _ ) =
+            update (HeaderClicked scoreColumn) model
+    in
+    newModel
 
 
 modelSortedByAscendingScore =
