@@ -10,6 +10,29 @@ suite : Test
 suite =
     describe "The Grid update function" <|
         describeHeaderClicked
+            ++ describeLineClicked
+
+
+describeLineClicked =
+    [ describe "receiving LineClicked"
+        [ test "item msg should store item as the last one being clicked" <|
+            \_ ->
+                let
+                    newModel =
+                        simulateLineClicked
+                in
+                Expect.equal (Just item1) newModel.clickedItem
+        ]
+    ]
+
+
+simulateLineClicked : Model a
+simulateLineClicked =
+    let
+        ( newModel, _ ) =
+            update (LineClicked item1) model
+    in
+    newModel
 
 
 describeHeaderClicked =
