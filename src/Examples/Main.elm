@@ -5,7 +5,7 @@ import Css exposing (Style, backgroundColor, hex, transparent)
 import Grid exposing (..)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, stringFilter)
 import Html exposing (Html, div, li, text, ul)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (attribute, style)
 
 
 type alias Item =
@@ -52,8 +52,8 @@ view model =
     in
     div []
         [ Html.map GridMsg <| Grid.view model.gridModel
-        , div centered [ text "Clicked Item = ", selectedItem ]
-        , div centered
+        , div (centeredWithId "clickedItem") [ text "Clicked Item = ", selectedItem ]
+        , div (centeredWithId "label")
             [ text <|
                 if not <| List.isEmpty model.selectedItems then
                     "SelectedItems:"
@@ -61,13 +61,14 @@ view model =
                 else
                     "Use checkboxes to select items."
             ]
-        , ul centered <| List.map (\it -> li [] [ viewItem it ]) model.selectedItems
+        , ul (centeredWithId "selectedItems") <| List.map (\it -> li [] [ viewItem it ]) model.selectedItems
         ]
 
 
-centered : List (Html.Attribute msg)
-centered =
-    [ style "margin" "auto"
+centeredWithId : String -> List (Html.Attribute msg)
+centeredWithId id =
+    [ attribute "data-testid" id
+    , style "margin" "auto"
     , style "width" "500px"
     , style "padding-top" "10px"
     ]

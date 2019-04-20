@@ -23,7 +23,7 @@ import Grid.Colors exposing (black, darkGrey, lightGreen, lightGrey, white)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString)
 import Html
 import Html.Styled exposing (Html, div, input, span, text, toUnstyled)
-import Html.Styled.Attributes exposing (class, css, fromUnstyled, id, type_)
+import Html.Styled.Attributes exposing (attribute, css, fromUnstyled, type_)
 import Html.Styled.Events exposing (onClick, onInput)
 import InfiniteList as IL
 import List.Extra
@@ -262,7 +262,8 @@ viewRow : Model a -> Int -> Int -> Item a -> Html.Html (Msg a)
 viewRow model idx listIdx item =
     toUnstyled
         << div
-            [ css
+            [ attribute "data-testid" "row"
+            , css
                 [ model.config.rowStyle item
                 , height (px <| toFloat model.config.lineHeight)
                 ]
@@ -427,7 +428,8 @@ viewHeader model columnConfig =
                     span [] []
     in
     div
-        [ css
+        [ attribute "data-testid" <| "header-" ++ columnConfig.properties.id
+        , css
             [ display inlineBlock
             , backgroundColor lightGrey
             , border3 (px 1) solid darkGrey
@@ -492,10 +494,11 @@ viewFilter model columnConfig =
             ]
         ]
         [ input
-            [ css
+            [ attribute "data-testid" <| "filter-" ++ columnConfig.properties.id
+            , css
                 [ margin (px 3)
-                , width (px (toFloat <| columnConfig.properties.width - 13))
                 , height (px <| toFloat <| model.config.lineHeight - 10)
+                , width (px (toFloat <| columnConfig.properties.width - 13))
                 ]
             , onInput <| FilterModified columnConfig
             ]
@@ -514,7 +517,8 @@ cumulatedBorderWidth =
 
 cellStyles : ColumnProperties -> List (Html.Styled.Attribute (Msg a))
 cellStyles properties =
-    [ css
+    [ attribute "data-testid" properties.id
+    , css
         [ display inlineBlock
         , border3 (px 1) solid lightGrey
         , overflow hidden
