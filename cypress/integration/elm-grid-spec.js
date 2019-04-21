@@ -32,12 +32,22 @@ describe('elm grid example', function () {
         })
     })
 
-    it('should filter elements containing a given value', function () {
+    it('should filter elements containing an exact given value', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-Value"]').type("=25")
+        cy.get('input[data-testid="filter-Value"]').type("25")
         let rows = cy.get('div[data-testid="row"]')
         rows.should('have.length', 1)
         cy.get('div[data-testid="Value"]').contains("25")
+    })
+
+    it('should filter elements containing at least the given string', function () {
+        cy.visit(url)
+        cy.get('input[data-testid="filter-City"]').type("o")
+        let rows = cy.get('div[data-testid="row"]')
+        rows.should('have.length', 3)
+        cy.get('div[data-testid="City"]').contains("New York")
+        cy.get('div[data-testid="City"]').contains("London")
+        cy.get('div[data-testid="City"]').contains("Moscow")
     })
 
     it('should filter elements greater than a given value', function () {

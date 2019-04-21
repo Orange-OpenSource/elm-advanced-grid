@@ -25,10 +25,10 @@ describeFilterParsing =
                     |> Expect.equal Nothing
         , test "should detect if a int is equal to another" <|
             \_ ->
-                testIntComparisonParsingSucceeds "=1" item2
+                testIntComparisonParsingSucceeds "1" item2
         , test "should detect if a int is different than another" <|
             \_ ->
-                testIntComparisonParsingFails "=0" item2
+                testIntComparisonParsingFails "0" item2
         , test "should detect if a int is lesser than another" <|
             \_ ->
                 testIntComparisonParsingSucceeds "<1" item1

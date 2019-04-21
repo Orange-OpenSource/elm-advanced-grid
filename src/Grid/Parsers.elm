@@ -28,9 +28,6 @@ stringParser =
 stringEqualityParser : Parser String
 stringEqualityParser =
     succeed identity
-        |. spaces
-        |. symbol "="
-        |. spaces
         |= stringParser
 
 
@@ -55,9 +52,6 @@ greaterThanStringParser =
 intEqualityParser : Parser Int
 intEqualityParser =
     succeed identity
-        |. spaces
-        |. symbol "="
-        |. spaces
         |= Parser.int
 
 
@@ -82,9 +76,6 @@ greaterThanIntParser =
 floatEqualityParser : Parser Float
 floatEqualityParser =
     succeed identity
-        |. spaces
-        |. symbol "="
-        |. spaces
         |= Parser.float
 
 
@@ -119,9 +110,6 @@ boolParser =
 boolEqualityParser : Parser Bool
 boolEqualityParser =
     succeed identity
-        |. spaces
-        |. symbol "="
-        |. spaces
         |= boolParser
 
 

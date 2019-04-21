@@ -7,11 +7,9 @@ import Grid
         ( ColumnConfig
         , Msg(..)
         , Sorting(..)
-        , compareBoolField
         , compareFloatField
         , compareIntField
         , compareStringField
-        , viewBool
         , viewFloat
         , viewInt
         , viewProgressBar
@@ -20,11 +18,13 @@ import Grid
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, stringFilter)
 import Html exposing (Html, div, li, text, ul)
 import Html.Attributes exposing (attribute, style)
+import List.Extra
 
 
 type alias Item =
     { id : Int
     , index : Int
+    , city : String
     , name : String
     , value : Float
     , even : Bool
@@ -136,6 +136,10 @@ itemCount =
     4
 
 
+cities =
+    [ "Paris", "London", "New York", "Moscow", "Roma", "Berlin" ]
+
+
 items : List Item
 items =
     List.range 0 (itemCount - 1)
@@ -143,6 +147,7 @@ items =
             (\i ->
                 { id = i
                 , index = i
+                , city = Maybe.withDefault "None" (List.Extra.getAt i cities)
                 , name = "name" ++ String.fromInt i
                 , value = (toFloat i / toFloat itemCount) * 100
                 , even = toFloat i / 2 == toFloat (i // 2)
@@ -236,63 +241,15 @@ columns =
       , comparator = compareFloatField (\item -> item.value)
       }
     , { properties =
-            { id = "Selected2"
+            { id = "City"
             , order = Unsorted
-            , title = "Selected2"
+            , title = "City"
             , visible = True
-            , width = 100
+            , width = 300
             }
-      , filters = BoolFilter <| boolFilter (\item -> item.even)
+      , filters = StringFilter <| stringFilter (\item -> item.city)
       , filteringValue = Nothing
-      , renderer = viewBool (\item -> item.even)
-      , comparator = compareBoolField (\item -> item.even)
-      }
-    , { properties =
-            { id = "Id2"
-            , order = Unsorted
-            , title = "Id2"
-            , visible = True
-            , width = 100
-            }
-      , filters = IntFilter <| intFilter (\item -> item.id)
-      , filteringValue = Nothing
-      , renderer = viewInt (\item -> item.id)
-      , comparator = compareIntField (\item -> item.id)
-      }
-    , { properties =
-            { id = "Name2"
-            , order = Unsorted
-            , title = "Name2"
-            , visible = True
-            , width = 100
-            }
-      , filters = StringFilter <| stringFilter (\item -> item.name)
-      , filteringValue = Nothing
-      , renderer = viewString (\item -> item.name)
-      , comparator = compareStringField (\item -> item.name)
-      }
-    , { properties =
-            { id = "Progres2s"
-            , order = Unsorted
-            , title = "Progres2s"
-            , visible = True
-            , width = 100
-            }
-      , filters = FloatFilter <| floatFilter (\item -> item.value)
-      , filteringValue = Nothing
-      , renderer = viewProgressBar 8 (\item -> item.value)
-      , comparator = compareFloatField (\item -> item.value)
-      }
-    , { properties =
-            { id = "Valu2e"
-            , order = Unsorted
-            , title = "Valu2e"
-            , visible = True
-            , width = 100
-            }
-      , filters = FloatFilter <| floatFilter (\item -> item.value)
-      , filteringValue = Nothing
-      , renderer = viewFloat (\item -> item.value)
-      , comparator = compareFloatField (\item -> item.value)
+      , renderer = viewString (\item -> item.city)
+      , comparator = compareStringField (\item -> item.city)
       }
     ]

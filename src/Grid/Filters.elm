@@ -101,19 +101,19 @@ validateFilter filteringString filters =
         parsedGreaterThan =
             Parser.run filters.greaterThan.parser filteringString
     in
-    case parsedEqual of
-        Ok equalityOperand ->
-            Just (filters.equal.filter equalityOperand)
+    case parsedLessThan of
+        Ok lessThanOperand ->
+            Just (filters.lessThan.filter lessThanOperand)
 
         _ ->
-            case parsedLessThan of
-                Ok lessThanOperand ->
-                    Just (filters.lessThan.filter lessThanOperand)
+            case parsedGreaterThan of
+                Ok greaterThanOperand ->
+                    Just (filters.greaterThan.filter greaterThanOperand)
 
                 _ ->
-                    case parsedGreaterThan of
-                        Ok greaterThanOperand ->
-                            Just (filters.greaterThan.filter greaterThanOperand)
+                    case parsedEqual of
+                        Ok equalityOperand ->
+                            Just (filters.equal.filter equalityOperand)
 
                         _ ->
                             Nothing
