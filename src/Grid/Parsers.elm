@@ -20,9 +20,10 @@ import Parser exposing ((|.), (|=), Parser, chompUntilEndOr, getChompedString, k
 stringParser : Parser String
 stringParser =
     -- the input string cannot contain "\t"
-    -- another implemntation is:
+    -- another implementation is:
     -- getChompedString <| chompWhile (\c -> True)
     getChompedString <| chompUntilEndOr "\u{0000}"
+
 
 stringEqualityParser : Parser String
 stringEqualityParser =

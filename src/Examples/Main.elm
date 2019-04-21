@@ -2,7 +2,21 @@ module Examples.Main exposing (main)
 
 import Browser
 import Css exposing (Style, backgroundColor, hex, transparent)
-import Grid exposing (..)
+import Grid
+    exposing
+        ( ColumnConfig
+        , Msg(..)
+        , Sorting(..)
+        , compareBoolField
+        , compareFloatField
+        , compareIntField
+        , compareStringField
+        , viewBool
+        , viewFloat
+        , viewInt
+        , viewProgressBar
+        , viewString
+        )
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, stringFilter)
 import Html exposing (Html, div, li, text, ul)
 import Html.Attributes exposing (attribute, style)

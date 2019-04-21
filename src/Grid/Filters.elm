@@ -1,17 +1,42 @@
 module Grid.Filters exposing
-    ( Filter(..)
-    , Item
-    , boolFilter
-    , floatFilter
-    , intFilter
-    , parseFilteringString
-    , stringFilter
+    ( Item
+    , boolFilter, floatFilter, intFilter, stringFilter
+    , Filter(..), parseFilteringString
     )
+
+{-| Helper functions for filtering the grid content
+
+
+# Data type
+
+@docs Item
+
+
+# Helpers
+
+@docs boolFilter, floatFilter, intFilter, stringFilter
+
+-}
 
 import Grid.Parsers exposing (..)
 import Parser exposing (Parser)
 
 
+{-| The data to be displayed in the grid
+It must be records with at least two fields: selected et index
+
+    items =
+        [ { index = 0
+          , name = "item0"
+          , selected = False
+          }
+        , { index = 1
+          , name = "item1"
+          , selected = False
+          }
+        ]
+
+-}
 type alias Item a =
     { a
         | selected : Bool
@@ -19,6 +44,8 @@ type alias Item a =
     }
 
 
+{-| Filter for a given column
+-}
 type Filter a
     = StringFilter (TypedFilter a String)
     | IntFilter (TypedFilter a Int)
@@ -92,6 +119,14 @@ validateFilter filteringString filters =
                             Nothing
 
 
+{-| Filters strings.
+The lambda function to be provided as a parameter returns
+the value of the field to be filtered.
+
+    filters =
+        StringFilter <| stringFilter (\item -> item.name)
+
+-}
 stringFilter : (Item a -> String) -> TypedFilter a String
 stringFilter getter =
     { equal =
@@ -124,6 +159,14 @@ filterStringFieldGreaterThan getter value item =
     getter item > value
 
 
+{-| Filters integers.
+The lambda function to be provided as a parameter returns
+the value of the field to be filtered.
+
+    filters =
+        IntFilter <| intFilter (\\item -> item.id)
+
+-}
 intFilter : (Item a -> Int) -> TypedFilter a Int
 intFilter getter =
     { equal =
@@ -156,6 +199,14 @@ filterIntFieldGreaterThan getter value item =
     getter item > value
 
 
+{-| Filters floating point numbers.
+The lambda function to be provided as a parameter returns
+the value of the field to be filtered.
+
+    filters =
+        FloatFilter <| floatFilter (\item -> item.value)
+
+-}
 floatFilter : (Item a -> Float) -> TypedFilter a Float
 floatFilter getter =
     { equal =
@@ -188,6 +239,14 @@ filterFloatFieldGreaterThan getter value item =
     getter item > value
 
 
+{-| Filters booleans.
+The lambda function to be provided as a parameter returns
+the value of the field to be filtered.
+
+    filters =
+        BoolFilter <| boolFilter (\item -> item.even)
+
+-}
 boolFilter : (Item a -> Bool) -> TypedFilter a Bool
 boolFilter getter =
     { equal =
