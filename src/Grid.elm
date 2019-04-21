@@ -355,6 +355,7 @@ view model =
                     [ css
                         [ border3 (px 1) solid darkGrey
                         , paddingBottom (px 3)
+                        , width (px <| toFloat <| totalWidth model)
                         ]
                     ]
                     [ viewHeaders model
