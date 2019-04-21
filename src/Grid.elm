@@ -388,7 +388,6 @@ viewRows model =
                 , width (px <| toFloat <| totalWidth model)
                 , overflow auto
                 , border3 (px 1) solid lightGrey
-                , margin auto
                 ]
             , fromUnstyled <| IL.onScroll InfListMsg
             ]
