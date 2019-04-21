@@ -1,7 +1,7 @@
 module Fixtures exposing (Item, columns, gridConfig, isValidColumn, item1, item2, item3, item4, items, model, rowColor, scoreColumn, titleColumn)
 
 import Css exposing (Style, backgroundColor, hex, transparent)
-import Grid exposing (ColumnConfig, Sorting(..), compareBoolField, compareFloatField, compareStringField, viewBool, viewFloat, viewString)
+import Grid exposing (ColumnConfig, Model, Sorting(..), compareBoolField, compareFloatField, compareStringField, viewBool, viewFloat, viewString)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, stringFilter)
 
 
@@ -54,6 +54,7 @@ item4 =
     }
 
 
+items : List Item
 items =
     [ item1, item2, item3, item4 ]
 
@@ -132,5 +133,6 @@ rowColor item =
         backgroundColor transparent
 
 
+model : Model Item
 model =
     Grid.init gridConfig items

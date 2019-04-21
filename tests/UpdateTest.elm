@@ -26,7 +26,7 @@ describeLineClicked =
     ]
 
 
-simulateLineClicked : Model a
+simulateLineClicked : Model Item
 simulateLineClicked =
     let
         ( newModel, _ ) =
