@@ -19,22 +19,22 @@ describeFilterParsing =
             \_ ->
                 parseFilteringString Nothing intFilters
                     |> Expect.equal Nothing
-        , test "should detect if a int is equal to another" <|
+        , test "should detect if an int is equal to another" <|
             \_ ->
                 testIntComparisonParsingSucceeds "1" item2
-        , test "should detect if a int is different than another" <|
+        , test "should detect if an int is different than another" <|
             \_ ->
                 testIntComparisonParsingFails "0" item2
-        , test "should detect if a int is lesser than another" <|
+        , test "should detect if an int is lesser than another" <|
             \_ ->
                 testIntComparisonParsingSucceeds "<1" item1
-        , test "should detect if a int is not lesser than another" <|
+        , test "should detect if an int is not lesser than another" <|
             \_ ->
                 testIntComparisonParsingFails "<1" item2
-        , test "should detect if a  int is greater than another" <|
+        , test "should detect if an int is greater than another" <|
             \_ ->
                 testIntComparisonParsingSucceeds ">0" item2
-        , test "should detect if a  int is not greater another" <|
+        , test "should detect if an int is not greater another" <|
             \_ ->
                 testIntComparisonParsingFails ">2" item2
         ]
@@ -55,10 +55,10 @@ describeFilterParsing =
         , test "should detect if a float is not lesser than another" <|
             \_ ->
                 testFloatComparisonParsingFails "<1.5" item2
-        , test "should detect if a  float is greater than another" <|
+        , test "should detect if a float is greater than another" <|
             \_ ->
                 testFloatComparisonParsingSucceeds ">1.8" item2
-        , test "should detect if a  float is not greater another" <|
+        , test "should detect if a float is not greater another" <|
             \_ ->
                 testFloatComparisonParsingFails ">2.5" item2
         ]
