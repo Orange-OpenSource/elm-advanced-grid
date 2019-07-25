@@ -20,7 +20,7 @@ describe('elm grid example', function () {
         cy.get('input[data-testid="filter-Value"]')
     })
 
-    it('should 4 rows of data when none is filtered', function () {
+    it('should contain 4 rows of data when none is filtered', function () {
         cy.visit(url)
         cy.get('div[data-testid="row"]').should('have.length', 4)
     })
