@@ -386,7 +386,8 @@ viewRows model =
             [ css
                 [ height (px <| toFloat model.config.containerHeight)
                 , width (px <| toFloat <| totalWidth model)
-                , overflow auto
+                , overflowX hidden
+                , overflowY auto
                 , border3 (px 1) solid lightGrey
                 ]
             , fromUnstyled <| IL.onScroll InfListMsg
@@ -410,6 +411,7 @@ viewRow model idx listIdx item =
             , css
                 [ model.config.rowStyle item
                 , height (px <| toFloat model.config.lineHeight)
+                , width (px <| toFloat <| totalWidth model)
                 ]
             , onClick (LineClicked item)
             ]

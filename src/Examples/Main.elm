@@ -133,7 +133,7 @@ update msg model =
 
 itemCount : Int
 itemCount =
-    24
+    250
 
 
 cities =
