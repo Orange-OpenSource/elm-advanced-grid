@@ -133,7 +133,7 @@ update msg model =
 
 itemCount : Int
 itemCount =
-    4
+    24
 
 
 cities =
@@ -147,7 +147,7 @@ items =
             (\i ->
                 { id = i
                 , index = i
-                , city = Maybe.withDefault "None" (List.Extra.getAt i cities)
+                , city = Maybe.withDefault "None" (List.Extra.getAt (modBy (List.length cities) i) cities)
                 , name = "name" ++ String.fromInt i
                 , value = (toFloat i / toFloat itemCount) * 100
                 , even = toFloat i / 2 == toFloat (i // 2)
