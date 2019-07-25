@@ -19,10 +19,6 @@ describeFilterParsing =
             \_ ->
                 parseFilteringString Nothing intFilters
                     |> Expect.equal Nothing
-        , fuzz string "should return no filter when filtering string for intFilter is not valid" <|
-            \randomString ->
-                parseFilteringString (Just (removeComparisonOperator randomString)) intFilters
-                    |> Expect.equal Nothing
         , test "should detect if a int is equal to another" <|
             \_ ->
                 testIntComparisonParsingSucceeds "1" item2
@@ -47,13 +43,9 @@ describeFilterParsing =
             \_ ->
                 parseFilteringString Nothing floatFilters
                     |> Expect.equal Nothing
-        , fuzz string "should return no filter when filtering string for floatFilter is not valid" <|
-            \randomString ->
-                parseFilteringString (Just (removeComparisonOperator randomString)) floatFilters
-                    |> Expect.equal Nothing
         , test "should detect if a float is equal to another" <|
             \_ ->
-                testFloatComparisonParsingSucceeds "=2.0" item2
+                testFloatComparisonParsingSucceeds "2.0" item2
         , test "should detect if a float is different than another" <|
             \_ ->
                 testFloatComparisonParsingFails "=3.0" item2
@@ -75,16 +67,12 @@ describeFilterParsing =
             \_ ->
                 parseFilteringString Nothing boolFilters
                     |> Expect.equal Nothing
-        , fuzz string "should return no filter when filtering string for boolFilter is not valid" <|
-            \randomString ->
-                parseFilteringString (Just (removeComparisonOperator randomString)) boolFilters
-                    |> Expect.equal Nothing
         , test "should detect if a bool is equal to another" <|
             \_ ->
-                testBoolComparisonParsingSucceeds "=true" item1
+                testBoolComparisonParsingSucceeds "true" item1
         , test "should detect if a bool is different than another" <|
             \_ ->
-                testBoolComparisonParsingFails "=false" item1
+                testBoolComparisonParsingFails "false" item1
         , test "should detect if a bool is lesser than another" <|
             \_ ->
                 testBoolComparisonParsingSucceeds "< true" item2
@@ -103,13 +91,9 @@ describeFilterParsing =
             \_ ->
                 parseFilteringString Nothing stringFilters
                     |> Expect.equal Nothing
-        , fuzz string "should return no filter when filtering string for StringFilter is not valid" <|
-            \randomString ->
-                parseFilteringString (Just (removeComparisonOperator randomString)) stringFilters
-                    |> Expect.equal Nothing
         , test "should detect if a String is equal to another" <|
             \_ ->
-                testStringComparisonParsingSucceeds "=ITEM 2" item2
+                testStringComparisonParsingSucceeds "ITEM 2" item2
         , test "should detect if a String is different than another" <|
             \_ ->
                 testStringComparisonParsingFails "=ABCD" item2
