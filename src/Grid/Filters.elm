@@ -75,18 +75,21 @@ parseFilteringString filteringValue filters =
         filteringString =
             Maybe.withDefault "" filteringValue
     in
-    case filters of
-        StringFilter stringTypedFilter ->
-            validateFilter filteringString stringTypedFilter
+    if filteringString == "" then
+        Nothing
+    else
+        case filters of
+            StringFilter stringTypedFilter ->
+                validateFilter filteringString stringTypedFilter
 
-        IntFilter intTypedFilter ->
-            validateFilter filteringString intTypedFilter
+            IntFilter intTypedFilter ->
+                validateFilter filteringString intTypedFilter
 
-        FloatFilter floatTypedFilter ->
-            validateFilter filteringString floatTypedFilter
+            FloatFilter floatTypedFilter ->
+                validateFilter filteringString floatTypedFilter
 
-        BoolFilter boolTypedFilter ->
-            validateFilter filteringString boolTypedFilter
+            BoolFilter boolTypedFilter ->
+                validateFilter filteringString boolTypedFilter
 
 
 validateFilter : String -> TypedFilter a b -> Maybe (Item a -> Bool)
