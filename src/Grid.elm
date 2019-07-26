@@ -741,6 +741,7 @@ cellStyles properties =
         , paddingLeft (px 2)
         , paddingRight (px 2)
         , overflow hidden
+        , whiteSpace noWrap
         , width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
     ]
