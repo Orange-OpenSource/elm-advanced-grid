@@ -173,6 +173,7 @@ gridConfig =
     , containerHeight = 500
     , containerWidth = 700
     , hasFilters = True
+    , headerHeight = 80
     , lineHeight = 20
     , rowStyle = rowColor
     }
@@ -196,6 +197,7 @@ columns =
             { id = "Id"
             , order = Unsorted
             , title = "Id"
+            , tooltip = ""
             , visible = True
             , width = 50
             }
@@ -208,6 +210,7 @@ columns =
             { id = "Name"
             , order = Unsorted
             , title = "Name"
+            , tooltip = ""
             , visible = True
             , width = 100
             }
@@ -220,6 +223,7 @@ columns =
             { id = "Progress"
             , order = Unsorted
             , title = "Progress"
+            , tooltip = ""
             , visible = True
             , width = 100
             }
@@ -232,6 +236,7 @@ columns =
             { id = "Value"
             , order = Unsorted
             , title = "Value"
+            , tooltip = ""
             , visible = True
             , width = 100
             }
@@ -244,6 +249,7 @@ columns =
             { id = "City"
             , order = Unsorted
             , title = "City"
+            , tooltip = ""
             , visible = True
             , width = 300
             }

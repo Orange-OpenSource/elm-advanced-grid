@@ -4,7 +4,7 @@ module Grid exposing
     , compareBoolField, compareFloatField, compareIntField, compareStringField
     , viewBool, viewFloat, viewInt, viewProgressBar, viewString
     , Model, init, update, view
-    , Msg(..), Sorting(..)
+    , ColumnProperties, Msg(..), Sorting(..)
     )
 
 {-| This library displays a grid of data.
@@ -46,8 +46,8 @@ import Css exposing (..)
 import Grid.Colors exposing (black, darkGrey, lightGreen, lightGrey, white)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString)
 import Html
-import Html.Styled exposing (Html, div, input, span, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, css, fromUnstyled, type_)
+import Html.Styled exposing (Html, div, input, text, toUnstyled)
+import Html.Styled.Attributes exposing (attribute, css, fromUnstyled, id, type_)
 import Html.Styled.Events exposing (onClick, onInput)
 import InfiniteList as IL
 import List.Extra
@@ -80,6 +80,7 @@ type alias Config a =
     , containerHeight : Int
     , containerWidth : Int
     , hasFilters : Bool
+    , headerHeight : Int
     , lineHeight : Int
     , rowStyle : Item a -> Style
     }
@@ -194,6 +195,7 @@ type alias ColumnProperties =
     { id : String
     , order : Sorting
     , title : String
+    , tooltip : String
     , visible : Bool
     , width : Int
     }
@@ -221,6 +223,7 @@ selectionColumn =
         { id = "MultipleSelection"
         , order = Unsorted
         , title = "Select"
+        , tooltip = ""
         , visible = True
         , width = 100
         }
@@ -353,13 +356,11 @@ view model =
             if model.config.hasFilters then
                 [ div
                     [ css
-                        [ border3 (px 1) solid darkGrey
-                        , paddingBottom (px 3)
-                        , width (px <| toFloat <| totalWidth model)
+                        [ borderLeft3 (px 1) solid darkGrey
+                        , borderRight3 (px 1) solid darkGrey
                         ]
                     ]
                     [ viewHeaders model
-                    , viewFilters model
                     ]
                 , viewRows model
                 ]
@@ -523,8 +524,8 @@ viewProgressBar barHeight field properties item =
             [ display inlineBlock
             , border3 (px 1) solid lightGrey
             , verticalAlign top
-            , paddingLeft (px 3)
-            , paddingRight (px 3)
+            , paddingLeft (px 5)
+            , paddingRight (px 5)
             ]
         ]
         [ div
@@ -625,10 +626,11 @@ visibleColumns model =
 viewHeaders : Model a -> Html (Msg a)
 viewHeaders model =
     div
-        [ css
+        [ id "Headers"
+        , css
             [ width (px <| toFloat <| totalWidth model)
-            , margin auto
-            , height (px <| toFloat model.config.lineHeight)
+            , backgroundColor lightGrey
+            , height (px <| toFloat model.config.headerHeight)
             ]
         ]
         (visibleColumns model
@@ -650,17 +652,19 @@ viewHeader model columnConfig =
                             arrowDown
 
                     else
-                        span [] []
+                        noContent
 
                 _ ->
-                    span [] []
+                    noContent
     in
     div
         [ attribute "data-testid" <| "header-" ++ columnConfig.properties.id
         , css
             [ display inlineBlock
-            , backgroundColor lightGrey
             , border3 (px 1) solid darkGrey
+            , height (px <| toFloat <| model.config.headerHeight - cumulatedBorderWidth)
+            , padding (px 2)
+            , position relative
             , overflow hidden
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
             ]
@@ -668,7 +672,13 @@ viewHeader model columnConfig =
         ]
         [ text <| columnConfig.properties.title
         , sortingSymbol
+        , viewFilter model columnConfig
         ]
+
+
+noContent : Html msg
+noContent =
+    text ""
 
 
 arrowUp : Html (Msg a)
@@ -697,48 +707,29 @@ arrow horizontalBorder =
         []
 
 
-viewFilters : Model a -> Html (Msg a)
-viewFilters model =
-    div
-        [ css
-            [ width (px <| toFloat <| totalWidth model)
-            , height (px <| toFloat model.config.lineHeight)
-            , marginBottom (px 3)
-            ]
-        ]
-        (visibleColumns model
-            |> List.map (viewFilter model)
-        )
-
-
 viewFilter : Model a -> ColumnConfig a -> Html (Msg a)
 viewFilter model columnConfig =
-    div
-        [ css
-            [ display inlineBlock
-            , backgroundColor lightGrey
-            , border3 (px 1) solid darkGrey
+    input
+        [ attribute "data-testid" <| "filter-" ++ columnConfig.properties.id
+        , css
+            [ position absolute
+            , bottom (px 4)
+            , left (px 2)
+            , border (px 0)
+            , padding (px 0)
+            , height (px <| toFloat <| model.config.lineHeight)
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
             ]
+        , onInput <| FilterModified columnConfig
         ]
-        [ input
-            [ attribute "data-testid" <| "filter-" ++ columnConfig.properties.id
-            , css
-                [ margin (px 3)
-                , height (px <| toFloat <| model.config.lineHeight - 10)
-                , width (px (toFloat <| columnConfig.properties.width - 13))
-                ]
-            , onInput <| FilterModified columnConfig
-            ]
-            []
-        ]
+        []
 
 
-{-| Left + right cell border width, in px. Useful to take in account the borders when calculating the total grid width
+{-| Left + right cell border width, including padding, in px. Useful to take in account the borders when calculating the total grid width
 -}
 cumulatedBorderWidth : Int
 cumulatedBorderWidth =
-    2
+    6
 
 
 cellStyles : ColumnProperties -> List (Html.Styled.Attribute (Msg a))
@@ -747,6 +738,8 @@ cellStyles properties =
     , css
         [ display inlineBlock
         , border3 (px 1) solid lightGrey
+        , paddingLeft (px 2)
+        , paddingRight (px 2)
         , overflow hidden
         , width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
