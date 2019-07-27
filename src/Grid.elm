@@ -126,7 +126,8 @@ You probably should not use the other constructors.
 
 -}
 type Msg a
-    = InfListMsg IL.Model
+    = ContentModified (List (Item a))
+    | InfListMsg IL.Model
     | HeaderClicked (ColumnConfig a)
     | FilterModified (ColumnConfig a) String
     | LineClicked (Item a)
@@ -269,6 +270,9 @@ init config items =
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
     case msg of
+        ContentModified itemList ->
+            ( { model | content = itemList }, Cmd.none )
+
         FilterModified columnConfig string ->
             let
                 newColumnconfig =
