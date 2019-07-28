@@ -76,11 +76,7 @@ describeHeaderClicked =
 
 
 simulateHeaderClick model =
-    let
-        ( newModel, _ ) =
-            update (HeaderClicked scoreColumn) model
-    in
-    newModel
+    update (HeaderClicked scoreColumn) model
 
 
 modelSortedByAscendingScore =

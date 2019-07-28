@@ -43,12 +43,14 @@ The list of data can be very long, thanks to the use of [FabienHenon/elm-infinit
 -}
 
 import Css exposing (..)
-import Grid.Colors exposing (black, darkGrey, lightGreen, lightGrey, white)
+import Css.Global exposing (descendants, typeSelector, withAttribute)
+import Css.Transitions exposing (background, easeOut, transition)
+import Grid.Colors exposing (black, darkGrey, lightGreen, lightGrey, lightGrey2, slightlyTransparentBlack, white, white2)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString)
 import Html
 import Html.Styled exposing (Html, div, input, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, css, fromUnstyled, id, type_)
-import Html.Styled.Events exposing (onClick, onInput)
+import Html.Styled.Attributes exposing (attribute, class, css, fromUnstyled, id, type_)
+import Html.Styled.Events exposing (onBlur, onClick, onInput)
 import InfiniteList as IL
 import List.Extra
 
@@ -126,12 +128,13 @@ You probably should not use the other constructors.
 
 -}
 type Msg a
-    = ContentModified (List (Item a))
-    | InfListMsg IL.Model
-    | HeaderClicked (ColumnConfig a)
+    = InfListMsg IL.Model
+    | FilterLoseFocus
     | FilterModified (ColumnConfig a) String
+    | HeaderClicked (ColumnConfig a)
     | LineClicked (Item a)
     | SelectionToggled (Item a) String
+    | UserClickedFilter
 
 
 {-| The sorting options for a column, to be used in the properties of a ColumnConfig.
@@ -209,6 +212,7 @@ type alias Model a =
     { clickedItem : Maybe (Item a)
     , config : Config a
     , content : List (Item a)
+    , filterHasFocus : Bool -- Prevents click in filter to trigger a sort
     , infList : IL.Model
     , order : Sorting
     , sortedBy : Maybe (ColumnConfig a)
@@ -259,6 +263,7 @@ init config items =
     { clickedItem = Nothing
     , config = newConfig
     , content = items
+    , filterHasFocus = False
     , infList = IL.init
     , order = Unsorted
     , sortedBy = Nothing
@@ -267,12 +272,9 @@ init config items =
 
 {-| Updates the grid model
 -}
-update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
+update : Msg a -> Model a -> Model a
 update msg model =
     case msg of
-        ContentModified itemList ->
-            ( { model | content = itemList }, Cmd.none )
-
         FilterModified columnConfig string ->
             let
                 newColumnconfig =
@@ -287,41 +289,49 @@ update msg model =
                 newConfig =
                     { oldConfig | columns = newColumns }
             in
-            ( { model | config = newConfig }, Cmd.none )
+            { model | config = newConfig }
 
         HeaderClicked columnConfig ->
-            let
-                ( sortedContent, newOrder ) =
-                    case model.order of
-                        Ascending ->
-                            ( List.sortWith columnConfig.comparator model.content |> List.reverse, Descending )
+            if model.filterHasFocus then
+                model
 
-                        _ ->
-                            ( List.sortWith columnConfig.comparator model.content, Ascending )
+            else
+                let
+                    ( sortedContent, newOrder ) =
+                        case model.order of
+                            Ascending ->
+                                ( List.sortWith columnConfig.comparator model.content |> List.reverse, Descending )
 
-                updatedContent =
-                    updateIndexes sortedContent
-            in
-            ( { model
-                | content = updatedContent
-                , order = newOrder
-                , sortedBy = Just columnConfig
-              }
-            , Cmd.none
-            )
+                            _ ->
+                                ( List.sortWith columnConfig.comparator model.content, Ascending )
+
+                    updatedContent =
+                        updateIndexes sortedContent
+                in
+                { model
+                    | content = updatedContent
+                    , order = newOrder
+                    , sortedBy = Just columnConfig
+                }
 
         InfListMsg infList ->
-            ( { model | infList = infList }, Cmd.none )
+            { model | infList = infList }
 
         LineClicked item ->
-            ( { model | clickedItem = Just item }, Cmd.none )
+            { model | clickedItem = Just item }
 
         SelectionToggled item _ ->
             let
                 newContent =
                     List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
             in
-            ( { model | content = newContent }, Cmd.none )
+            { model | content = newContent }
+
+        FilterLoseFocus ->
+            { model | filterHasFocus = False }
+
+        UserClickedFilter ->
+            { model | filterHasFocus = True }
 
 
 updateIndexes : List (Item a) -> List (Item a)
@@ -401,13 +411,9 @@ viewRows model =
         ]
 
 
-
-{--
-idx is the index of the visible line; if there are 25 visible lines, 0 <= idx < 25
+{-| idx is the index of the visible line; if there are 25 visible lines, 0 <= idx < 25
 listIdx is the index in the data source; if the total number of items is 1000, 0<= listidx < 1000
---}
-
-
+-}
 viewRow : Model a -> Int -> Int -> Item a -> Html.Html (Msg a)
 viewRow model idx listIdx item =
     toUnstyled
@@ -633,10 +639,11 @@ viewHeaders model =
         [ id "Headers"
         , css
             [ width (px <| toFloat <| totalWidth model)
-            , backgroundColor lightGrey
+            , backgroundImage <| linearGradient (stop white2) (stop lightGrey2) []
             , height (px <| toFloat model.config.headerHeight)
             ]
         ]
+    <|
         (visibleColumns model
             |> List.map (viewHeader model)
         )
@@ -668,16 +675,46 @@ viewHeader model columnConfig =
             , border3 (px 1) solid darkGrey
             , height (px <| toFloat <| model.config.headerHeight - cumulatedBorderWidth)
             , padding (px 2)
+            , cursor pointer
             , position relative
             , overflow hidden
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
+            , hover
+                [ descendants
+                    [ typeSelector "div"
+                        [ visibility visible -- makes the tooltip visible on hover
+                        ]
+                    ]
+                ]
             ]
         , onClick (HeaderClicked columnConfig)
         ]
         [ text <| columnConfig.properties.title
         , sortingSymbol
         , viewFilter model columnConfig
+        , div
+            [ css tooltipStyles
+            ]
+            [ text columnConfig.properties.tooltip ]
         ]
+
+
+tooltipStyles =
+    [ backgroundColor slightlyTransparentBlack
+    , borderRadius (px 3)
+    , color white2
+    , fontSize (px 12)
+    , lineHeight (pct 110)
+    , opacity (num 0.7)
+    , padding (px 5)
+    , position absolute
+    , textShadow4 (px -1) (px 1) (px 0) slightlyTransparentBlack
+    , transition
+        [ Css.Transitions.visibility3 0 0.5 easeOut -- delay the visibility change
+        ]
+    , visibility hidden
+    , zIndex (int 1000)
+    ]
 
 
 noContent : Html msg
@@ -724,12 +761,15 @@ viewFilter model columnConfig =
             , height (px <| toFloat <| model.config.lineHeight)
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
             ]
+        , onClick UserClickedFilter
+        , onBlur FilterLoseFocus
         , onInput <| FilterModified columnConfig
         ]
         []
 
 
-{-| Left + right cell border width, including padding, in px. Useful to take in account the borders when calculating the total grid width
+{-| Left + right cell border width, including padding, in px.
+Useful to take in account the borders when calculating the total grid width
 -}
 cumulatedBorderWidth : Int
 cumulatedBorderWidth =
@@ -742,6 +782,7 @@ cellStyles properties =
     , css
         [ display inlineBlock
         , border3 (px 1) solid lightGrey
+        , minHeight (pct 100) -- 100% min height forces empty divs to be correctly rendered
         , paddingLeft (px 2)
         , paddingRight (px 2)
         , overflow hidden

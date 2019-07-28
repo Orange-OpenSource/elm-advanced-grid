@@ -45,11 +45,10 @@ type Msg
 
 main : Program () Model Msg
 main =
-    Browser.element
+    Browser.sandbox
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -93,42 +92,40 @@ viewItem item =
     text ("id:" ++ String.fromInt item.id ++ " - name: " ++ item.name ++ "")
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         GridMsg (LineClicked item) ->
             let
-                ( newGridModel, cmd ) =
+                newGridModel =
                     Grid.update (LineClicked item) model.gridModel
             in
-            ( { model
+             { model
                 | gridModel = newGridModel
                 , clickedItem = Just item
               }
-            , Cmd.map GridMsg cmd
-            )
+            
 
         GridMsg (SelectionToggled item status) ->
             let
-                ( newGridModel, cmd ) =
+                newGridModel =
                     Grid.update (SelectionToggled item status) model.gridModel
 
                 selectedItems =
                     List.filter .selected newGridModel.content
             in
-            ( { model
+             { model
                 | gridModel = newGridModel
                 , selectedItems = selectedItems
               }
-            , Cmd.map GridMsg cmd
-            )
+            
 
         GridMsg message ->
             let
-                ( newGridModel, cmd ) =
+                newGridModel =
                     Grid.update message model.gridModel
             in
-            ( { model | gridModel = newGridModel }, Cmd.map GridMsg cmd )
+            { model | gridModel = newGridModel }
 
 
 itemCount : Int
@@ -156,14 +153,12 @@ items =
             )
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { gridModel = Grid.init gridConfig items
+init : Model
+init =
+     { gridModel = Grid.init gridConfig items
       , clickedItem = Nothing
       , selectedItems = []
       }
-    , Cmd.none
-    )
 
 
 gridConfig : Grid.Config Item
@@ -197,7 +192,7 @@ columns =
             { id = "Id"
             , order = Unsorted
             , title = "Id"
-            , tooltip = ""
+            , tooltip = "A hint for Id column"
             , visible = True
             , width = 50
             }
@@ -210,7 +205,7 @@ columns =
             { id = "Name"
             , order = Unsorted
             , title = "Name"
-            , tooltip = ""
+            , tooltip = "A hint for Name column"
             , visible = True
             , width = 100
             }
@@ -223,7 +218,7 @@ columns =
             { id = "Progress"
             , order = Unsorted
             , title = "Progress"
-            , tooltip = ""
+            , tooltip = "A hint for Progress column"
             , visible = True
             , width = 100
             }
@@ -236,7 +231,7 @@ columns =
             { id = "Value"
             , order = Unsorted
             , title = "Value"
-            , tooltip = ""
+            , tooltip = "A hint for Value column"
             , visible = True
             , width = 100
             }
@@ -249,7 +244,7 @@ columns =
             { id = "City"
             , order = Unsorted
             , title = "City"
-            , tooltip = ""
+            , tooltip = "A hint for City column"
             , visible = True
             , width = 300
             }
