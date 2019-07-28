@@ -64,6 +64,7 @@ scoreColumn =
         { id = "score"
         , order = Unsorted
         , title = "Score"
+        , tooltip = "Some text"
         , visible = True
         , width = 50
         }
@@ -79,6 +80,7 @@ titleColumn =
         { id = "title"
         , order = Unsorted
         , title = "Title"
+        , tooltip = "Some text"
         , visible = True
         , width = 100
         }
@@ -94,6 +96,7 @@ isValidColumn =
         { id = "isValid"
         , order = Unsorted
         , title = "is Valid?"
+        , tooltip = "Some text"
         , visible = True
         , width = 100
         }
@@ -119,6 +122,7 @@ gridConfig =
     , containerHeight = 500
     , containerWidth = 700
     , hasFilters = True
+    , headerHeight = 80
     , lineHeight = 20
     , rowStyle = rowColor
     }
