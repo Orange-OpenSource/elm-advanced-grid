@@ -43,13 +43,14 @@ The list of data can be very long, thanks to the use of [FabienHenon/elm-infinit
 -}
 
 import Css exposing (..)
-import Css.Global exposing (descendants, typeSelector, withAttribute)
-import Css.Transitions exposing (background, easeOut, transition)
+import Css.Global exposing (descendants, typeSelector)
+import Css.Transitions exposing (easeOut, transition)
 import Grid.Colors exposing (black, darkGrey, lightGreen, lightGrey, lightGrey2, slightlyTransparentBlack, white, white2)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString)
 import Html
+import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Html, div, input, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, class, css, fromUnstyled, id, type_)
+import Html.Styled.Attributes exposing (attribute, css, fromUnstyled, type_)
 import Html.Styled.Events exposing (onBlur, onClick, onInput)
 import InfiniteList as IL
 import List.Extra
@@ -135,6 +136,9 @@ type Msg a
     | LineClicked (Item a)
     | SelectionToggled (Item a) String
     | UserClickedFilter
+    | UserClickedResizeHandle (ColumnConfig a) ( Float, Float ) -- second param is offsetPos
+    | UserMovedResizeHandle ( Float, Float ) -- second param is offsetPos
+    | UserReleasedResizeHandle
 
 
 {-| The sorting options for a column, to be used in the properties of a ColumnConfig.
@@ -212,9 +216,11 @@ type alias Model a =
     { clickedItem : Maybe (Item a)
     , config : Config a
     , content : List (Item a)
+    , dragStartX : Float
     , filterHasFocus : Bool -- Prevents click in filter to trigger a sort
     , infList : IL.Model
     , order : Sorting
+    , resizingColumn : Maybe (ColumnConfig a)
     , sortedBy : Maybe (ColumnConfig a)
     }
 
@@ -259,13 +265,19 @@ init config items =
 
             else
                 config
+
+        -- ensure indexes are set to prevent systematic selection of the first item when clicking a checkbox
+        indexedItems =
+            List.indexedMap (\index item -> { item | index = index }) items
     in
     { clickedItem = Nothing
     , config = newConfig
-    , content = items
+    , content = indexedItems
+    , dragStartX = 0
     , filterHasFocus = False
     , infList = IL.init
     , order = Unsorted
+    , resizingColumn = Nothing
     , sortedBy = Nothing
     }
 
@@ -332,6 +344,65 @@ update msg model =
 
         UserClickedFilter ->
             { model | filterHasFocus = True }
+
+        UserClickedResizeHandle columnConfig ( x, _ ) ->
+            { model
+                | resizingColumn = Just columnConfig
+                , dragStartX = x
+            }
+
+        UserMovedResizeHandle ( x, _ ) ->
+            resizeColumn model x
+
+        UserReleasedResizeHandle ->
+            { model
+                | resizingColumn = Nothing
+            }
+
+
+resizeColumn : Model a -> Float -> Model a
+resizeColumn model x =
+    case model.resizingColumn of
+        Just columnConfig ->
+            let
+                deltaX =
+                    x - model.dragStartX
+
+                newWidth =
+                    columnConfig.properties.width
+                        + Basics.round deltaX
+
+                newColumns =
+                    updateColumnProperties model columnConfig newWidth
+
+                config =
+                    model.config
+            in
+            { model
+                | config = { config | columns = newColumns }
+            }
+
+        _ ->
+            model
+
+
+updateColumnProperties : Model a -> ColumnConfig a -> Int -> List (ColumnConfig a)
+updateColumnProperties model columnConfig width =
+    List.Extra.updateIf (\col -> col.properties.id == columnConfig.properties.id)
+        (updateColumnWidth width)
+        model.config.columns
+
+
+updateColumnWidth : Int -> ColumnConfig a -> ColumnConfig a
+updateColumnWidth newWidth columnConfig =
+    let
+        properties =
+            columnConfig.properties
+
+        newProperties =
+            { properties | width = newWidth }
+    in
+    { columnConfig | properties = newProperties }
 
 
 updateIndexes : List (Item a) -> List (Item a)
@@ -635,14 +706,26 @@ visibleColumns model =
 
 viewHeaders : Model a -> Html (Msg a)
 viewHeaders model =
+    let
+        conditionalAttributes =
+            case model.resizingColumn of
+                Just _ ->
+                    [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle event.clientPos)
+                    , fromUnstyled <| Mouse.onUp (\event -> UserReleasedResizeHandle)
+                    ]
+
+                Nothing ->
+                    []
+    in
     div
-        [ id "Headers"
-        , css
+        ([ css
             [ width (px <| toFloat <| totalWidth model)
             , backgroundImage <| linearGradient (stop white2) (stop lightGrey2) []
             , height (px <| toFloat model.config.headerHeight)
             ]
-        ]
+         ]
+            ++ conditionalAttributes
+        )
     <|
         (visibleColumns model
             |> List.map (viewHeader model)
@@ -667,10 +750,18 @@ viewHeader model columnConfig =
 
                 _ ->
                     noContent
+
+        conditionalAttributes =
+            case model.resizingColumn of
+                Just _ ->
+                    []
+
+                Nothing ->
+                    [ onClick (HeaderClicked columnConfig) ]
     in
     div
-        [ attribute "data-testid" <| "header-" ++ columnConfig.properties.id
-        , css
+        ([ attribute "data-testid" <| "header-" ++ columnConfig.properties.id
+         , css
             [ display inlineBlock
             , border3 (px 1) solid darkGrey
             , height (px <| toFloat <| model.config.headerHeight - cumulatedBorderWidth)
@@ -687,12 +778,14 @@ viewHeader model columnConfig =
                     ]
                 ]
             ]
-        , onClick (HeaderClicked columnConfig)
-        ]
+         ]
+            ++ conditionalAttributes
+        )
         [ text <| columnConfig.properties.title
         , sortingSymbol
         , viewFilter model columnConfig
         , viewTooltip columnConfig
+        , viewResizeHandle columnConfig
         ]
 
 
@@ -721,6 +814,25 @@ viewTooltip columnConfig =
                 ]
             ]
             [ text columnConfig.properties.tooltip ]
+
+
+viewResizeHandle : ColumnConfig a -> Html (Msg a)
+viewResizeHandle columnConfig =
+    div
+        [ css
+            [ cursor colResize
+            , display block
+            , fontSize (px 0.1)
+            , height (pct 100)
+            , position absolute
+            , right (px -5)
+            , top (px 0)
+            , width (px 9)
+            , zIndex (int 1)
+            ]
+        , fromUnstyled <| Mouse.onDown (\event -> UserClickedResizeHandle columnConfig event.clientPos)
+        ]
+        []
 
 
 noContent : Html msg
