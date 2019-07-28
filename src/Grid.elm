@@ -692,29 +692,35 @@ viewHeader model columnConfig =
         [ text <| columnConfig.properties.title
         , sortingSymbol
         , viewFilter model columnConfig
-        , div
-            [ css tooltipStyles
+        , viewTooltip columnConfig
+        ]
+
+
+viewTooltip : ColumnConfig a -> Html msg
+viewTooltip columnConfig =
+    if columnConfig.properties.tooltip == "" then
+        noContent
+
+    else
+        div
+            [ css
+                [ backgroundColor slightlyTransparentBlack
+                , borderRadius (px 3)
+                , color white2
+                , fontSize (px 12)
+                , lineHeight (pct 110)
+                , opacity (num 0.7)
+                , padding (px 5)
+                , position absolute
+                , textShadow4 (px -1) (px 1) (px 0) slightlyTransparentBlack
+                , transition
+                    [ Css.Transitions.visibility3 0 0.5 easeOut -- delay the visibility change
+                    ]
+                , visibility hidden
+                , zIndex (int 1000)
+                ]
             ]
             [ text columnConfig.properties.tooltip ]
-        ]
-
-
-tooltipStyles =
-    [ backgroundColor slightlyTransparentBlack
-    , borderRadius (px 3)
-    , color white2
-    , fontSize (px 12)
-    , lineHeight (pct 110)
-    , opacity (num 0.7)
-    , padding (px 5)
-    , position absolute
-    , textShadow4 (px -1) (px 1) (px 0) slightlyTransparentBlack
-    , transition
-        [ Css.Transitions.visibility3 0 0.5 easeOut -- delay the visibility change
-        ]
-    , visibility hidden
-    , zIndex (int 1000)
-    ]
 
 
 noContent : Html msg
