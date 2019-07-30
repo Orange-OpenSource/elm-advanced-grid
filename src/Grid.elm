@@ -51,9 +51,10 @@ import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Html, div, input, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, css, fromUnstyled, type_)
-import Html.Styled.Events exposing (onBlur, onClick, onInput)
+import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseEnter, onMouseUp)
 import InfiniteList as IL
-import List.Extra
+import List.Extra exposing (elemIndex, findIndex, getAt, setAt, swapAt, updateAt, updateIf)
+import String exposing (toInt)
 
 
 {-| The configuration for the grid
@@ -129,16 +130,19 @@ You probably should not use the other constructors.
 
 -}
 type Msg a
-    = InfListMsg IL.Model
+    = CursorEnteredDropZone (ColumnConfig a)
+    | InfListMsg IL.Model
     | FilterLoseFocus
     | FilterModified (ColumnConfig a) String
     | HeaderClicked (ColumnConfig a)
     | LineClicked (Item a)
     | SelectionToggled (Item a) String
     | UserClickedFilter
-    | UserClickedResizeHandle (ColumnConfig a) ( Float, Float ) -- second param is offsetPos
-    | UserMovedResizeHandle ( Float, Float ) -- second param is offsetPos
-    | UserReleasedResizeHandle
+    | UserStartedMovingColumn (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
+    | UserMovedColumn ( Float, Float ) -- param is clienttPos
+    | UserClickedResizeHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
+    | UserMovedResizeHandle ( Float, Float ) -- param is clienttPos
+    | UserEndedMouseInteraction
 
 
 {-| The sorting options for a column, to be used in the properties of a ColumnConfig.
@@ -215,10 +219,12 @@ and definitely should not modify them directly
 type alias Model a =
     { clickedItem : Maybe (Item a)
     , config : Config a
+    , columnsX : List Int
     , content : List (Item a)
     , dragStartX : Float
     , filterHasFocus : Bool -- Prevents click in filter to trigger a sort
     , infList : IL.Model
+    , movingColumn : Maybe (ColumnConfig a)
     , order : Sorting
     , resizingColumn : Maybe (ColumnConfig a)
     , sortedBy : Maybe (ColumnConfig a)
@@ -269,17 +275,30 @@ init config items =
         -- ensure indexes are set to prevent systematic selection of the first item when clicking a checkbox
         indexedItems =
             List.indexedMap (\index item -> { item | index = index }) items
+
+        initialModel =
+            { clickedItem = Nothing
+            , config = newConfig
+            , columnsX = []
+            , content = indexedItems
+            , dragStartX = 0
+            , filterHasFocus = False
+            , infList = IL.init
+            , movingColumn = Nothing
+            , order = Unsorted
+            , resizingColumn = Nothing
+            , sortedBy = Nothing
+            }
     in
-    { clickedItem = Nothing
-    , config = newConfig
-    , content = indexedItems
-    , dragStartX = 0
-    , filterHasFocus = False
-    , infList = IL.init
-    , order = Unsorted
-    , resizingColumn = Nothing
-    , sortedBy = Nothing
-    }
+    { initialModel | columnsX = columnsX initialModel }
+
+
+{-| the X coordinate of each column
+-}
+columnsX : Model a -> List Int
+columnsX model =
+    visibleColumns model
+        |> List.Extra.scanl (\col x -> x + col.properties.width) 0
 
 
 {-| Updates the grid model
@@ -351,13 +370,78 @@ update msg model =
                 , dragStartX = x
             }
 
+        UserEndedMouseInteraction ->
+            { model
+                | resizingColumn = Nothing
+                , movingColumn = Nothing
+            }
+
+        UserMovedColumn ( x, _ ) ->
+            moveColumnTo model x
+
         UserMovedResizeHandle ( x, _ ) ->
             resizeColumn model x
 
-        UserReleasedResizeHandle ->
+        UserStartedMovingColumn columnConfig ( x, _ ) ->
             { model
-                | resizingColumn = Nothing
+                | movingColumn = Just columnConfig
+                , dragStartX = x
             }
+
+        CursorEnteredDropZone columnConfig ->
+            case model.movingColumn of
+                Just movingColumn ->
+                    if columnConfig.properties.id == movingColumn.properties.id then
+                        model
+
+                    else
+                        let
+                            maybeSrcIndex =
+                                indexOfColumn movingColumn model
+
+                            maybeDestIndex =
+                                indexOfColumn columnConfig model
+
+                            newColumns =
+                                case ( maybeSrcIndex, maybeDestIndex ) of
+                                    ( Just srcIndex, Just destIndex ) ->
+                                        swapAt srcIndex destIndex model.config.columns
+
+                                    _ ->
+                                        model.config.columns
+
+                            currentConfig =
+                                model.config
+
+                            newConfig =
+                                { currentConfig | columns = newColumns }
+                        in
+                        { model | config = newConfig }
+
+                Nothing ->
+                    model
+
+
+indexOfColumn : ColumnConfig a -> Model a -> Maybe Int
+indexOfColumn columnConfig model =
+    findIndex (\col -> col.properties.id == columnConfig.properties.id) model.config.columns
+
+
+moveColumnTo : Model a -> Float -> Model a
+moveColumnTo model x =
+    let
+        indexOfMovingColumn =
+            case model.movingColumn of
+                Just column ->
+                    Maybe.withDefault -1 <| indexOfColumn column model
+
+                Nothing ->
+                    -1
+
+        newColumnsX =
+            setAt indexOfMovingColumn (Basics.round x) model.columnsX
+    in
+    { model | columnsX = newColumnsX }
 
 
 resizeColumn : Model a -> Float -> Model a
@@ -380,6 +464,7 @@ resizeColumn model x =
             in
             { model
                 | config = { config | columns = newColumns }
+                , columnsX = columnsX model
             }
 
         _ ->
@@ -429,14 +514,25 @@ gridConfig model =
 -}
 view : Model a -> Html.Html (Msg a)
 view model =
+    let
+        conditionalAttributes =
+            if model.resizingColumn == Nothing && model.movingColumn == Nothing then
+                []
+
+            else
+                [ onMouseUp UserEndedMouseInteraction
+                ]
+    in
     toUnstyled <|
         div
-            [ css
+            ([ css
                 [ width (px <| toFloat (model.config.containerWidth + cumulatedBorderWidth))
                 , overflow auto
                 , margin auto
                 ]
-            ]
+             ]
+                ++ conditionalAttributes
+            )
         <|
             if model.config.hasFilters then
                 [ div
@@ -708,56 +804,44 @@ viewHeaders : Model a -> Html (Msg a)
 viewHeaders model =
     let
         conditionalAttributes =
-            case model.resizingColumn of
-                Just _ ->
-                    [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle event.clientPos)
-                    , fromUnstyled <| Mouse.onUp (\event -> UserReleasedResizeHandle)
-                    ]
+            if model.resizingColumn /= Nothing then
+                [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle event.clientPos)
+                ]
 
-                Nothing ->
-                    []
+            else if model.movingColumn /= Nothing then
+                [ fromUnstyled <| Mouse.onMove (\event -> UserMovedColumn event.clientPos)
+                ]
+
+            else
+                []
     in
     div
         ([ css
             [ width (px <| toFloat <| totalWidth model)
             , backgroundImage <| linearGradient (stop white2) (stop lightGrey2) []
             , height (px <| toFloat model.config.headerHeight)
+            , position relative
             ]
          ]
             ++ conditionalAttributes
         )
     <|
         (visibleColumns model
-            |> List.map (viewHeader model)
+            |> List.indexedMap (\index column -> viewHeader model column index)
         )
 
 
-viewHeader : Model a -> ColumnConfig a -> Html (Msg a)
-viewHeader model columnConfig =
+viewHeader : Model a -> ColumnConfig a -> Int -> Html (Msg a)
+viewHeader model columnConfig index =
     let
-        sortingSymbol =
-            case model.sortedBy of
-                Just config ->
-                    if config.properties.id == columnConfig.properties.id then
-                        if model.order == Descending then
-                            arrowUp
-
-                        else
-                            arrowDown
-
-                    else
-                        noContent
-
-                _ ->
-                    noContent
-
         conditionalAttributes =
-            case model.resizingColumn of
-                Just _ ->
-                    []
+            if model.resizingColumn == Nothing && model.movingColumn == Nothing then
+                [ onClick (HeaderClicked columnConfig)
+                , fromUnstyled <| Mouse.onDown (\event -> UserStartedMovingColumn columnConfig event.clientPos)
+                ]
 
-                Nothing ->
-                    [ onClick (HeaderClicked columnConfig) ]
+            else
+                []
     in
     div
         ([ attribute "data-testid" <| "header-" ++ columnConfig.properties.id
@@ -767,7 +851,8 @@ viewHeader model columnConfig =
             , height (px <| toFloat <| model.config.headerHeight - cumulatedBorderWidth)
             , padding (px 2)
             , cursor pointer
-            , position relative
+            , position absolute
+            , left (px <| toFloat <| Maybe.withDefault 0 <| getAt index model.columnsX)
             , overflow hidden
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
             , hover
@@ -782,11 +867,53 @@ viewHeader model columnConfig =
             ++ conditionalAttributes
         )
         [ text <| columnConfig.properties.title
-        , sortingSymbol
+        , viewDropZone model columnConfig
+        , viewSortingSymbol model columnConfig
         , viewFilter model columnConfig
         , viewTooltip columnConfig
         , viewResizeHandle columnConfig
         ]
+
+
+viewDropZone : Model a -> ColumnConfig a -> Html (Msg a)
+viewDropZone model columnConfig =
+    case model.movingColumn of
+        Just movingColumn ->
+            div
+                [ css
+                    [ display block
+                    , fontSize (px 0.1)
+                    , height (pct 100)
+                    , position absolute
+                    , left (px -5)
+                    , top (px 0)
+                    , width (px 9)
+                    , zIndex (int 2)
+                    ]
+                , onMouseEnter (CursorEnteredDropZone columnConfig)
+                ]
+                []
+
+        Nothing ->
+            noContent
+
+
+viewSortingSymbol : Model a -> ColumnConfig a -> Html (Msg a)
+viewSortingSymbol model columnConfig =
+    case model.sortedBy of
+        Just config ->
+            if config.properties.id == columnConfig.properties.id then
+                if model.order == Descending then
+                    arrowUp
+
+                else
+                    arrowDown
+
+            else
+                noContent
+
+        _ ->
+            noContent
 
 
 viewTooltip : ColumnConfig a -> Html msg
@@ -831,6 +958,7 @@ viewResizeHandle columnConfig =
             , zIndex (int 1)
             ]
         , fromUnstyled <| Mouse.onDown (\event -> UserClickedResizeHandle columnConfig event.clientPos)
+        , onBlur UserEndedMouseInteraction
         ]
         []
 
