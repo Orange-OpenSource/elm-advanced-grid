@@ -168,9 +168,10 @@ gridConfig =
     , containerHeight = 500
     , containerWidth = 700
     , hasFilters = True
-    , headerHeight = 80
+    , headerHeight = 60
     , lineHeight = 20
     , rowStyle = rowColor
+    , selectionColumnTitle = "Select"
     }
 
 

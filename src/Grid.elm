@@ -44,17 +44,16 @@ The list of data can be very long, thanks to the use of [FabienHenon/elm-infinit
 
 import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector)
-import Css.Transitions exposing (easeOut, transition)
-import Grid.Colors exposing (black, darkGrey, lightGreen, lightGrey, lightGrey2, slightlyTransparentBlack, white, white2)
+import Grid.Colors exposing (black, darkGrey, darkGrey2, lightGreen, lightGrey, lightGrey2, white, white2)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString)
 import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Html, div, input, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, css, fromUnstyled, type_)
-import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseEnter, onMouseUp)
+import Html.Styled.Attributes exposing (attribute, css, fromUnstyled, title, type_)
+import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp)
 import InfiniteList as IL
-import List.Extra exposing (elemIndex, findIndex, getAt, setAt, swapAt, updateAt, updateIf)
-import String exposing (toInt)
+import List.Extra exposing (findIndex, getAt, swapAt)
+import String
 
 
 {-| The configuration for the grid
@@ -87,6 +86,7 @@ type alias Config a =
     , headerHeight : Int
     , lineHeight : Int
     , rowStyle : Item a -> Style
+    , selectionColumnTitle : String
     }
 
 
@@ -130,17 +130,17 @@ You probably should not use the other constructors.
 
 -}
 type Msg a
-    = CursorEnteredDropZone (ColumnConfig a)
+    = CursorEnteredDropZone (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
     | InfListMsg IL.Model
     | FilterLoseFocus
     | FilterModified (ColumnConfig a) String
-    | HeaderClicked (ColumnConfig a)
+    | UserClickedHeader (ColumnConfig a)
     | LineClicked (Item a)
     | SelectionToggled (Item a) String
     | UserClickedFilter
-    | UserStartedMovingColumn (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
-    | UserMovedColumn ( Float, Float ) -- param is clienttPos
+    | UserClickedMoveHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
     | UserClickedResizeHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
+    | UserMovedColumn ( Float, Float ) -- param is clienttPos
     | UserMovedResizeHandle ( Float, Float ) -- param is clienttPos
     | UserEndedMouseInteraction
 
@@ -223,8 +223,10 @@ type alias Model a =
     , content : List (Item a)
     , dragStartX : Float
     , filterHasFocus : Bool -- Prevents click in filter to trigger a sort
+    , hoveredColumn : Maybe (ColumnConfig a)
     , infList : IL.Model
     , movingColumn : Maybe (ColumnConfig a)
+    , movingColumnDeltaX : Float
     , order : Sorting
     , resizingColumn : Maybe (ColumnConfig a)
     , sortedBy : Maybe (ColumnConfig a)
@@ -239,7 +241,7 @@ selectionColumn =
     { properties =
         { id = "MultipleSelection"
         , order = Unsorted
-        , title = "Select"
+        , title = "Select" -- TODO i18n
         , tooltip = ""
         , visible = True
         , width = 100
@@ -266,8 +268,18 @@ init : Config a -> List (Item a) -> Model a
 init config items =
     let
         newConfig =
+            let
+                selectionColumnProperties =
+                    selectionColumn.properties
+
+                titledSelectionColumnProperties =
+                    { selectionColumnProperties | title = config.selectionColumnTitle }
+
+                titledSelectionColumn =
+                    { selectionColumn | properties = titledSelectionColumnProperties }
+            in
             if config.canSelectRows then
-                { config | columns = selectionColumn :: config.columns }
+                { config | columns = titledSelectionColumn :: config.columns }
 
             else
                 config
@@ -283,8 +295,10 @@ init config items =
             , content = indexedItems
             , dragStartX = 0
             , filterHasFocus = False
+            , hoveredColumn = Nothing
             , infList = IL.init
             , movingColumn = Nothing
+            , movingColumnDeltaX = 0
             , order = Unsorted
             , resizingColumn = Nothing
             , sortedBy = Nothing
@@ -322,7 +336,7 @@ update msg model =
             in
             { model | config = newConfig }
 
-        HeaderClicked columnConfig ->
+        UserClickedHeader columnConfig ->
             if model.filterHasFocus then
                 model
 
@@ -382,13 +396,13 @@ update msg model =
         UserMovedResizeHandle ( x, _ ) ->
             resizeColumn model x
 
-        UserStartedMovingColumn columnConfig ( x, _ ) ->
+        UserClickedMoveHandle columnConfig ( x, _ ) ->
             { model
                 | movingColumn = Just columnConfig
                 , dragStartX = x
             }
 
-        CursorEnteredDropZone columnConfig ->
+        CursorEnteredDropZone columnConfig ( x, _ ) ->
             case model.movingColumn of
                 Just movingColumn ->
                     if columnConfig.properties.id == movingColumn.properties.id then
@@ -415,8 +429,15 @@ update msg model =
 
                             newConfig =
                                 { currentConfig | columns = newColumns }
+
+                            updatedModel =
+                                { model
+                                    | config = newConfig
+                                    , movingColumnDeltaX = 0
+                                    , dragStartX = x
+                                }
                         in
-                        { model | config = newConfig }
+                        { updatedModel | columnsX = columnsX updatedModel }
 
                 Nothing ->
                     model
@@ -429,19 +450,7 @@ indexOfColumn columnConfig model =
 
 moveColumnTo : Model a -> Float -> Model a
 moveColumnTo model x =
-    let
-        indexOfMovingColumn =
-            case model.movingColumn of
-                Just column ->
-                    Maybe.withDefault -1 <| indexOfColumn column model
-
-                Nothing ->
-                    -1
-
-        newColumnsX =
-            setAt indexOfMovingColumn (Basics.round x) model.columnsX
-    in
-    { model | columnsX = newColumnsX }
+    { model | movingColumnDeltaX = x - model.dragStartX }
 
 
 resizeColumn : Model a -> Float -> Model a
@@ -836,12 +845,13 @@ viewHeader model columnConfig index =
     let
         conditionalAttributes =
             if model.resizingColumn == Nothing && model.movingColumn == Nothing then
-                [ onClick (HeaderClicked columnConfig)
-                , fromUnstyled <| Mouse.onDown (\event -> UserStartedMovingColumn columnConfig event.clientPos)
-                ]
+                [ onClick (UserClickedHeader columnConfig) ]
 
             else
                 []
+
+        x =
+            columnX model columnConfig index
     in
     div
         ([ attribute "data-testid" <| "header-" ++ columnConfig.properties.id
@@ -852,27 +862,47 @@ viewHeader model columnConfig index =
             , padding (px 2)
             , cursor pointer
             , position absolute
-            , left (px <| toFloat <| Maybe.withDefault 0 <| getAt index model.columnsX)
+            , left (px x)
             , overflow hidden
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
             , hover
                 [ descendants
                     [ typeSelector "div"
-                        [ visibility visible -- makes the tooltip visible on hover
+                        [ visibility visible -- makes the move handle visible on hover
+                        , display inlineBlock
                         ]
                     ]
                 ]
             ]
+         , title columnConfig.properties.tooltip
          ]
             ++ conditionalAttributes
         )
-        [ text <| columnConfig.properties.title
+        [ viewMoveHandle columnConfig
+        , text <| columnConfig.properties.title
         , viewDropZone model columnConfig
         , viewSortingSymbol model columnConfig
         , viewFilter model columnConfig
-        , viewTooltip columnConfig
         , viewResizeHandle columnConfig
         ]
+
+
+columnX : Model a -> ColumnConfig a -> Int -> Float
+columnX model columnConfig index =
+    let
+        initialX =
+            toFloat <| Maybe.withDefault 0 <| getAt index model.columnsX
+    in
+    case model.movingColumn of
+        Just movingColumn ->
+            if movingColumn.properties.id == columnConfig.properties.id then
+                initialX + model.movingColumnDeltaX
+
+            else
+                initialX
+
+        Nothing ->
+            initialX
 
 
 viewDropZone : Model a -> ColumnConfig a -> Html (Msg a)
@@ -890,7 +920,7 @@ viewDropZone model columnConfig =
                     , width (px 9)
                     , zIndex (int 2)
                     ]
-                , onMouseEnter (CursorEnteredDropZone columnConfig)
+                , fromUnstyled <| Mouse.onEnter (\event -> CursorEnteredDropZone columnConfig event.clientPos)
                 ]
                 []
 
@@ -916,31 +946,37 @@ viewSortingSymbol model columnConfig =
             noContent
 
 
-viewTooltip : ColumnConfig a -> Html msg
-viewTooltip columnConfig =
-    if columnConfig.properties.tooltip == "" then
-        noContent
-
-    else
-        div
-            [ css
-                [ backgroundColor slightlyTransparentBlack
-                , borderRadius (px 3)
-                , color white2
-                , fontSize (px 12)
-                , lineHeight (pct 110)
-                , opacity (num 0.7)
-                , padding (px 5)
-                , position absolute
-                , textShadow4 (px -1) (px 1) (px 0) slightlyTransparentBlack
-                , transition
-                    [ Css.Transitions.visibility3 0 0.5 easeOut -- delay the visibility change
-                    ]
-                , visibility hidden
-                , zIndex (int 1000)
-                ]
+viewMoveHandle : ColumnConfig a -> Html (Msg a)
+viewMoveHandle columnConfig =
+    div
+        [ css
+            [ cursor move
+            , display block
+            , fontSize (px 0.1)
+            , height (px 20)
+            , float left
+            , visibility hidden
+            , width (px 10)
+            , zIndex (int 2)
             ]
-            [ text columnConfig.properties.tooltip ]
+        , fromUnstyled <| Mouse.onDown (\event -> UserClickedMoveHandle columnConfig event.clientPos)
+        , onBlur UserEndedMouseInteraction
+        ]
+        (List.repeat 2 <|
+            div [ css [ display inlineBlock ] ] <|
+                List.repeat 4 <|
+                    div
+                        [ css
+                            [ backgroundColor darkGrey2
+                            , borderRadius (pct 50)
+                            , height (px 3)
+                            , width (px 3)
+                            , marginRight (px 1)
+                            , marginBottom (px 2)
+                            ]
+                        ]
+                        []
+        )
 
 
 viewResizeHandle : ColumnConfig a -> Html (Msg a)

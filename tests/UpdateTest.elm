@@ -76,7 +76,7 @@ describeHeaderClicked =
 
 
 simulateHeaderClick model =
-    update (HeaderClicked scoreColumn) model
+    update (UserClickedHeader scoreColumn) model
 
 
 modelSortedByAscendingScore =
