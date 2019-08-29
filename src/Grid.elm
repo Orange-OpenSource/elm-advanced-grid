@@ -4,7 +4,7 @@ module Grid exposing
     , compareBoolField, compareFloatField, compareIntField, compareStringField
     , viewBool, viewFloat, viewInt, viewProgressBar, viewString
     , Model, init, update, view
-    , ColumnProperties, Msg(..), Sorting(..)
+    , ColumnProperties, Msg(..), Sorting(..), cellStyles, cumulatedBorderWidth
     )
 
 {-| This library displays a grid of data.
@@ -43,7 +43,7 @@ The list of data can be very long, thanks to the use of [FabienHenon/elm-infinit
 -}
 
 import Css exposing (..)
-import Css.Global exposing (descendants, typeSelector)
+import Css.Global exposing (descendants, typeSelector, withAttribute)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, lightGreen, lightGrey, lightGrey2, white, white2)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString)
 import Html
@@ -709,6 +709,7 @@ viewProgressBar barHeight field properties item =
         [ css
             [ display inlineBlock
             , border3 (px 1) solid lightGrey
+            , boxSizing contentBox
             , verticalAlign top
             , paddingLeft (px 5)
             , paddingRight (px 5)
@@ -858,6 +859,7 @@ viewHeader model columnConfig index =
          , css
             [ display inlineBlock
             , border3 (px 1) solid darkGrey
+            , boxSizing contentBox
             , height (px <| toFloat <| model.config.headerHeight - cumulatedBorderWidth)
             , padding (px 2)
             , cursor pointer
@@ -868,8 +870,9 @@ viewHeader model columnConfig index =
             , hover
                 [ descendants
                     [ typeSelector "div"
-                        [ visibility visible -- makes the move handle visible on hover
-                        , display inlineBlock
+                        [ visibility visible -- makes the move handle visible when hover the column
+                        , withAttribute "data-handle"
+                            [ display inlineBlock ]
                         ]
                     ]
                 ]
@@ -957,7 +960,7 @@ viewMoveHandle columnConfig =
             , float left
             , visibility hidden
             , width (px 10)
-            , zIndex (int 2)
+            , zIndex (int 5)
             ]
         , fromUnstyled <| Mouse.onDown (\event -> UserClickedMoveHandle columnConfig event.clientPos)
         , onBlur UserEndedMouseInteraction
@@ -982,7 +985,8 @@ viewMoveHandle columnConfig =
 viewResizeHandle : ColumnConfig a -> Html (Msg a)
 viewResizeHandle columnConfig =
     div
-        [ css
+        [ attribute "data-handle" ""
+        , css
             [ cursor colResize
             , display block
             , fontSize (px 0.1)
@@ -1064,6 +1068,7 @@ cellStyles properties =
     , css
         [ display inlineBlock
         , border3 (px 1) solid lightGrey
+        , boxSizing contentBox
         , minHeight (pct 100) -- 100% min height forces empty divs to be correctly rendered
         , paddingLeft (px 2)
         , paddingRight (px 2)
