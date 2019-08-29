@@ -1,7 +1,6 @@
 module Examples.Main exposing (main)
 
 import Browser
-import Css exposing (Style, backgroundColor, hex, transparent)
 import Grid
     exposing
         ( ColumnConfig
@@ -15,7 +14,7 @@ import Grid
         , viewProgressBar
         , viewString
         )
-import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, stringFilter)
+import Grid.Filters exposing (Filter(..), floatFilter, intFilter, stringFilter)
 import Html exposing (Html, div, li, text, ul)
 import Html.Attributes exposing (attribute, style)
 import List.Extra
@@ -168,20 +167,20 @@ gridConfig =
     , hasFilters = True
     , headerHeight = 60
     , lineHeight = 20
-    , rowStyle = rowColor
+    , rowClass = rowClass
     }
 
 
-rowColor : Item -> Style
-rowColor item =
+rowClass : Item -> String
+rowClass item =
     if item.selected then
-        backgroundColor (hex "FFE3AA")
+        "selected-row"
 
     else if item.even then
-        backgroundColor (hex "EEE")
+        "even-row"
 
     else
-        backgroundColor transparent
+        ""
 
 
 columns : List (ColumnConfig Item)

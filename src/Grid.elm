@@ -49,7 +49,7 @@ import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString
 import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, input, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, css, fromUnstyled, title, type_)
+import Html.Styled.Attributes exposing (attribute, class, css, fromUnstyled, title, type_)
 import Html.Styled.Events exposing (onBlur, onCheck, onClick, onInput, onMouseUp, preventDefaultOn, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
@@ -57,7 +57,7 @@ import List.Extra exposing (findIndex, getAt, swapAt)
 import String
 
 
-{-| The configuration for the grid
+{-| The configuration for the grid. You should define the css classes, if you want to use some.
 
     gridConfig =
         { canSelectRows = True
@@ -66,16 +66,16 @@ import String
         , containerWidth = 700
         , hasFilters = True
         , lineHeight = 20
-        , rowStyle = rowColor
+        , rowClass = cssClassname
         }
 
-    rowColor : Item -> Style
-    rowColor item =
+    cssClassname : Item -> String
+    cssClassname item =
         if item.selected then
-            backgroundColor (hex "FFE3AA")
+            "selected"
 
         else
-            backgroundColor transparent
+            ""
 
 -}
 type alias Config a =
@@ -86,7 +86,7 @@ type alias Config a =
     , hasFilters : Bool
     , headerHeight : Int
     , lineHeight : Int
-    , rowStyle : Item a -> Style
+    , rowClass : Item a -> String
     }
 
 
@@ -601,9 +601,9 @@ viewRow model idx listIdx item =
     toUnstyled
         << div
             [ attribute "data-testid" "row"
+            , class (model.config.rowClass item)
             , css
-                [ model.config.rowStyle item
-                , height (px <| toFloat model.config.lineHeight)
+                [ height (px <| toFloat model.config.lineHeight)
                 , width (px <| toFloat <| totalWidth model)
                 ]
             , onClick (LineClicked item)

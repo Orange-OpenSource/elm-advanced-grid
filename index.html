@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Elm Grid</title>
+    <style>
+        .selected-row {
+            background-color: gold;
+        }
+
+        .even-row {
+            background-color:lightgray;
+        }
+    </style>
+</head>
+<body>
+    <div id="elm-area"></div>
+    <script type="text/javascript" src="example.js"></script>
+    <script type="text/javascript">
+        Elm.Examples.Main.init({
+			node: document.getElementById('elm-area')
+	});
+    </script>
+</body>
+</html>

@@ -1,7 +1,6 @@
 .idea
 
 elm-stuff
-index.html
-elm.js
+example.js
 
 node_modules
