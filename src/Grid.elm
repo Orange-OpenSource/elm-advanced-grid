@@ -48,10 +48,11 @@ import Grid.Colors exposing (black, darkGrey, darkGrey2, lightGreen, lightGrey, 
 import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString)
 import Html
 import Html.Events.Extra.Mouse as Mouse
-import Html.Styled exposing (Html, div, input, text, toUnstyled)
+import Html.Styled exposing (Attribute, Html, div, input, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, css, fromUnstyled, title, type_)
-import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp)
+import Html.Styled.Events exposing (onBlur, onCheck, onClick, onInput, onMouseUp, preventDefaultOn, stopPropagationOn)
 import InfiniteList as IL
+import Json.Decode
 import List.Extra exposing (findIndex, getAt, swapAt)
 import String
 
@@ -136,7 +137,7 @@ type Msg a
     | FilterModified (ColumnConfig a) String
     | UserClickedHeader (ColumnConfig a)
     | LineClicked (Item a)
-    | SelectionToggled (Item a) String
+    | SelectionToggled (Item a)
     | UserClickedFilter
     | UserClickedMoveHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
     | UserClickedResizeHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
@@ -365,7 +366,7 @@ update msg model =
         LineClicked item ->
             { model | clickedItem = Just item }
 
-        SelectionToggled item _ ->
+        SelectionToggled item ->
             let
                 newContent =
                     List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
@@ -648,10 +649,22 @@ viewBool field properties item =
         [ input
             [ type_ "checkbox"
             , Html.Styled.Attributes.checked (field item)
-            , Html.Styled.Events.onInput (SelectionToggled item)
+            , stopPropagationOnClick item
             ]
             []
         ]
+
+
+{-| Prevents the click on the line to be detected when interacting with the checkbox
+-}
+stopPropagationOnClick : Item a -> Attribute (Msg a)
+stopPropagationOnClick item =
+    stopPropagationOn "click" (Json.Decode.map alwaysPreventDefault (Json.Decode.succeed (SelectionToggled item)))
+
+
+alwaysPreventDefault : Msg a -> ( Msg a, Bool )
+alwaysPreventDefault msg =
+    ( msg, True )
 
 
 {-| Renders a cell containing a floating number. Use this function in a ColumnConfig

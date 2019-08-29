@@ -100,25 +100,23 @@ update msg model =
                 newGridModel =
                     Grid.update (LineClicked item) model.gridModel
             in
-             { model
+            { model
                 | gridModel = newGridModel
                 , clickedItem = Just item
-              }
-            
+            }
 
-        GridMsg (SelectionToggled item status) ->
+        GridMsg (SelectionToggled item) ->
             let
                 newGridModel =
-                    Grid.update (SelectionToggled item status) model.gridModel
+                    Grid.update (SelectionToggled item) model.gridModel
 
                 selectedItems =
                     List.filter .selected newGridModel.content
             in
-             { model
+            { model
                 | gridModel = newGridModel
                 , selectedItems = selectedItems
-              }
-            
+            }
 
         GridMsg message ->
             let
@@ -155,10 +153,10 @@ items =
 
 init : Model
 init =
-     { gridModel = Grid.init gridConfig items
-      , clickedItem = Nothing
-      , selectedItems = []
-      }
+    { gridModel = Grid.init gridConfig items
+    , clickedItem = Nothing
+    , selectedItems = []
+    }
 
 
 gridConfig : Grid.Config Item

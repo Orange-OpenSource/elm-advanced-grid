@@ -110,4 +110,13 @@ describe('elm grid example', function () {
             .next().contains("id:2 - name: name2")
     })
 
+    it('should not detect click when checkboxes are selected', function () {
+        cy.visit(url)
+        cy.get(':nth-child(2) > [data-testid=MultipleSelection] > input').click()
+
+        let status = cy.get('div[data-testid="clickedItem"]')
+        status.contains("Clicked Item = None.")        
+
+    })
+
 })
