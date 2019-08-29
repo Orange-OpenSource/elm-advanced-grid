@@ -169,7 +169,6 @@ gridConfig =
     , headerHeight = 60
     , lineHeight = 20
     , rowStyle = rowColor
-    , selectionColumnTitle = "Select"
     }
 
 

@@ -87,7 +87,6 @@ type alias Config a =
     , headerHeight : Int
     , lineHeight : Int
     , rowStyle : Item a -> Style
-    , selectionColumnTitle : String
     }
 
 
@@ -141,9 +140,10 @@ type Msg a
     | UserClickedFilter
     | UserClickedMoveHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
     | UserClickedResizeHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
+    | UserEndedMouseInteraction
     | UserMovedColumn ( Float, Float ) -- param is clienttPos
     | UserMovedResizeHandle ( Float, Float ) -- param is clienttPos
-    | UserEndedMouseInteraction
+    | UserToggledAllItemSelection
 
 
 {-| The sorting options for a column, to be used in the properties of a ColumnConfig.
@@ -226,6 +226,7 @@ type alias Model a =
     , filterHasFocus : Bool -- Prevents click in filter to trigger a sort
     , hoveredColumn : Maybe (ColumnConfig a)
     , infList : IL.Model
+    , isAllSelected : Bool
     , movingColumn : Maybe (ColumnConfig a)
     , movingColumnDeltaX : Float
     , order : Sorting
@@ -240,12 +241,12 @@ used when canSelectRows is True in grid config.
 selectionColumn : ColumnConfig a
 selectionColumn =
     { properties =
-        { id = "MultipleSelection"
+        { id = "_MultipleSelection_"
         , order = Unsorted
-        , title = "Select" -- TODO i18n
+        , title = ""
         , tooltip = ""
         , visible = True
-        , width = 100
+        , width = 30
         }
     , filters = BoolFilter <| boolFilter (\item -> item.selected)
     , filteringValue = Nothing
@@ -269,18 +270,8 @@ init : Config a -> List (Item a) -> Model a
 init config items =
     let
         newConfig =
-            let
-                selectionColumnProperties =
-                    selectionColumn.properties
-
-                titledSelectionColumnProperties =
-                    { selectionColumnProperties | title = config.selectionColumnTitle }
-
-                titledSelectionColumn =
-                    { selectionColumn | properties = titledSelectionColumnProperties }
-            in
             if config.canSelectRows then
-                { config | columns = titledSelectionColumn :: config.columns }
+                { config | columns = selectionColumn :: config.columns }
 
             else
                 config
@@ -298,6 +289,7 @@ init config items =
             , filterHasFocus = False
             , hoveredColumn = Nothing
             , infList = IL.init
+            , isAllSelected = False
             , movingColumn = Nothing
             , movingColumnDeltaX = 0
             , order = Unsorted
@@ -442,6 +434,19 @@ update msg model =
 
                 Nothing ->
                     model
+
+        UserToggledAllItemSelection ->
+            let
+                newStatus =
+                    not model.isAllSelected
+
+                newContent =
+                    List.map (\item -> { item | selected = newStatus }) model.content
+            in
+            { model
+                | isAllSelected = newStatus
+                , content = newContent
+            }
 
 
 indexOfColumn : ColumnConfig a -> Model a -> Maybe Int
@@ -649,7 +654,7 @@ viewBool field properties item =
         [ input
             [ type_ "checkbox"
             , Html.Styled.Attributes.checked (field item)
-            , stopPropagationOnClick item
+            , stopPropagationOnClick (SelectionToggled item)
             ]
             []
         ]
@@ -657,9 +662,9 @@ viewBool field properties item =
 
 {-| Prevents the click on the line to be detected when interacting with the checkbox
 -}
-stopPropagationOnClick : Item a -> Attribute (Msg a)
-stopPropagationOnClick item =
-    stopPropagationOn "click" (Json.Decode.map alwaysPreventDefault (Json.Decode.succeed (SelectionToggled item)))
+stopPropagationOnClick : Msg a -> Attribute (Msg a)
+stopPropagationOnClick msg =
+    stopPropagationOn "click" (Json.Decode.map alwaysPreventDefault (Json.Decode.succeed msg))
 
 
 alwaysPreventDefault : Msg a -> ( Msg a, Bool )
@@ -894,13 +899,35 @@ viewHeader model columnConfig index =
          ]
             ++ conditionalAttributes
         )
-        [ viewMoveHandle columnConfig
-        , text <| columnConfig.properties.title
-        , viewDropZone model columnConfig
-        , viewSortingSymbol model columnConfig
-        , viewFilter model columnConfig
-        , viewResizeHandle columnConfig
+        (if isSelectionColumn columnConfig then
+            [ viewMultiSelectionCheckbox model columnConfig ]
+
+         else
+            [ viewMoveHandle columnConfig
+            , viewTitle columnConfig
+            , viewDropZone model columnConfig
+            , viewSortingSymbol model columnConfig
+            , viewFilter model columnConfig
+            , viewResizeHandle columnConfig
+            ]
+        )
+
+
+{-| specific header content for the selection column
+-}
+viewMultiSelectionCheckbox : Model a -> ColumnConfig a -> Html (Msg a)
+viewMultiSelectionCheckbox model columnConfig =
+    input
+        [ type_ "checkbox"
+        , Html.Styled.Attributes.checked False
+        , stopPropagationOnClick UserToggledAllItemSelection
         ]
+        []
+
+
+isSelectionColumn : ColumnConfig a -> Bool
+isSelectionColumn columnConfig =
+    columnConfig.properties.id == selectionColumn.properties.id
 
 
 columnX : Model a -> ColumnConfig a -> Int -> Float
@@ -942,6 +969,11 @@ viewDropZone model columnConfig =
 
         Nothing ->
             noContent
+
+
+viewTitle : ColumnConfig a -> Html (Msg a)
+viewTitle columnConfig =
+    text <| columnConfig.properties.title
 
 
 viewSortingSymbol : Model a -> ColumnConfig a -> Html (Msg a)
