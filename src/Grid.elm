@@ -132,7 +132,7 @@ You probably should not use the other constructors.
 type Msg a
     = CursorEnteredDropZone (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
     | InfListMsg IL.Model
-    | FilterLoseFocus
+    | FilterLostFocus
     | FilterModified (ColumnConfig a) String
     | UserClickedHeader (ColumnConfig a)
     | LineClicked (Item a)
@@ -374,7 +374,7 @@ update msg model =
             in
             { model | content = newContent }
 
-        FilterLoseFocus ->
+        FilterLostFocus ->
             { model | filterHasFocus = False }
 
         UserClickedFilter ->
@@ -1102,7 +1102,7 @@ viewFilter model columnConfig =
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
             ]
         , onClick UserClickedFilter
-        , onBlur FilterLoseFocus
+        , onBlur FilterLostFocus
         , onInput <| FilterModified columnConfig
         , value <| Maybe.withDefault "" columnConfig.filteringValue
         ]
