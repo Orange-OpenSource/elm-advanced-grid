@@ -4,7 +4,7 @@ describe('elm grid example', function () {
 
    it('should have headers', function () {
         cy.visit(url)
-        cy.get('div[data-testid="header-MultipleSelection"]').contains('Select')
+        cy.get('div[data-testid="header-_MultipleSelection_"]')  // TODO test checkbox presence
         cy.get('div[data-testid="header-Id"]').contains('Id')
         cy.get('div[data-testid="header-Name"]').contains('Name')
         cy.get('div[data-testid="header-Progress"]').contains('Progress')
@@ -13,7 +13,6 @@ describe('elm grid example', function () {
 
     it('should have filters', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-MultipleSelection"]')
         cy.get('input[data-testid="filter-Id"]')
         cy.get('input[data-testid="filter-Name"]')
         cy.get('input[data-testid="filter-Progress"]')
@@ -101,8 +100,8 @@ describe('elm grid example', function () {
 
     it('should select items when checkboxes are selected', function () {
         cy.visit(url)
-        cy.get(':nth-child(2) > [data-testid=MultipleSelection] > input').click()
-        cy.get(':nth-child(3) > [data-testid=MultipleSelection] > input').click()
+        cy.get(':nth-child(2) > [data-testid=_MultipleSelection_] > input').click()
+        cy.get(':nth-child(3) > [data-testid=_MultipleSelection_] > input').click()
 
         let selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
         selectedItems.should('have.length', 2)
@@ -112,10 +111,10 @@ describe('elm grid example', function () {
 
     it('should not detect click when checkboxes are selected', function () {
         cy.visit(url)
-        cy.get(':nth-child(2) > [data-testid=MultipleSelection] > input').click()
+        cy.get(':nth-child(2) > [data-testid=_MultipleSelection_] > input').click()
 
         let status = cy.get('div[data-testid="clickedItem"]')
-        status.contains("Clicked Item = None.")        
+        status.contains("Clicked Item = None.")
 
     })
 
