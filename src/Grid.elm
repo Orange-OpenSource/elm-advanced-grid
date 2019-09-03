@@ -271,8 +271,8 @@ and content.
 init : Config a -> List (Item a) -> Model a
 init config items =
     let
-        hasNoSelectionColumns : List (ColumnConfig a) -> Bool
-        hasNoSelectionColumns columns =
+        hasSelectionColumn : List (ColumnConfig a) -> Bool
+        hasSelectionColumn columns =
             case List.head columns of
                 Just firstColumn ->
                     isSelectionColumn firstColumn
@@ -280,8 +280,11 @@ init config items =
                 Nothing ->
                     False
 
+        shouldAddSelectionColumn =
+            config.canSelectRows && not (hasSelectionColumn config.columns)
+
         newConfig =
-            if config.canSelectRows && hasNoSelectionColumns config.columns then
+            if shouldAddSelectionColumn then
                 { config | columns = selectionColumn :: config.columns }
 
             else
