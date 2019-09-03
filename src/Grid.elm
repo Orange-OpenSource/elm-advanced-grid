@@ -49,7 +49,7 @@ import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString
 import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, input, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, class, css, fromUnstyled, title, type_)
+import Html.Styled.Attributes exposing (attribute, class, css, fromUnstyled, title, type_, value)
 import Html.Styled.Events exposing (onBlur, onCheck, onClick, onInput, onMouseUp, preventDefaultOn, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
@@ -269,8 +269,17 @@ and content.
 init : Config a -> List (Item a) -> Model a
 init config items =
     let
+        hasNoSelectionColumns : List (ColumnConfig a) -> Bool
+        hasNoSelectionColumns columns =
+            case List.head columns of
+                Just firstColumn ->
+                    isSelectionColumn firstColumn
+
+                Nothing ->
+                    False
+
         newConfig =
-            if config.canSelectRows then
+            if config.canSelectRows && hasNoSelectionColumns config.columns then
                 { config | columns = selectionColumn :: config.columns }
 
             else
@@ -1095,6 +1104,7 @@ viewFilter model columnConfig =
         , onClick UserClickedFilter
         , onBlur FilterLoseFocus
         , onInput <| FilterModified columnConfig
+        , value <| Maybe.withDefault "" columnConfig.filteringValue
         ]
         []
 
