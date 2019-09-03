@@ -552,8 +552,8 @@ view model =
             if model.config.hasFilters then
                 [ div
                     [ css
-                        [ borderLeft3 (px 1) solid darkGrey
-                        , borderRight3 (px 1) solid darkGrey
+                        [ borderLeft3 (px 1) solid lightGrey2
+                        , borderRight3 (px 1) solid lightGrey2
                         ]
                     ]
                     [ viewHeaders model
@@ -846,7 +846,7 @@ viewHeaders model =
     div
         ([ css
             [ width (px <| toFloat <| totalWidth model)
-            , backgroundImage <| linearGradient (stop white2) (stop lightGrey2) []
+            , backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
             , height (px <| toFloat model.config.headerHeight)
             , position relative
             ]
@@ -876,7 +876,7 @@ viewHeader model columnConfig index =
         ([ attribute "data-testid" <| "header-" ++ columnConfig.properties.id
          , css
             [ display inlineBlock
-            , border3 (px 1) solid darkGrey
+            , border3 (px 1) solid lightGrey2
             , boxSizing contentBox
             , height (px <| toFloat <| model.config.headerHeight - cumulatedBorderWidth)
             , padding (px 2)
