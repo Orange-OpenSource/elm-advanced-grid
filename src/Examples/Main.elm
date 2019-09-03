@@ -1,6 +1,7 @@
 module Examples.Main exposing (main)
 
 import Browser
+import Dict
 import Grid
     exposing
         ( ColumnConfig
@@ -15,8 +16,9 @@ import Grid
         , viewString
         )
 import Grid.Filters exposing (Filter(..), floatFilter, intFilter, stringFilter)
-import Html exposing (Html, div, li, text, ul)
+import Html exposing (Html, button, div, li, text, ul)
 import Html.Attributes exposing (attribute, style)
+import Html.Events exposing (onClick)
 import List.Extra
 
 
@@ -40,6 +42,8 @@ type alias Model =
 
 type Msg
     = GridMsg (Grid.Msg Item)
+    | ResetFilters
+    | SetFilters
 
 
 main : Program () Model Msg
@@ -74,6 +78,10 @@ view model =
                     "Use checkboxes to select items."
             ]
         , ul (centeredWithId "selectedItems") <| List.map (\it -> li [] [ viewItem it ]) model.selectedItems
+        , div (centeredWithId "ButtonBar")
+            [ button [ onClick SetFilters, style "margin" "10px" ] [ text "Set Filters" ]
+            , button [ onClick ResetFilters, style "margin" "10px" ] [ text "Reset Filters" ]
+            ]
         ]
 
 
@@ -119,6 +127,29 @@ update msg model =
 
         GridMsg message ->
             let
+                newGridModel =
+                    Grid.update message model.gridModel
+            in
+            { model | gridModel = newGridModel }
+
+        ResetFilters ->
+            let
+                message =
+                    Grid.InitializeFilters Dict.empty
+
+                newGridModel =
+                    Grid.update message model.gridModel
+            in
+            { model | gridModel = newGridModel }
+
+        SetFilters ->
+            let
+                filters =
+                    Dict.fromList [ ( "City", "o" ) ]
+
+                message =
+                    Grid.InitializeFilters filters
+
                 newGridModel =
                     Grid.update message model.gridModel
             in

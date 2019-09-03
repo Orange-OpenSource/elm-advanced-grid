@@ -44,6 +44,7 @@ The list of data can be very long, thanks to the use of [FabienHenon/elm-infinit
 
 import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector, withAttribute)
+import Dict exposing (Dict)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, lightGreen, lightGrey, lightGrey2, white, white2)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString)
 import Html
@@ -137,6 +138,7 @@ type Msg a
     | UserClickedHeader (ColumnConfig a)
     | LineClicked (Item a)
     | SelectionToggled (Item a)
+    | InitializeFilters (Dict String String) -- column ID, filter value
     | UserClickedFilter
     | UserClickedMoveHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
     | UserClickedResizeHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
@@ -456,6 +458,30 @@ update msg model =
                 | isAllSelected = newStatus
                 , content = newContent
             }
+
+        InitializeFilters filterValues ->
+            let
+                newColumns =
+                    List.map (initializeFilter filterValues) model.config.columns
+
+                currentConfig =
+                    model.config
+
+                newConfig =
+                    { currentConfig | columns = newColumns }
+            in
+            { model
+                | config = newConfig
+            }
+
+
+initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
+initializeFilter filterValues columnConfig =
+    let
+        value =
+            Dict.get columnConfig.properties.id filterValues
+    in
+    { columnConfig | filteringValue = value }
 
 
 indexOfColumn : ColumnConfig a -> Model a -> Maybe Int
