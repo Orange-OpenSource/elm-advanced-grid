@@ -135,17 +135,18 @@ type Msg a
     | InfListMsg IL.Model
     | FilterLostFocus
     | FilterModified (ColumnConfig a) String
-    | UserClickedHeader (ColumnConfig a)
-    | LineClicked (Item a)
-    | SelectionToggled (Item a)
     | InitializeFilters (Dict String String) -- column ID, filter value
+    | InitializeSorting String Sorting -- column ID, Ascending or Descending
+    | UserClickedHeader (ColumnConfig a)
     | UserClickedFilter
+    | UserClickedLine (Item a)
     | UserClickedMoveHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
     | UserClickedResizeHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
     | UserEndedMouseInteraction
     | UserMovedColumn ( Float, Float ) -- param is clienttPos
     | UserMovedResizeHandle ( Float, Float ) -- param is clienttPos
     | UserToggledAllItemSelection
+    | UserToggledSelection (Item a)
 
 
 {-| The sorting options for a column, to be used in the properties of a ColumnConfig.
@@ -171,7 +172,7 @@ type Sorting
 {-| The configuration for a column. The grid content is described
 using a list of ColumnConfigs.
 
-    idColumn =
+    idColumnConfig =
         { properties =
             { id = "Id"
             , order = Unsorted
@@ -327,88 +328,6 @@ columnsX model =
 update : Msg a -> Model a -> Model a
 update msg model =
     case msg of
-        FilterModified columnConfig string ->
-            let
-                newColumnconfig =
-                    { columnConfig | filteringValue = Just string }
-
-                newColumns =
-                    List.Extra.setIf (\item -> item.properties.id == columnConfig.properties.id) newColumnconfig model.config.columns
-
-                oldConfig =
-                    model.config
-
-                newConfig =
-                    { oldConfig | columns = newColumns }
-            in
-            { model | config = newConfig }
-
-        UserClickedHeader columnConfig ->
-            if model.filterHasFocus then
-                model
-
-            else
-                let
-                    ( sortedContent, newOrder ) =
-                        case model.order of
-                            Ascending ->
-                                ( List.sortWith columnConfig.comparator model.content |> List.reverse, Descending )
-
-                            _ ->
-                                ( List.sortWith columnConfig.comparator model.content, Ascending )
-
-                    updatedContent =
-                        updateIndexes sortedContent
-                in
-                { model
-                    | content = updatedContent
-                    , order = newOrder
-                    , sortedBy = Just columnConfig
-                }
-
-        InfListMsg infList ->
-            { model | infList = infList }
-
-        LineClicked item ->
-            { model | clickedItem = Just item }
-
-        SelectionToggled item ->
-            let
-                newContent =
-                    List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
-            in
-            { model | content = newContent }
-
-        FilterLostFocus ->
-            { model | filterHasFocus = False }
-
-        UserClickedFilter ->
-            { model | filterHasFocus = True }
-
-        UserClickedResizeHandle columnConfig ( x, _ ) ->
-            { model
-                | resizingColumn = Just columnConfig
-                , dragStartX = x
-            }
-
-        UserEndedMouseInteraction ->
-            { model
-                | resizingColumn = Nothing
-                , movingColumn = Nothing
-            }
-
-        UserMovedColumn ( x, _ ) ->
-            moveColumnTo model x
-
-        UserMovedResizeHandle ( x, _ ) ->
-            resizeColumn model x
-
-        UserClickedMoveHandle columnConfig ( x, _ ) ->
-            { model
-                | movingColumn = Just columnConfig
-                , dragStartX = x
-            }
-
         CursorEnteredDropZone columnConfig ( x, _ ) ->
             case model.movingColumn of
                 Just movingColumn ->
@@ -449,18 +368,27 @@ update msg model =
                 Nothing ->
                     model
 
-        UserToggledAllItemSelection ->
+        FilterModified columnConfig string ->
             let
-                newStatus =
-                    not model.isAllSelected
+                newColumnconfig =
+                    { columnConfig | filteringValue = Just string }
 
-                newContent =
-                    List.map (\item -> { item | selected = newStatus }) model.content
+                newColumns =
+                    List.Extra.setIf (\item -> item.properties.id == columnConfig.properties.id) newColumnconfig model.config.columns
+
+                oldConfig =
+                    model.config
+
+                newConfig =
+                    { oldConfig | columns = newColumns }
             in
-            { model
-                | isAllSelected = newStatus
-                , content = newContent
-            }
+            { model | config = newConfig }
+
+        InfListMsg infList ->
+            { model | infList = infList }
+
+        FilterLostFocus ->
+            { model | filterHasFocus = False }
 
         InitializeFilters filterValues ->
             let
@@ -477,6 +405,75 @@ update msg model =
                 | config = newConfig
             }
 
+        InitializeSorting columnId sorting ->
+            let
+                sortedColumnConfig =
+                    List.Extra.find (\column -> column.properties.id == columnId) model.config.columns
+            in
+            case sortedColumnConfig of
+                Just columnConfig ->
+                    sort model columnConfig sorting orderBy
+
+                Nothing ->
+                    model
+
+        UserClickedFilter ->
+            { model | filterHasFocus = True }
+
+        UserClickedHeader columnConfig ->
+            if model.filterHasFocus then
+                model
+
+            else
+                sort model columnConfig model.order toggleOrder
+
+        UserClickedLine item ->
+            { model | clickedItem = Just item }
+
+        UserClickedMoveHandle columnConfig ( x, _ ) ->
+            { model
+                | movingColumn = Just columnConfig
+                , dragStartX = x
+            }
+
+        UserClickedResizeHandle columnConfig ( x, _ ) ->
+            { model
+                | resizingColumn = Just columnConfig
+                , dragStartX = x
+            }
+
+        UserEndedMouseInteraction ->
+            { model
+                | resizingColumn = Nothing
+                , movingColumn = Nothing
+            }
+
+        UserMovedColumn ( x, _ ) ->
+            moveColumnTo model x
+
+        UserMovedResizeHandle ( x, _ ) ->
+            resizeColumn model x
+
+        UserToggledAllItemSelection ->
+            let
+                newStatus =
+                    not model.isAllSelected
+
+                newContent =
+                    List.map (\item -> { item | selected = newStatus }) model.content
+            in
+            { model
+                | isAllSelected = newStatus
+                , content = newContent
+            }
+
+        UserToggledSelection item ->
+            let
+                newContent =
+                    List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
+            in
+            { model | content = newContent }
+
 
 initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
 initializeFilter filterValues columnConfig =
@@ -485,6 +482,45 @@ initializeFilter filterValues columnConfig =
             Dict.get columnConfig.properties.id filterValues
     in
     { columnConfig | filteringValue = value }
+
+
+sort : Model a -> ColumnConfig a -> Sorting -> (Model a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )) -> Model a
+sort model columnConfig order sorter =
+    let
+        ( sortedContent, newOrder ) =
+            sorter model columnConfig order
+
+        updatedContent =
+            updateIndexes sortedContent
+    in
+    { model
+        | content = updatedContent
+        , order = newOrder
+        , sortedBy = Just columnConfig
+    }
+
+
+toggleOrder : Model a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )
+toggleOrder model columnConfig order =
+    case order of
+        Ascending ->
+            ( List.sortWith columnConfig.comparator model.content |> List.reverse, Descending )
+
+        _ ->
+            ( List.sortWith columnConfig.comparator model.content, Ascending )
+
+
+orderBy : Model a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )
+orderBy model columnConfig order =
+    case order of
+        Descending ->
+            ( List.sortWith columnConfig.comparator model.content |> List.reverse, Descending )
+
+        Ascending ->
+            ( List.sortWith columnConfig.comparator model.content, Ascending )
+
+        Unsorted ->
+            ( model.content, Unsorted )
 
 
 indexOfColumn : ColumnConfig a -> Model a -> Maybe Int
@@ -644,7 +680,7 @@ viewRow model idx listIdx item =
                 [ height (px <| toFloat model.config.lineHeight)
                 , width (px <| toFloat <| totalWidth model)
                 ]
-            , onClick (LineClicked item)
+            , onClick (UserClickedLine item)
             ]
     <|
         List.map (\columnConfig -> viewColumn columnConfig item) (visibleColumns model)
@@ -692,7 +728,7 @@ viewBool field properties item =
         [ input
             [ type_ "checkbox"
             , Html.Styled.Attributes.checked (field item)
-            , stopPropagationOnClick (SelectionToggled item)
+            , stopPropagationOnClick (UserToggledSelection item)
             ]
             []
         ]

@@ -44,6 +44,8 @@ type Msg
     = GridMsg (Grid.Msg Item)
     | ResetFilters
     | SetFilters
+    | SetAscendingOrder
+    | SetDecendingOrder
 
 
 main : Program () Model Msg
@@ -81,6 +83,8 @@ view model =
         , div (centeredWithId "ButtonBar")
             [ button [ onClick SetFilters, style "margin" "10px" ] [ text "Set Filters" ]
             , button [ onClick ResetFilters, style "margin" "10px" ] [ text "Reset Filters" ]
+            , button [ onClick SetAscendingOrder, style "margin" "10px" ] [ text "Sort cities ascending" ]
+            , button [ onClick SetDecendingOrder, style "margin" "10px" ] [ text "Sort cities descending" ]
             ]
         ]
 
@@ -89,7 +93,7 @@ centeredWithId : String -> List (Html.Attribute msg)
 centeredWithId id =
     [ attribute "data-testid" id
     , style "margin" "auto"
-    , style "width" "500px"
+    , style "width" "700px"
     , style "padding-top" "10px"
     ]
 
@@ -102,20 +106,20 @@ viewItem item =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        GridMsg (LineClicked item) ->
+        GridMsg (UserClickedLine item) ->
             let
                 newGridModel =
-                    Grid.update (LineClicked item) model.gridModel
+                    Grid.update (UserClickedLine item) model.gridModel
             in
             { model
                 | gridModel = newGridModel
                 , clickedItem = Just item
             }
 
-        GridMsg (SelectionToggled item) ->
+        GridMsg (UserToggledSelection item) ->
             let
                 newGridModel =
-                    Grid.update (SelectionToggled item) model.gridModel
+                    Grid.update (UserToggledSelection item) model.gridModel
 
                 selectedItems =
                     List.filter .selected newGridModel.content
@@ -149,6 +153,26 @@ update msg model =
 
                 message =
                     Grid.InitializeFilters filters
+
+                newGridModel =
+                    Grid.update message model.gridModel
+            in
+            { model | gridModel = newGridModel }
+
+        SetAscendingOrder ->
+            let
+                message =
+                    Grid.InitializeSorting "City" Ascending
+
+                newGridModel =
+                    Grid.update message model.gridModel
+            in
+            { model | gridModel = newGridModel }
+
+        SetDecendingOrder ->
+            let
+                message =
+                    Grid.InitializeSorting "City" Descending
 
                 newGridModel =
                     Grid.update message model.gridModel
