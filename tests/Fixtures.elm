@@ -1,4 +1,4 @@
-module Fixtures exposing (Item, columns, gridConfig, isValidColumn, item1, item2, item3, item4, items, model, rowColor, scoreColumn, titleColumn)
+module Fixtures exposing (Item, columns, gridConfig, isValidColumn, item1, item2, item3, item4, items, model, scoreColumn, titleColumn)
 
 import Css exposing (Style, backgroundColor, hex, transparent)
 import Grid exposing (ColumnConfig, Model, Sorting(..), compareBoolField, compareFloatField, compareStringField, viewBool, viewFloat, viewString)
@@ -124,18 +124,17 @@ gridConfig =
     , hasFilters = True
     , headerHeight = 60
     , lineHeight = 20
-    , rowStyle = rowColor
-    , selectionColumnTitle = "Select"
+    , rowClass = rowClass
     }
 
 
-rowColor : Item -> Style
-rowColor item =
+rowClass : Item -> String
+rowClass item =
     if item.selected then
-        backgroundColor (hex "FFE3AA")
+        "selected-item"
 
     else
-        backgroundColor transparent
+        ""
 
 
 model : Model Item
