@@ -28,7 +28,6 @@ type alias Item =
     , city : String
     , name : String
     , value : Float
-    , even : Bool
     , selected : Bool
     }
 
@@ -199,7 +198,6 @@ items =
                 , city = Maybe.withDefault "None" (List.Extra.getAt (modBy (List.length cities) i) cities)
                 , name = "name" ++ String.fromInt i
                 , value = (toFloat i / toFloat itemCount) * 100
-                , even = toFloat i / 2 == toFloat (i // 2)
                 , selected = False
                 }
             )
@@ -228,10 +226,14 @@ gridConfig =
 
 rowClass : Item -> String
 rowClass item =
+    let
+        even =
+            toFloat item.index / 2 == toFloat (item.index // 2)
+    in
     if item.selected then
         "selected-row"
 
-    else if item.even then
+    else if even then
         "even-row"
 
     else
