@@ -128,6 +128,23 @@ update msg model =
                 , selectedItems = selectedItems
             }
 
+        GridMsg UserToggledAllItemSelection ->
+            let
+                newGridModel =
+                    Grid.update UserToggledAllItemSelection model.gridModel
+
+                selectedItems =
+                    if newGridModel.isAllSelected then
+                        newGridModel.content
+
+                    else
+                        []
+            in
+            { model
+                | gridModel = newGridModel
+                , selectedItems = selectedItems
+            }
+
         GridMsg message ->
             let
                 newGridModel =
