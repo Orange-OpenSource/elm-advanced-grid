@@ -118,4 +118,84 @@ describe('elm grid example', function () {
 
     })
 
+    it('should select all rows when clicking the multiple selection button', function () {
+        cy.visit(url)
+        cy.get('div[data-testid="header-_MultipleSelection_"] > input').click()
+
+        let selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
+        selectedItems.should('have.length', 4)
+        selectedItems.first().contains("id:0 - name: name0")
+            .next().contains("id:1 - name: name1")
+            .next().contains("id:2 - name: name2")
+            .next().contains("id:3 - name: name3")
+    })
+
+    it('should select all rows when clicking the multiple selection button (v2)', function () {
+        cy.visit(url)
+        cy.get(':nth-child(2) > [data-testid=_MultipleSelection_] > input').click()
+        let selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
+        selectedItems.should('have.length', 1)
+        selectedItems.first().contains("id:1 - name: name1")
+
+        cy.get('div[data-testid="header-_MultipleSelection_"] > input').click()
+        selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
+        selectedItems.should('have.length', 4)
+        selectedItems.first().contains("id:0 - name: name0")
+            .next().contains("id:1 - name: name1")
+            .next().contains("id:2 - name: name2")
+            .next().contains("id:3 - name: name3")
+    })
+
+    it('should deselect all rows when clicking 2 times the multiple selection button', function () {
+        cy.visit(url)
+        cy.get('div[data-testid="header-_MultipleSelection_"] > input').click().click()
+
+        let selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
+        selectedItems.should('have.length', 0)
+    })
+
+    it('should deselect all rows when clicking 2 times the multiple selection button (v2)', function () {
+        cy.visit(url)
+        cy.get(':nth-child(3) > [data-testid=_MultipleSelection_] > input').click()
+        let selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
+        selectedItems.should('have.length', 1)
+        selectedItems.first().contains("id:2 - name: name2")
+
+        cy.get('div[data-testid="header-_MultipleSelection_"] > input').click().click()
+        selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
+        selectedItems.should('have.length', 0)
+    })
+
+    it('should filter elements containing at least the given string when clicking the "set filters" button', function () {
+        cy.visit(url)
+        cy.get('div[data-testid="buttonBar"]').children().first().click()
+
+        let rows = cy.get('div[data-testid="row"]')
+        rows.should('have.length', 3)
+        cy.get('div[data-testid="City"]').contains("New York")
+        cy.get('div[data-testid="City"]').contains("London")
+        cy.get('div[data-testid="City"]').contains("Moscow")
+    })
+
+    it('should reset filters when clicking on "Reset filters" button', function () {
+        cy.visit(url)
+        cy.get('input[data-testid="filter-Id"]').type("<2")
+        cy.get('input[data-testid="filter-Name"]').type("me")
+        cy.get('input[data-testid="filter-Progress"]').type("<30")
+        cy.get('input[data-testid="filter-Value"]').type("25")
+        cy.get('input[data-testid="filter-City"]').type("ond")
+        let rows = cy.get('div[data-testid="row"]')
+        rows.should('have.length', 1)
+        cy.get('div[data-testid="City"]').contains("London")
+
+        cy.get('div[data-testid="buttonBar"]').children().first().next().click()
+
+        rows = cy.get('div[data-testid="row"]')
+        rows.should('have.length', 4)
+        cy.get('div[data-testid="City"]').contains("Paris")
+        cy.get('div[data-testid="City"]').contains("New York")
+        cy.get('div[data-testid="City"]').contains("London")
+        cy.get('div[data-testid="City"]').contains("Moscow")
+    })
+
 })
