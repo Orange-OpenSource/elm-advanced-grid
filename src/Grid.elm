@@ -1,10 +1,10 @@
 module Grid exposing
     ( Config
     , ColumnConfig
-    , compareBoolField, compareFloatField, compareIntField, compareStringField
-    , viewBool, viewFloat, viewInt, viewProgressBar, viewString
+    , compareBoolField
+    , viewBool, viewProgressBar
     , Model, init, update, view
-    , ColumnProperties, Msg(..), Sorting(..), cellStyles, cumulatedBorderWidth
+    , ColumnProperties, Msg(..), Sorting(..), boolColumnConfig, cellStyles, compareFields, cumulatedBorderWidth, floatColumnConfig, intColumnConfig, isSelectionColumn, isSelectionColumnProperties, selectionColumn, stringColumnConfig
     )
 
 {-| This library displays a grid of data.
@@ -46,7 +46,7 @@ import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector, withAttribute)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, lightGreen, lightGrey, lightGrey2, white, white2)
-import Grid.Filters exposing (Filter(..), Item, boolFilter, parseFilteringString)
+import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, input, text, toUnstyled)
@@ -746,6 +746,69 @@ alwaysPreventDefault msg =
     ( msg, True )
 
 
+{-| Create a ColumnConfig for a column containing a string value
+-}
+stringColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> String, localize : String -> String } -> ColumnConfig a
+stringColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+    { properties =
+        columnConfigProperties properties
+    , filters = StringFilter <| stringFilter getter
+    , filteringValue = Nothing
+    , renderer = viewString getter
+    , comparator = compareFields getter
+    }
+
+
+{-| Create a ColumnConfig for a column containing a float value
+-}
+floatColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> Float, localize : String -> String } -> ColumnConfig a
+floatColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+    { properties =
+        columnConfigProperties properties
+    , filters = FloatFilter <| floatFilter getter
+    , filteringValue = Nothing
+    , renderer = viewFloat getter
+    , comparator = compareFields getter
+    }
+
+
+{-| Create a ColumnConfig for a column containing an integer value
+-}
+intColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> Int, localize : String -> String } -> ColumnConfig a
+intColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+    { properties =
+        columnConfigProperties properties
+    , filters = IntFilter <| intFilter getter
+    , filteringValue = Nothing
+    , renderer = viewInt getter
+    , comparator = compareFields getter
+    }
+
+
+{-| Create a ColumnConfig for a column containing a boolean value
+-}
+boolColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> Bool, localize : String -> String } -> ColumnConfig a
+boolColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+    { properties =
+        columnConfigProperties properties
+    , filters = BoolFilter <| boolFilter getter
+    , filteringValue = Nothing
+    , renderer = viewBool getter
+    , comparator = compareBoolField getter
+    }
+
+
+columnConfigProperties : { a | id : String, title : String, tooltip : String, width : Int, localize : String -> String } -> ColumnProperties
+columnConfigProperties { id, title, tooltip, width, localize } =
+    { id = id
+    , order = Unsorted
+    , title = localize title
+    , tooltip = localize tooltip
+    , visible = True
+    , width = width
+    }
+
+
 {-| Renders a cell containing a floating number. Use this function in a ColumnConfig
 to define how the values in a given column should be rendered.
 The unique parameter to be provided is a lambda which
@@ -830,49 +893,22 @@ viewProgressBar barHeight field properties item =
         ]
 
 
-{-| Compares two integers. Use this function in a ColumnConfig
+{-| Compares two integers, two floats or two strings.
+Use this function in a ColumnConfig
 to define how the values in a given column should be compared.
 The unique parameter to be provided is a lambda which
 returns the field to be displayed in this column.
 
     comparator =
-        compareIntField (\item -> item.id)
+        compareFields (\item -> item.id)
 
 -}
-compareIntField : (Item a -> Int) -> Item a -> Item a -> Order
-compareIntField field item1 item2 =
+compareFields : (Item a -> comparable) -> Item a -> Item a -> Order
+compareFields field item1 item2 =
     compare (field item1) (field item2)
 
 
-{-| Compares two floating point numbers. Use this function in a ColumnConfig
-to define how the values in a given column should be compared.
-The unique parameter to be provided is a lambda which
-returns the field to be displayed in this column.
-
-    comparator =
-        compareFloatField (\item -> item.value)
-
--}
-compareFloatField : (Item a -> Float) -> Item a -> Item a -> Order
-compareFloatField field item1 item2 =
-    compare (field item1) (field item2)
-
-
-{-| Compares two strings. Use this function in a ColumnConfig
-to define how the values in a given column should be compared.
-The unique parameter to be provided is a lambda which
-returns the field to be displayed in this column.
-
-    comparator =
-        compareStringField (\item -> item.name)
-
--}
-compareStringField : (Item a -> String) -> Item a -> Item a -> Order
-compareStringField field item1 item2 =
-    compare (field item1) (field item2)
-
-
-{-| Compares two boolean. Use this function in a ColumnConfig
+{-| Compares two booleans. Use this function in a ColumnConfig
 to define how the values in a given column should be compared.
 The unique parameter to be provided is a lambda which
 returns the field to be displayed in this column.
@@ -1001,7 +1037,12 @@ viewMultiSelectionCheckbox model columnConfig =
 
 isSelectionColumn : ColumnConfig a -> Bool
 isSelectionColumn columnConfig =
-    columnConfig.properties.id == selectionColumn.properties.id
+    isSelectionColumnProperties columnConfig.properties
+
+
+isSelectionColumnProperties : { a | id : String } -> Bool
+isSelectionColumnProperties columnProperties =
+    columnProperties.id == selectionColumn.properties.id
 
 
 columnX : Model a -> ColumnConfig a -> Int -> Float

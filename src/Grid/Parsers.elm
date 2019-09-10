@@ -1,20 +1,33 @@
 module Grid.Parsers exposing
-    ( boolEqualityParser
-    , boolParser
-    , floatEqualityParser
-    , greaterThanBoolParser
-    , greaterThanFloatParser
-    , greaterThanIntParser
-    , greaterThanStringParser
-    , intEqualityParser
-    , lessThanBoolParser
-    , lessThanFloatParser
-    , lessThanIntParser
-    , lessThanStringParser
-    , stringEqualityParser
+    ( boolParser
+    , equalityParser
+    , greaterThanParser
+    , lessThanParser
+    , stringParser
     )
 
 import Parser exposing ((|.), (|=), Parser, chompUntilEndOr, getChompedString, keyword, oneOf, spaces, succeed, symbol)
+
+
+equalityParser : Parser (a -> a)
+equalityParser =
+    succeed identity
+
+
+lessThanParser : Parser (a -> a)
+lessThanParser =
+    succeed identity
+        |. spaces
+        |. symbol "<"
+        |. spaces
+
+
+greaterThanParser : Parser (a -> a)
+greaterThanParser =
+    succeed identity
+        |. spaces
+        |. symbol ">"
+        |. spaces
 
 
 stringParser : Parser String
@@ -25,78 +38,6 @@ stringParser =
     getChompedString <| chompUntilEndOr "\u{0000}"
 
 
-stringEqualityParser : Parser String
-stringEqualityParser =
-    succeed identity
-        |= stringParser
-
-
-lessThanStringParser : Parser String
-lessThanStringParser =
-    succeed identity
-        |. spaces
-        |. symbol "<"
-        |. spaces
-        |= stringParser
-
-
-greaterThanStringParser : Parser String
-greaterThanStringParser =
-    succeed identity
-        |. spaces
-        |. symbol ">"
-        |. spaces
-        |= stringParser
-
-
-intEqualityParser : Parser Int
-intEqualityParser =
-    succeed identity
-        |= Parser.int
-
-
-lessThanIntParser : Parser Int
-lessThanIntParser =
-    succeed identity
-        |. spaces
-        |. symbol "<"
-        |. spaces
-        |= Parser.int
-
-
-greaterThanIntParser : Parser Int
-greaterThanIntParser =
-    succeed identity
-        |. spaces
-        |. symbol ">"
-        |. spaces
-        |= Parser.int
-
-
-floatEqualityParser : Parser Float
-floatEqualityParser =
-    succeed identity
-        |= Parser.float
-
-
-lessThanFloatParser : Parser Float
-lessThanFloatParser =
-    succeed identity
-        |. spaces
-        |. symbol "<"
-        |. spaces
-        |= Parser.float
-
-
-greaterThanFloatParser : Parser Float
-greaterThanFloatParser =
-    succeed identity
-        |. spaces
-        |. symbol ">"
-        |. spaces
-        |= Parser.float
-
-
 boolParser : Parser Bool
 boolParser =
     oneOf
@@ -105,27 +46,3 @@ boolParser =
         , succeed False
             |. keyword "false"
         ]
-
-
-boolEqualityParser : Parser Bool
-boolEqualityParser =
-    succeed identity
-        |= boolParser
-
-
-lessThanBoolParser : Parser Bool
-lessThanBoolParser =
-    succeed identity
-        |. spaces
-        |. symbol "<"
-        |. spaces
-        |= boolParser
-
-
-greaterThanBoolParser : Parser Bool
-greaterThanBoolParser =
-    succeed identity
-        |. spaces
-        |. symbol ">"
-        |. spaces
-        |= boolParser
