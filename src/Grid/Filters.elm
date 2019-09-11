@@ -194,12 +194,12 @@ boolFilter getter =
 
 boolLessThan : Bool -> Bool -> Bool
 boolLessThan a b =
-    (not <| b) && a
+    (not <| a) && b
 
 
 boolGreaterThan : Bool -> Bool -> Bool
 boolGreaterThan a b =
-    b && not a
+    a && not b
 
 
 makeFilter :
