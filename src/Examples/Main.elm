@@ -27,7 +27,8 @@ type alias Model =
 
 
 type Msg
-    = GridMsg (Grid.Msg Item)
+    = DisplayPreferences
+    | GridMsg (Grid.Msg Item)
     | ResetFilters
     | SetFilters
     | SetAscendingOrder
@@ -66,7 +67,14 @@ view model =
                     "Use checkboxes to select items."
             ]
         , ul (centeredWithId "selectedItems") <| List.map (\it -> li [] [ viewItem it ]) model.selectedItems
-        , div (centeredWithId "buttonBar")
+        , div (centeredWithId "Preferences")
+            [ button
+                [ onClick DisplayPreferences
+                , style "margin" "10px"
+                ]
+                [ text "Show Preferences" ]
+            ]
+        , div (centeredWithId "ButtonBar")
             [ button [ onClick SetFilters, style "margin" "10px" ] [ text "Set Filters" ]
             , button [ onClick ResetFilters, style "margin" "10px" ] [ text "Reset Filters" ]
             , button [ onClick SetAscendingOrder, style "margin" "10px" ] [ text "Sort cities ascending" ]
@@ -92,6 +100,15 @@ viewItem item =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
+        DisplayPreferences ->
+            let
+                newGridModel =
+                    Grid.update ShowPreferences model.gridModel
+            in
+            { model
+                | gridModel = newGridModel
+            }
+
         GridMsg (UserClickedLine item) ->
             let
                 newGridModel =

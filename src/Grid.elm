@@ -45,13 +45,13 @@ The list of data can be very long, thanks to the use of [FabienHenon/elm-infinit
 import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector, withAttribute)
 import Dict exposing (Dict)
-import Grid.Colors exposing (black, darkGrey, darkGrey2, lightGreen, lightGrey, lightGrey2, white, white2)
+import Grid.Colors exposing (black, darkGrey2, lightGreen, lightGrey, lightGrey2, white, white2)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Html
 import Html.Events.Extra.Mouse as Mouse
-import Html.Styled exposing (Attribute, Html, div, input, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, class, css, fromUnstyled, title, type_, value)
-import Html.Styled.Events exposing (onBlur, onCheck, onClick, onInput, onMouseUp, preventDefaultOn, stopPropagationOn)
+import Html.Styled exposing (Attribute, Html, div, input, label, text, toUnstyled)
+import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
+import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
 import List.Extra exposing (findIndex, getAt, swapAt)
@@ -137,15 +137,18 @@ type Msg a
     | FilterModified (ColumnConfig a) String
     | InitializeFilters (Dict String String) -- column ID, filter value
     | InitializeSorting String Sorting -- column ID, Ascending or Descending
+    | ShowPreferences
     | UserClickedHeader (ColumnConfig a)
     | UserClickedFilter
     | UserClickedLine (Item a)
     | UserClickedMoveHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
+    | UserClickedPreferenceCloseButton
     | UserClickedResizeHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
     | UserEndedMouseInteraction
     | UserMovedColumn ( Float, Float ) -- param is clienttPos
     | UserMovedResizeHandle ( Float, Float ) -- param is clienttPos
     | UserToggledAllItemSelection
+    | UserToggledColumnVisibilty (ColumnConfig a)
     | UserToggledSelection (Item a)
 
 
@@ -234,6 +237,7 @@ type alias Model a =
     , movingColumnDeltaX : Float
     , order : Sorting
     , resizingColumn : Maybe (ColumnConfig a)
+    , showPreferences : Bool
     , sortedBy : Maybe (ColumnConfig a)
     }
 
@@ -309,6 +313,7 @@ init config items =
             , movingColumnDeltaX = 0
             , order = Unsorted
             , resizingColumn = Nothing
+            , showPreferences = False
             , sortedBy = Nothing
             }
     in
@@ -467,12 +472,47 @@ update msg model =
                 , content = newContent
             }
 
+        UserToggledColumnVisibilty columnConfig ->
+            let
+                currentProperties =
+                    columnConfig.properties
+
+                newProperties =
+                    { currentProperties | visible = not columnConfig.properties.visible }
+
+                newColumnConfig =
+                    { columnConfig | properties = newProperties }
+
+                newColumns =
+                    List.Extra.updateIf (\c -> c.properties.id == columnConfig.properties.id)
+                        (\c -> newColumnConfig)
+                        model.config.columns
+
+                currentGridGConfig =
+                    model.config
+
+                newGridConfig =
+                    { currentGridGConfig
+                        | columns = newColumns
+                    }
+
+                updatedModel =
+                    { model | config = newGridConfig }
+            in
+            { updatedModel | columnsX = columnsX updatedModel }
+
         UserToggledSelection item ->
             let
                 newContent =
                     List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
             in
             { model | content = newContent }
+
+        UserClickedPreferenceCloseButton ->
+            { model | showPreferences = False }
+
+        ShowPreferences ->
+            { model | showPreferences = True }
 
 
 initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
@@ -546,7 +586,7 @@ resizeColumn model x =
                         + Basics.round deltaX
 
                 newColumns =
-                    updateColumnProperties model columnConfig newWidth
+                    updateColumnWidthProperty model columnConfig newWidth
 
                 config =
                     model.config
@@ -560,8 +600,8 @@ resizeColumn model x =
             model
 
 
-updateColumnProperties : Model a -> ColumnConfig a -> Int -> List (ColumnConfig a)
-updateColumnProperties model columnConfig width =
+updateColumnWidthProperty : Model a -> ColumnConfig a -> Int -> List (ColumnConfig a)
+updateColumnWidthProperty model columnConfig width =
     List.Extra.updateIf (\col -> col.properties.id == columnConfig.properties.id)
         (updateColumnWidth width)
         model.config.columns
@@ -603,6 +643,18 @@ gridConfig model =
 -}
 view : Model a -> Html.Html (Msg a)
 view model =
+    toUnstyled <|
+        if model.showPreferences then
+            viewPreferences model
+
+        else
+            viewGrid model
+
+
+{-| Renders the grid
+-}
+viewGrid : Model a -> Html (Msg a)
+viewGrid model =
     let
         conditionalAttributes =
             if model.resizingColumn == Nothing && model.movingColumn == Nothing then
@@ -612,33 +664,33 @@ view model =
                 [ onMouseUp UserEndedMouseInteraction
                 ]
     in
-    toUnstyled <|
-        div
-            ([ css
-                [ width (px <| toFloat (model.config.containerWidth + cumulatedBorderWidth))
-                , overflow auto
-                , margin auto
-                ]
-             ]
-                ++ conditionalAttributes
-            )
-        <|
-            if model.config.hasFilters then
-                [ div
-                    [ css
-                        [ borderLeft3 (px 1) solid lightGrey2
-                        , borderRight3 (px 1) solid lightGrey2
-                        ]
+    div
+        ([ css
+            [ width (px <| toFloat (model.config.containerWidth + cumulatedBorderWidth))
+            , overflow auto
+            , margin auto
+            ]
+         ]
+            ++ conditionalAttributes
+        )
+    <|
+        if model.config.hasFilters then
+            [ div
+                [ css
+                    [ borderLeft3 (px 1) solid lightGrey2
+                    , borderRight3 (px 1) solid lightGrey2
+                    , width (px <| toFloat <| totalWidth model)
                     ]
-                    [ viewHeaders model
-                    ]
-                , viewRows model
                 ]
-
-            else
                 [ viewHeaders model
-                , viewRows model
                 ]
+            , viewRows model
+            ]
+
+        else
+            [ viewHeaders model
+            , viewRows model
+            ]
 
 
 viewRows : Model a -> Html (Msg a)
@@ -893,6 +945,79 @@ viewProgressBar barHeight field properties item =
         ]
 
 
+{-| View column visibility panel
+-}
+viewPreferences : Model a -> Html (Msg a)
+viewPreferences model =
+    let
+        dataColumns =
+            List.filter (not << isSelectionColumn) model.config.columns
+    in
+    div
+        [ css
+            [ border3 (px 1) solid lightGrey2
+            , margin auto
+            , padding (px 5)
+            , width (px <| toFloat model.config.containerWidth * 0.6)
+            ]
+        ]
+    <|
+        (viewClosebutton
+            :: List.map viewColumnVisibilitySelector dataColumns
+        )
+
+
+viewClosebutton : Html (Msg a)
+viewClosebutton =
+    div
+        [ css
+            [ cursor pointer
+            , position relative
+            , float right
+            , width (px 16)
+            , height (px 16)
+            , opacity (num 0.3)
+            , hover
+                [ opacity (num 1) ]
+            , before
+                [ position absolute
+                , left (px 7)
+                , property "content" "' '"
+                , height (px 17)
+                , width (px 2)
+                , backgroundColor darkGrey2
+                , transform (rotate (deg 45))
+                ]
+            , after
+                [ position absolute
+                , left (px 7)
+                , property "content" "' '"
+                , height (px 17)
+                , width (px 2)
+                , backgroundColor darkGrey2
+                , transform (rotate (deg -45))
+                ]
+            ]
+        , onClick UserClickedPreferenceCloseButton
+        ]
+        []
+
+
+viewColumnVisibilitySelector : ColumnConfig a -> Html (Msg a)
+viewColumnVisibilitySelector columnConfig =
+    div
+        []
+        [ input
+            [ id columnConfig.properties.id
+            , type_ "checkbox"
+            , Html.Styled.Attributes.checked columnConfig.properties.visible
+            , onClick (UserToggledColumnVisibilty columnConfig)
+            ]
+            []
+        , label [ for columnConfig.properties.id ] [ text columnConfig.properties.title ]
+        ]
+
+
 {-| Compares two integers, two floats or two strings.
 Use this function in a ColumnConfig
 to define how the values in a given column should be compared.
@@ -955,8 +1080,7 @@ viewHeaders model =
     in
     div
         ([ css
-            [ width (px <| toFloat <| totalWidth model)
-            , backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
+            [ backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
             , height (px <| toFloat model.config.headerHeight)
             , position relative
             ]
