@@ -492,9 +492,14 @@ update msg model =
                     model.config
 
                 newGridConfig =
-                    { currentGridGConfig | columns = newColumns }
+                    { currentGridGConfig
+                        | columns = newColumns
+                    }
+
+                updatedModel =
+                    { model | config = newGridConfig }
             in
-            { model | config = newGridConfig }
+            { updatedModel | columnsX = columnsX updatedModel }
 
         UserToggledSelection item ->
             let
@@ -674,6 +679,7 @@ viewGrid model =
                 [ css
                     [ borderLeft3 (px 1) solid lightGrey2
                     , borderRight3 (px 1) solid lightGrey2
+                    , width (px <| toFloat <| totalWidth model)
                     ]
                 ]
                 [ viewHeaders model
@@ -1074,8 +1080,7 @@ viewHeaders model =
     in
     div
         ([ css
-            [ width (px <| toFloat <| totalWidth model)
-            , backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
+            [ backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
             , height (px <| toFloat model.config.headerHeight)
             , position relative
             ]
