@@ -19,11 +19,11 @@ module Grid.Filters exposing
 -}
 
 import Grid.Parsers exposing (..)
-import Parser exposing (Parser)
+import Parser exposing ((|=), Parser)
 
 
 {-| The data to be displayed in the grid
-It must be records with at least two fields: selected et index
+It must be records with at least two fields: selected and index
 
     items =
         [ { index = 0
@@ -70,15 +70,16 @@ type alias TypedFilter a b =
 
 
 parseFilteringString : Maybe String -> Filter a -> Maybe (Item a -> Bool)
-parseFilteringString filteringValue filters =
+parseFilteringString filteringValue filter =
     let
         filteringString =
             Maybe.withDefault "" filteringValue
     in
     if filteringString == "" then
         Nothing
+
     else
-        case filters of
+        case filter of
             StringFilter stringTypedFilter ->
                 validateFilter filteringString stringTypedFilter
 
@@ -104,22 +105,19 @@ validateFilter filteringString filters =
         parsedGreaterThan =
             Parser.run filters.greaterThan.parser filteringString
     in
-    case parsedLessThan of
-        Ok lessThanOperand ->
+    case ( parsedLessThan, parsedGreaterThan, parsedEqual ) of
+        ( Ok lessThanOperand, _, _ ) ->
             Just (filters.lessThan.filter lessThanOperand)
 
+        ( _, Ok greaterThanOperand, _ ) ->
+            Just (filters.greaterThan.filter greaterThanOperand)
+
+        ( _, _, Ok equalityOperand ) ->
+            -- must be tested after lessThanOperand and greaterThanOperand because it accepts any string
+            Just (filters.equal.filter equalityOperand)
+
         _ ->
-            case parsedGreaterThan of
-                Ok greaterThanOperand ->
-                    Just (filters.greaterThan.filter greaterThanOperand)
-
-                _ ->
-                    case parsedEqual of
-                        Ok equalityOperand ->
-                            Just (filters.equal.filter equalityOperand)
-
-                        _ ->
-                            Nothing
+            Nothing
 
 
 {-| Filters strings.
@@ -132,34 +130,12 @@ the value of the field to be filtered.
 -}
 stringFilter : (Item a -> String) -> TypedFilter a String
 stringFilter getter =
-    { equal =
-        { filter = filterStringFieldEqualTo getter
-        , parser = stringEqualityParser
+    makeFilter
+        { getter = getter
+        , lessThan = \a b -> a < b
+        , greaterThan = \a b -> a > b
+        , typedParser = stringParser
         }
-    , lessThan =
-        { filter = filterStringFieldLesserThan getter
-        , parser = lessThanStringParser
-        }
-    , greaterThan =
-        { filter = filterStringFieldGreaterThan getter
-        , parser = greaterThanStringParser
-        }
-    }
-
-
-filterStringFieldEqualTo : (Item a -> String) -> String -> Item a -> Bool
-filterStringFieldEqualTo getter value item =
-    String.contains value <| getter item
-
-
-filterStringFieldLesserThan : (Item a -> String) -> String -> Item a -> Bool
-filterStringFieldLesserThan getter value item =
-    getter item < value
-
-
-filterStringFieldGreaterThan : (Item a -> String) -> String -> Item a -> Bool
-filterStringFieldGreaterThan getter value item =
-    getter item > value
 
 
 {-| Filters integers.
@@ -172,34 +148,12 @@ the value of the field to be filtered.
 -}
 intFilter : (Item a -> Int) -> TypedFilter a Int
 intFilter getter =
-    { equal =
-        { filter = filterIntFieldEqualTo getter
-        , parser = intEqualityParser
+    makeFilter
+        { getter = getter
+        , lessThan = \a b -> a < b
+        , greaterThan = \a b -> a > b
+        , typedParser = Parser.int
         }
-    , lessThan =
-        { filter = filterIntFieldLesserThan getter
-        , parser = lessThanIntParser
-        }
-    , greaterThan =
-        { filter = filterIntFieldGreaterThan getter
-        , parser = greaterThanIntParser
-        }
-    }
-
-
-filterIntFieldEqualTo : (Item a -> Int) -> Int -> Item a -> Bool
-filterIntFieldEqualTo getter value item =
-    getter item == value
-
-
-filterIntFieldLesserThan : (Item a -> Int) -> Int -> Item a -> Bool
-filterIntFieldLesserThan getter value item =
-    getter item < value
-
-
-filterIntFieldGreaterThan : (Item a -> Int) -> Int -> Item a -> Bool
-filterIntFieldGreaterThan getter value item =
-    getter item > value
 
 
 {-| Filters floating point numbers.
@@ -212,34 +166,12 @@ the value of the field to be filtered.
 -}
 floatFilter : (Item a -> Float) -> TypedFilter a Float
 floatFilter getter =
-    { equal =
-        { filter = filterFloatFieldEqualTo getter
-        , parser = floatEqualityParser
+    makeFilter
+        { getter = getter
+        , lessThan = \a b -> a < b
+        , greaterThan = \a b -> a > b
+        , typedParser = Parser.float
         }
-    , lessThan =
-        { filter = filterFloatFieldLesserThan getter
-        , parser = lessThanFloatParser
-        }
-    , greaterThan =
-        { filter = filterFloatFieldGreaterThan getter
-        , parser = greaterThanFloatParser
-        }
-    }
-
-
-filterFloatFieldEqualTo : (Item a -> Float) -> Float -> Item a -> Bool
-filterFloatFieldEqualTo getter value item =
-    getter item == value
-
-
-filterFloatFieldLesserThan : (Item a -> Float) -> Float -> Item a -> Bool
-filterFloatFieldLesserThan getter value item =
-    getter item < value
-
-
-filterFloatFieldGreaterThan : (Item a -> Float) -> Float -> Item a -> Bool
-filterFloatFieldGreaterThan getter value item =
-    getter item > value
 
 
 {-| Filters booleans.
@@ -252,31 +184,42 @@ the value of the field to be filtered.
 -}
 boolFilter : (Item a -> Bool) -> TypedFilter a Bool
 boolFilter getter =
+    makeFilter
+        { getter = getter
+        , lessThan = boolLessThan
+        , greaterThan = boolGreaterThan
+        , typedParser = boolParser
+        }
+
+
+boolLessThan : Bool -> Bool -> Bool
+boolLessThan a b =
+    (not <| a) && b
+
+
+boolGreaterThan : Bool -> Bool -> Bool
+boolGreaterThan a b =
+    a && not b
+
+
+makeFilter :
+    { getter : Item a -> b
+    , lessThan : b -> b -> Bool
+    , greaterThan : b -> b -> Bool
+    , typedParser : Parser b
+    }
+    -> TypedFilter a b
+makeFilter { getter, lessThan, greaterThan, typedParser } =
     { equal =
-        { filter = filterBoolFieldEqualTo getter
-        , parser = boolEqualityParser
+        { filter = \value item -> value == getter item
+        , parser = equalityParser |= typedParser
         }
     , lessThan =
-        { filter = filterBoolFieldLesserThan getter
-        , parser = lessThanBoolParser
+        { filter = \value item -> lessThan (getter item) value
+        , parser = lessThanParser |= typedParser
         }
     , greaterThan =
-        { filter = filterBoolFieldGreaterThan getter
-        , parser = greaterThanBoolParser
+        { filter = \value item -> greaterThan (getter item) value
+        , parser = greaterThanParser |= typedParser
         }
     }
-
-
-filterBoolFieldEqualTo : (Item a -> Bool) -> Bool -> Item a -> Bool
-filterBoolFieldEqualTo getter value item =
-    getter item == value
-
-
-filterBoolFieldLesserThan : (Item a -> Bool) -> Bool -> Item a -> Bool
-filterBoolFieldLesserThan getter value item =
-    (not <| getter item) && value
-
-
-filterBoolFieldGreaterThan : (Item a -> Bool) -> Bool -> Item a -> Bool
-filterBoolFieldGreaterThan getter value item =
-    getter item && not value
