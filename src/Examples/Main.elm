@@ -2,20 +2,7 @@ module Examples.Main exposing (main)
 
 import Browser
 import Dict
-import Grid
-    exposing
-        ( ColumnConfig
-        , Msg(..)
-        , Sorting(..)
-        , compareFloatField
-        , compareIntField
-        , compareStringField
-        , viewFloat
-        , viewInt
-        , viewProgressBar
-        , viewString
-        )
-import Grid.Filters exposing (Filter(..), floatFilter, intFilter, stringFilter)
+import Grid exposing (ColumnConfig, Msg(..), Sorting(..), floatColumnConfig, intColumnConfig, stringColumnConfig, viewProgressBar)
 import Html exposing (Html, button, div, li, text, ul)
 import Html.Attributes exposing (attribute, style)
 import Html.Events exposing (onClick)
@@ -40,7 +27,8 @@ type alias Model =
 
 
 type Msg
-    = GridMsg (Grid.Msg Item)
+    = DisplayPreferences
+    | GridMsg (Grid.Msg Item)
     | ResetFilters
     | SetFilters
     | SetAscendingOrder
@@ -79,6 +67,13 @@ view model =
                     "Use checkboxes to select items."
             ]
         , ul (centeredWithId "selectedItems") <| List.map (\it -> li [] [ viewItem it ]) model.selectedItems
+        , div (centeredWithId "Preferences")
+            [ button
+                [ onClick DisplayPreferences
+                , style "margin" "10px"
+                ]
+                [ text "Show Preferences" ]
+            ]
         , div (centeredWithId "buttonBar")
             [ button [ onClick SetFilters, style "margin" "10px" ] [ text "Set Filters" ]
             , button [ onClick ResetFilters, style "margin" "10px" ] [ text "Reset Filters" ]
@@ -105,6 +100,15 @@ viewItem item =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
+        DisplayPreferences ->
+            let
+                newGridModel =
+                    Grid.update ShowPreferences model.gridModel
+            in
+            { model
+                | gridModel = newGridModel
+            }
+
         GridMsg (UserClickedLine item) ->
             let
                 newGridModel =
@@ -257,71 +261,59 @@ rowClass item =
         ""
 
 
+localize : String -> String
+localize string =
+    string
+
+
+
+-- TODO implement
+
+
 columns : List (ColumnConfig Item)
 columns =
-    [ { properties =
-            { id = "Id"
-            , order = Unsorted
-            , title = "Id"
-            , tooltip = "A hint for Id column"
-            , visible = True
-            , width = 50
-            }
-      , filters = IntFilter <| intFilter (\item -> item.id)
-      , filteringValue = Nothing
-      , renderer = viewInt (\item -> item.id)
-      , comparator = compareIntField (\item -> item.id)
-      }
-    , { properties =
-            { id = "Name"
-            , order = Unsorted
-            , title = "Name"
-            , tooltip = "A hint for Name column"
-            , visible = True
-            , width = 100
-            }
-      , filters = StringFilter <| stringFilter (\item -> item.name)
-      , filteringValue = Nothing
-      , renderer = viewString (\item -> item.name)
-      , comparator = compareStringField (\item -> item.name)
-      }
-    , { properties =
-            { id = "Progress"
-            , order = Unsorted
-            , title = "Progress"
-            , tooltip = "A hint for Progress column"
-            , visible = True
-            , width = 100
-            }
-      , filters = FloatFilter <| floatFilter (\item -> item.value)
-      , filteringValue = Nothing
-      , renderer = viewProgressBar 8 (\item -> item.value)
-      , comparator = compareFloatField (\item -> item.value)
-      }
-    , { properties =
-            { id = "Value"
-            , order = Unsorted
-            , title = "Value"
-            , tooltip = "A hint for Value column"
-            , visible = True
-            , width = 100
-            }
-      , filters = FloatFilter <| floatFilter (\item -> item.value)
-      , filteringValue = Nothing
-      , renderer = viewFloat (\item -> item.value)
-      , comparator = compareFloatField (\item -> item.value)
-      }
-    , { properties =
-            { id = "City"
-            , order = Unsorted
-            , title = "City"
-            , tooltip = "A hint for City column"
-            , visible = True
-            , width = 300
-            }
-      , filters = StringFilter <| stringFilter (\item -> item.city)
-      , filteringValue = Nothing
-      , renderer = viewString (\item -> item.city)
-      , comparator = compareStringField (\item -> item.city)
-      }
+    [ intColumnConfig
+        { id = "Id"
+        , getter = .id
+        , localize = localize
+        , title = "Id"
+        , tooltip = "A hint for Id column"
+        , width = 50
+        }
+    , stringColumnConfig
+        { id = "Name"
+        , getter = .name
+        , localize = localize
+        , title = "Name"
+        , tooltip = "A hint for Name column"
+        , width = 100
+        }
+    , let
+        progressColumnConfig =
+            floatColumnConfig
+                { id = "Progress"
+                , getter = .value
+                , localize = localize
+                , title = "Progress"
+                , tooltip = "A hint for Progress column"
+                , width = 100
+                }
+      in
+      { progressColumnConfig | renderer = viewProgressBar 8 (\item -> item.value) }
+    , floatColumnConfig
+        { id = "Value"
+        , getter = .value
+        , localize = localize
+        , title = "Value"
+        , tooltip = "A hint for Value column"
+        , width = 100
+        }
+    , stringColumnConfig
+        { id = "City"
+        , getter = .city
+        , localize = localize
+        , title = "City"
+        , tooltip = "A hint for City column"
+        , width = 300
+        }
     ]

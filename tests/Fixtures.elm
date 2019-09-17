@@ -1,8 +1,6 @@
 module Fixtures exposing (Item, columns, gridConfig, isValidColumn, item1, item2, item3, item4, items, model, scoreColumn, titleColumn)
 
-import Css exposing (Style, backgroundColor, hex, transparent)
-import Grid exposing (ColumnConfig, Model, Sorting(..), compareBoolField, compareFloatField, compareStringField, viewBool, viewFloat, viewString)
-import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, stringFilter)
+import Grid exposing (ColumnConfig, Model, Sorting(..), boolColumnConfig, floatColumnConfig, stringColumnConfig)
 
 
 type alias Item =
@@ -60,51 +58,36 @@ items =
 
 
 scoreColumn =
-    { properties =
+    floatColumnConfig
         { id = "score"
-        , order = Unsorted
+        , getter = .score
+        , localize = identity
         , title = "Score"
         , tooltip = "Some text"
-        , visible = True
         , width = 50
         }
-    , filters = FloatFilter <| floatFilter (\item -> item.score)
-    , filteringValue = Nothing
-    , renderer = viewFloat (\item -> item.score)
-    , comparator = compareFloatField (\item -> item.score)
-    }
 
 
 titleColumn =
-    { properties =
+    stringColumnConfig
         { id = "title"
-        , order = Unsorted
+        , getter = .title
+        , localize = identity
         , title = "Title"
         , tooltip = "Some text"
-        , visible = True
         , width = 100
         }
-    , filters = StringFilter <| stringFilter (\item -> item.title)
-    , filteringValue = Nothing
-    , renderer = viewString (\item -> item.title)
-    , comparator = compareStringField (\item -> item.title)
-    }
 
 
 isValidColumn =
-    { properties =
+    boolColumnConfig
         { id = "isValid"
-        , order = Unsorted
+        , getter = .isValid
+        , localize = identity
         , title = "is Valid?"
         , tooltip = "Some text"
-        , visible = True
         , width = 100
         }
-    , filters = BoolFilter <| boolFilter (\item -> item.isValid)
-    , filteringValue = Nothing
-    , renderer = viewBool (\item -> item.isValid)
-    , comparator = compareBoolField (\item -> item.isValid)
-    }
 
 
 columns : List (ColumnConfig Item)
