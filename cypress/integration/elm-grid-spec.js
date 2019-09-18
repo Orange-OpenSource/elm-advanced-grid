@@ -1,6 +1,8 @@
 describe('elm grid example', function () {
 
    const url = 'http://127.0.0.1:9999'
+   const sortCitiesAscending = ['London', 'Moscow', 'New York', 'Paris']
+   const sortCitiesDescending = ['Paris', 'New York', 'Moscow', 'London']
 
    it('should have headers', function () {
         cy.visit(url)
@@ -219,4 +221,5 @@ describe('elm grid example', function () {
             expect ($citiesList.eq(2)).to.contain(`${sortCitiesDescending[2]}`)
             expect ($citiesList.eq(3)).to.contain(`${sortCitiesDescending[3]}`)
         })
+    })
 })
