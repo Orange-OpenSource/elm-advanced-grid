@@ -234,8 +234,8 @@ describe('elm grid example', function () {
 
         cy.get('body>div>div>div>div>div').each(($cell, index, $list) => {
             cy.wrap($cell).should('not.have.attr', 'data-testid', 'header-Id')
-            cy.wrap($cell).should('not.have.attr', 'data-testid', 'header-Progress')
-            cy.wrap($cell).should('not.have.attr', 'data-testid', 'header-City')
+            cy.wrap($cell).should('not.contain', 'Progress')
+            cy.wrap($cell).should('not.contain', 'City')
         })
    })
 
