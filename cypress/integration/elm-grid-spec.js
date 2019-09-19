@@ -222,4 +222,23 @@ describe('elm grid example', function () {
             expect ($citiesList.eq(3)).to.contain(`${sortCitiesDescending[3]}`)
         })
     })
+
+    it('should set preferences when clicking the "Show preferences" button', function () {
+        cy.visit(url)
+        cy.get('div[data-testid="Preferences"] > button').click()
+          .get('input[id="Id"]').click()
+          .get('input[id="Progress"]').click()
+          .get('input[id="City"]').click()
+          .get('input[id="Id"]').parent().prev().click()
+
+        cy.get('div[data-testid="header-Name"]').should('be.visible')
+        cy.get('div[data-testid="header-Value"]').should('be.visible')
+
+        cy.get('body>div>div>div>div>div').each(($cell, index, $list) => {
+            cy.wrap($cell).should('not.have.attr', 'data-testid', 'header-Id')
+            cy.wrap($cell).should('not.have.attr', 'data-testid', 'header-Progress')
+            cy.wrap($cell).should('not.have.attr', 'data-testid', 'header-City')
+        })
+   })
+
 })
