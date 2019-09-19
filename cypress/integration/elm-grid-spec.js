@@ -206,20 +206,18 @@ describe('elm grid example', function () {
         cy.get('div[data-testid="buttonBar"]').children().first().next().next().click()
         cy.get('div[data-testid="City"]').then (function($citiesList){
             expect($citiesList).to.have.length(4)
-            expect ($citiesList.eq(0)).to.contain(`${sortCitiesAscending[0]}`)
-            expect ($citiesList.eq(1)).to.contain(`${sortCitiesAscending[1]}`)
-            expect ($citiesList.eq(2)).to.contain(`${sortCitiesAscending[2]}`)
-            expect ($citiesList.eq(3)).to.contain(`${sortCitiesAscending[3]}`)
+            for (let i=0; i<4; i++){
+              expect ($citiesList.eq(`${i}`)).to.contain(`${sortCitiesAscending[`${i}`]}`)
+            }
         })
 
         //Cities are sorted descending
         cy.get('div[data-testid="buttonBar"]').children().first().next().next().next().click()
         cy.get('div[data-testid="City"]').then (function($citiesList){
             expect($citiesList).to.have.length(4)
-            expect ($citiesList.eq(0)).to.contain(`${sortCitiesDescending[0]}`)
-            expect ($citiesList.eq(1)).to.contain(`${sortCitiesDescending[1]}`)
-            expect ($citiesList.eq(2)).to.contain(`${sortCitiesDescending[2]}`)
-            expect ($citiesList.eq(3)).to.contain(`${sortCitiesDescending[3]}`)
+            for (let i=0; i<4; i++){
+              expect ($citiesList.eq(`${i}`)).to.contain(`${sortCitiesDescending[`${i}`]}`)
+            }
         })
     })
 
