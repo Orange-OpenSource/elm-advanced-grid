@@ -195,6 +195,7 @@ type alias ColumnConfig a =
     , comparator : Item a -> Item a -> Order
     , filteringValue : Maybe String
     , filters : Filter a
+    , toString : Item a -> String
     , renderer : ColumnProperties -> (Item a -> Html (Msg a))
     }
 
@@ -798,6 +799,7 @@ stringColumnConfig ({ id, title, tooltip, width, getter, localize } as propertie
         columnConfigProperties properties
     , filters = StringFilter <| stringFilter getter
     , filteringValue = Nothing
+    , toString = getter
     , renderer = viewString getter
     , comparator = compareFields getter
     }
@@ -811,6 +813,7 @@ floatColumnConfig ({ id, title, tooltip, width, getter, localize } as properties
         columnConfigProperties properties
     , filters = FloatFilter <| floatFilter getter
     , filteringValue = Nothing
+    , toString = getter >> String.fromFloat
     , renderer = viewFloat getter
     , comparator = compareFields getter
     }
@@ -824,6 +827,7 @@ intColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) 
         columnConfigProperties properties
     , filters = IntFilter <| intFilter getter
     , filteringValue = Nothing
+    , toString = getter >> String.fromInt
     , renderer = viewInt getter
     , comparator = compareFields getter
     }
@@ -837,9 +841,19 @@ boolColumnConfig ({ id, title, tooltip, width, getter, localize } as properties)
         columnConfigProperties properties
     , filters = BoolFilter <| boolFilter getter
     , filteringValue = Nothing
+    , toString = getter >> boolToString
     , renderer = viewBool getter
     , comparator = compareBoolField getter
     }
+
+
+boolToString : Bool -> String
+boolToString value =
+    if value then
+        "true"
+
+    else
+        "false"
 
 
 columnConfigProperties : { a | id : String, title : String, tooltip : String, width : Int, localize : String -> String } -> ColumnProperties
@@ -1006,7 +1020,13 @@ viewColumnVisibilitySelector columnConfig =
             , onClick (UserToggledColumnVisibilty columnConfig)
             ]
             []
-        , label [ for columnConfig.properties.id ] [ text columnConfig.properties.title ]
+        , label
+            [ css
+                [ marginLeft (px 5)
+                ]
+            , for columnConfig.properties.id
+            ]
+            [ text columnConfig.properties.title ]
         ]
 
 
