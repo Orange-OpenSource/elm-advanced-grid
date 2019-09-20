@@ -1125,7 +1125,13 @@ viewHeader model columnConfig index =
             , boxSizing contentBox
             , height (px <| toFloat <| model.config.headerHeight - cumulatedBorderWidth)
             , padding (px 2)
-            , cursor pointer
+            , cursor
+                (if model.movingColumn /= Nothing then
+                    move
+
+                 else
+                    pointer
+                )
             , position absolute
             , left (px x)
             , overflow hidden
