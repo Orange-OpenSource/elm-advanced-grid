@@ -4,7 +4,7 @@ module Grid exposing
     , compareBoolField
     , viewBool, viewProgressBar
     , Model, init, update, view
-    , ColumnProperties, Msg(..), Sorting(..), boolColumnConfig, cellStyles, compareFields, cumulatedBorderWidth, floatColumnConfig, intColumnConfig, isSelectionColumn, isSelectionColumnProperties, selectionColumn, stringColumnConfig
+    , ColumnProperties, Msg(..), Sorting(..), boolColumnConfig, cellStyles, compareFields, cumulatedBorderWidth, filteredItems, floatColumnConfig, intColumnConfig, isSelectionColumn, isSelectionColumnProperties, selectionColumn, stringColumnConfig, visibleColumns
     )
 
 {-| This library displays a grid of data.
@@ -469,19 +469,11 @@ update msg model =
 
         UserToggledColumnVisibilty columnConfig ->
             let
-                currentProperties =
-                    columnConfig.properties
-
-                newProperties =
-                    { currentProperties | visible = not columnConfig.properties.visible }
-
-                newColumnConfig =
-                    { columnConfig | properties = newProperties }
+                toggleVisibility properties =
+                    { properties | visible = not properties.visible }
 
                 newColumns =
-                    List.Extra.updateIf (\c -> c.properties.id == columnConfig.properties.id)
-                        (\c -> newColumnConfig)
-                        model.config.columns
+                    updateColumnProperties toggleVisibility model columnConfig.properties.id
 
                 currentGridConfig =
                     model.config
@@ -597,21 +589,23 @@ resizeColumn model x =
 
 updateColumnWidthProperty : Model a -> ColumnConfig a -> Int -> List (ColumnConfig a)
 updateColumnWidthProperty model columnConfig width =
-    List.Extra.updateIf (\col -> col.properties.id == columnConfig.properties.id)
-        (updateColumnWidth width)
+    let
+        setWidth properties =
+            { properties | width = width }
+    in
+    updateColumnProperties setWidth model columnConfig.properties.id
+
+
+updateColumnProperties : (ColumnProperties -> ColumnProperties) -> Model a -> String -> List (ColumnConfig a)
+updateColumnProperties updateFunction model id =
+    List.Extra.updateIf (\col -> col.properties.id == id)
+        (updatePropertiesInColumnConfig updateFunction)
         model.config.columns
 
 
-updateColumnWidth : Int -> ColumnConfig a -> ColumnConfig a
-updateColumnWidth newWidth columnConfig =
-    let
-        properties =
-            columnConfig.properties
-
-        newProperties =
-            { properties | width = newWidth }
-    in
-    { columnConfig | properties = newProperties }
+updatePropertiesInColumnConfig : (ColumnProperties -> ColumnProperties) -> ColumnConfig a -> ColumnConfig a
+updatePropertiesInColumnConfig updateFunction columnConfig =
+    { columnConfig | properties = updateFunction columnConfig.properties }
 
 
 updateIndexes : List (Item a) -> List (Item a)
@@ -690,15 +684,6 @@ viewGrid model =
 
 viewRows : Model a -> Html (Msg a)
 viewRows model =
-    let
-        columnFilters : List (Item a -> Bool)
-        columnFilters =
-            model.config.columns
-                |> List.filterMap (\c -> parseFilteringString c.filteringValue c.filters)
-
-        filteredItems =
-            List.foldl (\filter remainingValues -> List.filter filter remainingValues) model.content columnFilters
-    in
     div []
         [ div
             [ css
@@ -710,8 +695,20 @@ viewRows model =
                 ]
             , fromUnstyled <| IL.onScroll InfListMsg
             ]
-            [ Html.Styled.fromUnstyled <| IL.view (gridConfig model) model.infList filteredItems ]
+            [ Html.Styled.fromUnstyled <| IL.view (gridConfig model) model.infList (filteredItems model) ]
         ]
+
+
+columnFilters : Model a -> List (Item a -> Bool)
+columnFilters model =
+    model.config.columns
+        |> List.filterMap (\c -> parseFilteringString c.filteringValue c.filters)
+
+
+filteredItems : Model a -> List (Item a)
+filteredItems model =
+    columnFilters model
+        |> List.foldl (\filter remainingValues -> List.filter filter remainingValues) model.content
 
 
 {-| idx is the index of the visible line; if there are 25 visible lines, 0 <= idx < 25
