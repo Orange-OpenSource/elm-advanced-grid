@@ -200,6 +200,24 @@ describe('elm grid example', function () {
         cy.get('div[data-testid="City"]').contains("Moscow")
     })
 
+   it('should filter elements containing exactly the given string', function () {
+        cy.visit(url)
+        cy.get('input[data-testid="filter-City"]').type("=o")
+        let rows = cy.get('div[data-testid="row"]')
+        rows.should('have.length', 0)
+        cy.get('input[data-testid="filter-City"]').clear()
+
+        cy.get('input[data-testid="filter-City"]').type("=london")
+        rows = cy.get('div[data-testid="row"]')
+        rows.should('have.length', 0)
+        cy.get('input[data-testid="filter-City"]').clear()
+
+        cy.get('input[data-testid="filter-City"]').type("=London")
+        rows = cy.get('div[data-testid="row"]')
+        rows.should('have.length', 1)
+        cy.get('div[data-testid="City"]').contains("London")
+    })
+
     it('should sort cities when clicking the "sort cities" buttons', function () {
         cy.visit(url)
         //Cities are sorted ascending
