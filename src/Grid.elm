@@ -483,11 +483,11 @@ update msg model =
                         (\c -> newColumnConfig)
                         model.config.columns
 
-                currentGridGConfig =
+                currentGridConfig =
                     model.config
 
                 newGridConfig =
-                    { currentGridGConfig
+                    { currentGridConfig
                         | columns = newColumns
                     }
 
