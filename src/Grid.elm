@@ -247,19 +247,14 @@ used when canSelectRows is True in grid config.
 -}
 selectionColumn : ColumnConfig a
 selectionColumn =
-    { properties =
+    boolColumnConfig
         { id = "_MultipleSelection_"
-        , order = Unsorted
+        , getter = .selected
         , title = ""
         , tooltip = ""
-        , visible = True
         , width = 30
+        , localize = \_ -> ""
         }
-    , filters = BoolFilter <| boolFilter (\item -> item.selected)
-    , filteringValue = Nothing
-    , renderer = viewBool (\item -> item.selected)
-    , comparator = compareBoolField (\item -> item.selected)
-    }
 
 
 {-| Initializes the grid model, according to the given grid configuration
