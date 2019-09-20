@@ -19,7 +19,7 @@ module Grid.Filters exposing
 -}
 
 import Grid.Parsers exposing (..)
-import Parser exposing ((|=), Parser)
+import Parser exposing ((|=), DeadEnd, Parser)
 
 
 {-| The data to be displayed in the grid
@@ -66,6 +66,10 @@ type alias TypedFilter a b =
         { filter : b -> Item a -> Bool
         , parser : Parser b
         }
+    , contains :
+        { filter : b -> Item a -> Bool
+        , parser : Parser b
+        }
     }
 
 
@@ -96,28 +100,46 @@ parseFilteringString filteringValue filter =
 validateFilter : String -> TypedFilter a b -> Maybe (Item a -> Bool)
 validateFilter filteringString filters =
     let
-        parsedEqual =
-            Parser.run filters.equal.parser filteringString
+        validators =
+            [ validateEqualFilter, validateLessThanFilter, validateGreaterThanFilter, validateContainsFilter ]
 
-        parsedLessThan =
-            Parser.run filters.lessThan.parser filteringString
-
-        parsedGreaterThan =
-            Parser.run filters.greaterThan.parser filteringString
+        -- validateContainsFilter must be tested last because it accepts any string
     in
-    case ( parsedLessThan, parsedGreaterThan, parsedEqual ) of
-        ( Ok lessThanOperand, _, _ ) ->
-            Just (filters.lessThan.filter lessThanOperand)
+    -- find first OK value returned by a validator, change it into a Maybe
+    List.foldl
+        (\validator acc ->
+            case ( acc, validator filters filteringString ) of
+                ( Just _, _ ) ->
+                    acc
 
-        ( _, Ok greaterThanOperand, _ ) ->
-            Just (filters.greaterThan.filter greaterThanOperand)
+                ( Nothing, Err _ ) ->
+                    Nothing
 
-        ( _, _, Ok equalityOperand ) ->
-            -- must be tested after lessThanOperand and greaterThanOperand because it accepts any string
-            Just (filters.equal.filter equalityOperand)
+                ( Nothing, Ok value ) ->
+                    Just value
+        )
+        Nothing
+        validators
 
-        _ ->
-            Nothing
+
+validateEqualFilter : TypedFilter a b -> String -> Result (List DeadEnd) (Item a -> Bool)
+validateEqualFilter filters filteringString =
+    Result.map filters.equal.filter (Parser.run filters.equal.parser filteringString)
+
+
+validateLessThanFilter : TypedFilter a b -> String -> Result (List DeadEnd) (Item a -> Bool)
+validateLessThanFilter filters filteringString =
+    Result.map filters.lessThan.filter (Parser.run filters.lessThan.parser filteringString)
+
+
+validateGreaterThanFilter : TypedFilter a b -> String -> Result (List DeadEnd) (Item a -> Bool)
+validateGreaterThanFilter filters filteringString =
+    Result.map filters.greaterThan.filter (Parser.run filters.greaterThan.parser filteringString)
+
+
+validateContainsFilter : TypedFilter a b -> String -> Result (List DeadEnd) (Item a -> Bool)
+validateContainsFilter filters filteringString =
+    Result.map filters.contains.filter (Parser.run filters.contains.parser filteringString)
 
 
 {-| Filters strings.
@@ -132,8 +154,10 @@ stringFilter : (Item a -> String) -> TypedFilter a String
 stringFilter getter =
     makeFilter
         { getter = getter
-        , lessThan = \a b -> a < b
-        , greaterThan = \a b -> a > b
+        , equal = \a b -> String.toLower a == String.toLower b
+        , lessThan = \a b -> String.toLower a < String.toLower b
+        , greaterThan = \a b -> String.toLower a > String.toLower b
+        , contains = \a b -> String.contains (String.toLower b) (String.toLower a)
         , typedParser = stringParser
         }
 
@@ -150,8 +174,10 @@ intFilter : (Item a -> Int) -> TypedFilter a Int
 intFilter getter =
     makeFilter
         { getter = getter
+        , equal = (==)
         , lessThan = \a b -> a < b
         , greaterThan = \a b -> a > b
+        , contains = \a b -> String.contains (String.fromInt b) (String.fromInt a)
         , typedParser = Parser.int
         }
 
@@ -168,8 +194,10 @@ floatFilter : (Item a -> Float) -> TypedFilter a Float
 floatFilter getter =
     makeFilter
         { getter = getter
+        , equal = (==)
         , lessThan = \a b -> a < b
         , greaterThan = \a b -> a > b
+        , contains = \a b -> String.contains (String.fromFloat b) (String.fromFloat a)
         , typedParser = Parser.float
         }
 
@@ -186,8 +214,10 @@ boolFilter : (Item a -> Bool) -> TypedFilter a Bool
 boolFilter getter =
     makeFilter
         { getter = getter
+        , equal = (==)
         , lessThan = boolLessThan
         , greaterThan = boolGreaterThan
+        , contains = (==)
         , typedParser = boolParser
         }
 
@@ -204,14 +234,16 @@ boolGreaterThan a b =
 
 makeFilter :
     { getter : Item a -> b
+    , equal : b -> b -> Bool
     , lessThan : b -> b -> Bool
     , greaterThan : b -> b -> Bool
+    , contains : b -> b -> Bool
     , typedParser : Parser b
     }
     -> TypedFilter a b
-makeFilter { getter, lessThan, greaterThan, typedParser } =
+makeFilter { getter, equal, lessThan, greaterThan, contains, typedParser } =
     { equal =
-        { filter = \value item -> value == getter item
+        { filter = \value item -> equal (getter item) value
         , parser = equalityParser |= typedParser
         }
     , lessThan =
@@ -221,5 +253,9 @@ makeFilter { getter, lessThan, greaterThan, typedParser } =
     , greaterThan =
         { filter = \value item -> greaterThan (getter item) value
         , parser = greaterThanParser |= typedParser
+        }
+    , contains =
+        { filter = \value item -> contains (getter item) value
+        , parser = containsParser |= typedParser
         }
     }

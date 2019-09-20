@@ -1,5 +1,6 @@
 module Grid.Parsers exposing
     ( boolParser
+    , containsParser
     , equalityParser
     , greaterThanParser
     , lessThanParser
@@ -11,6 +12,14 @@ import Parser exposing ((|.), (|=), Parser, chompUntilEndOr, getChompedString, k
 
 equalityParser : Parser (a -> a)
 equalityParser =
+    succeed identity
+        |. spaces
+        |. symbol "="
+        |. spaces
+
+
+containsParser : Parser (a -> a)
+containsParser =
     succeed identity
 
 
