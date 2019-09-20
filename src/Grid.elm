@@ -54,7 +54,7 @@ import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
-import List.Extra exposing (findIndex, getAt, swapAt)
+import List.Extra exposing (findIndex, getAt, swapAt, takeWhile)
 import String
 
 
@@ -328,7 +328,7 @@ columnsX model =
 -}
 update : Msg a -> Model a -> Model a
 update msg model =
-    case msg of
+    case Debug.log "msg" msg of
         CursorEnteredDropZone columnConfig ( x, _ ) ->
             case model.movingColumn of
                 Just movingColumn ->
@@ -337,19 +337,18 @@ update msg model =
 
                     else
                         let
-                            maybeSrcIndex =
-                                indexOfColumn movingColumn model
+                            unchangedColumns =
+                                model.config.columns
+                                    |> List.filter (\c -> c.properties.id /= movingColumn.properties.id)
 
-                            maybeDestIndex =
-                                indexOfColumn columnConfig model
+                            leftColumns =
+                                List.Extra.takeWhile (\c -> c.properties.id /= columnConfig.properties.id) unchangedColumns
+
+                            rightColumns =
+                                List.Extra.dropWhile (\c -> c.properties.id /= columnConfig.properties.id) unchangedColumns
 
                             newColumns =
-                                case ( maybeSrcIndex, maybeDestIndex ) of
-                                    ( Just srcIndex, Just destIndex ) ->
-                                        swapAt srcIndex destIndex model.config.columns
-
-                                    _ ->
-                                        model.config.columns
+                                List.concat [ leftColumns, [ movingColumn ], rightColumns ]
 
                             currentConfig =
                                 model.config
@@ -1209,9 +1208,9 @@ viewDropZone model columnConfig =
                     , fontSize (px 0.1)
                     , height (pct 100)
                     , position absolute
-                    , left (px -5)
+                    , left (px -25)
                     , top (px 0)
-                    , width (px 9)
+                    , width (px 49)
                     , zIndex (int 2)
                     ]
                 , fromUnstyled <| Mouse.onEnter (\event -> CursorEnteredDropZone columnConfig event.clientPos)
