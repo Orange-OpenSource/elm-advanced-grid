@@ -106,20 +106,20 @@ validateFilter filteringString filters =
         -- validateContainsFilter must be tested last because it accepts any string
     in
     -- find first OK value returned by a validator, change it into a Maybe
-    List.foldl
-        (\validator acc ->
-            case ( acc, validator filters filteringString ) of
-                ( Just _, _ ) ->
-                    acc
+    findFirstOK <| List.map (\validator -> validator filters filteringString) validators
 
-                ( Nothing, Err _ ) ->
-                    Nothing
 
-                ( Nothing, Ok value ) ->
-                    Just value
-        )
-        Nothing
-        validators
+findFirstOK : List (Result (List DeadEnd) (Item a -> Bool)) -> Maybe (Item a -> Bool)
+findFirstOK results =
+    case results of
+        [] ->
+            Nothing
+
+        (Ok result) :: _ ->
+            Just result
+
+        (Err _) :: tail ->
+            findFirstOK tail
 
 
 validateEqualFilter : TypedFilter a b -> String -> Result (List DeadEnd) (Item a -> Bool)
