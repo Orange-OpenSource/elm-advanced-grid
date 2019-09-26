@@ -331,11 +331,33 @@ columnsX model =
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
     case Debug.log "msg" msg of
+        ScrollTo idx ->
+            ( model
+            , IL.scrollToNthItem
+                { postScrollMessage = NoOp
+                , listHtmlId = gridHtmlId
+                , itemIndex = idx
+                , configValue = gridConfig model
+                , items = model.content
+                }
+            )
+
+        _ ->
+            ( updateWithNoCmd msg model, Cmd.none )
+
+
+
+{- update for messages for which no command is generated -}
+
+
+updateWithNoCmd : Msg a -> Model a -> Model a
+updateWithNoCmd msg model =
+    case msg of
         CursorEnteredDropZone columnConfig ( x, _ ) ->
             case model.movingColumn of
                 Just movingColumn ->
                     if columnConfig.properties.id == movingColumn.properties.id then
-                        ( model, Cmd.none )
+                        model
 
                     else
                         let
@@ -365,10 +387,10 @@ update msg model =
                                     , dragStartX = x
                                 }
                         in
-                        ( { updatedModel | columnsX = columnsX updatedModel }, Cmd.none )
+                        { updatedModel | columnsX = columnsX updatedModel }
 
                 Nothing ->
-                    ( model, Cmd.none )
+                    model
 
         FilterModified columnConfig string ->
             let
@@ -384,13 +406,13 @@ update msg model =
                 newConfig =
                     { oldConfig | columns = newColumns }
             in
-            ( { model | config = newConfig }, Cmd.none )
+            { model | config = newConfig }
 
         InfListMsg infList ->
-            ( { model | infList = infList }, Cmd.none )
+            { model | infList = infList }
 
         FilterLostFocus ->
-            ( { model | filterHasFocus = False }, Cmd.none )
+            { model | filterHasFocus = False }
 
         InitializeFilters filterValues ->
             let
@@ -403,11 +425,9 @@ update msg model =
                 newConfig =
                     { currentConfig | columns = newColumns }
             in
-            ( { model
+            { model
                 | config = newConfig
-              }
-            , Cmd.none
-            )
+            }
 
         InitializeSorting columnId sorting ->
             let
@@ -416,70 +436,47 @@ update msg model =
             in
             case sortedColumnConfig of
                 Just columnConfig ->
-                    ( sort model columnConfig sorting orderBy, Cmd.none )
+                    sort model columnConfig sorting orderBy
 
                 Nothing ->
-                    ( model, Cmd.none )
-
-        NoOp ->
-            ( model, Cmd.none )
-
-        ScrollTo idx ->
-            ( model
-            , IL.scrollToNthItem
-                { postScrollMessage = NoOp
-                , listHtmlId = gridHtmlId
-                , itemIndex = idx
-                , configValue = gridConfig model
-                , items = model.content
-                }
-            )
-
-        ShowPreferences ->
-            ( { model | showPreferences = True }, Cmd.none )
+                    model
 
         UserClickedFilter ->
-            ( { model | filterHasFocus = True }, Cmd.none )
+            { model | filterHasFocus = True }
 
         UserClickedHeader columnConfig ->
             if model.filterHasFocus then
-                ( model, Cmd.none )
+                model
 
             else
-                ( sort model columnConfig model.order toggleOrder, Cmd.none )
+                sort model columnConfig model.order toggleOrder
 
         UserClickedLine item ->
-            ( { model | clickedItem = Just item }, Cmd.none )
+            { model | clickedItem = Just item }
 
         UserClickedMoveHandle columnConfig ( x, _ ) ->
-            ( { model
+            { model
                 | movingColumn = Just columnConfig
                 , dragStartX = x
-              }
-            , Cmd.none
-            )
+            }
 
         UserClickedResizeHandle columnConfig ( x, _ ) ->
-            ( { model
+            { model
                 | resizingColumn = Just columnConfig
                 , dragStartX = x
-              }
-            , Cmd.none
-            )
+            }
 
         UserEndedMouseInteraction ->
-            ( { model
+            { model
                 | resizingColumn = Nothing
                 , movingColumn = Nothing
-              }
-            , Cmd.none
-            )
+            }
 
         UserMovedColumn ( x, _ ) ->
-            ( moveColumnTo model x, Cmd.none )
+            moveColumnTo model x
 
         UserMovedResizeHandle ( x, _ ) ->
-            ( resizeColumn model x, Cmd.none )
+            resizeColumn model x
 
         UserToggledAllItemSelection ->
             let
@@ -489,12 +486,10 @@ update msg model =
                 newContent =
                     List.map (\item -> { item | selected = newStatus }) model.content
             in
-            ( { model
+            { model
                 | isAllSelected = newStatus
                 , content = newContent
-              }
-            , Cmd.none
-            )
+            }
 
         UserToggledColumnVisibilty columnConfig ->
             let
@@ -515,17 +510,27 @@ update msg model =
                 updatedModel =
                     { model | config = newGridConfig }
             in
-            ( { updatedModel | columnsX = columnsX updatedModel }, Cmd.none )
+            { updatedModel | columnsX = columnsX updatedModel }
 
         UserToggledSelection item ->
             let
                 newContent =
                     List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
             in
-            ( { model | content = newContent }, Cmd.none )
+            { model | content = newContent }
 
         UserClickedPreferenceCloseButton ->
-            ( { model | showPreferences = False }, Cmd.none )
+            { model | showPreferences = False }
+
+        ShowPreferences ->
+            { model | showPreferences = True }
+
+        NoOp ->
+            model
+
+        -- The rest is handled in the `update` function
+        ScrollTo int ->
+            model
 
 
 initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
