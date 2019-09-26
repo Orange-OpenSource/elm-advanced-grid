@@ -240,7 +240,7 @@ gridConfig =
     , containerWidth = 700
     , hasFilters = True
     , headerHeight = 60
-    , lineHeight = 20
+    , lineHeight = 25
     , rowClass = rowClass
     }
 
