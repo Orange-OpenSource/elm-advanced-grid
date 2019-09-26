@@ -328,7 +328,7 @@ columnsX model =
 -}
 update : Msg a -> Model a -> Model a
 update msg model =
-    case Debug.log "msg" msg of
+    case msg of
         CursorEnteredDropZone columnConfig ( x, _ ) ->
             case model.movingColumn of
                 Just movingColumn ->
@@ -354,7 +354,6 @@ update msg model =
                                 model.config
 
                             newConfig =
-                                { currentConfig | columns = newColumns }
                                 { currentConfig | columns = reorderedColumns }
 
                             updatedModel =
