@@ -1257,7 +1257,7 @@ viewMoveHandle columnConfig =
             [ cursor move
             , display block
             , fontSize (px 0.1)
-            , height (px 20)
+            , height (pct 100)
             , float left
             , visibility hidden
             , width (px 10)
