@@ -958,6 +958,7 @@ viewProgressBar barHeight field properties item =
             [ display inlineBlock
             , border3 (px 1) solid lightGrey
             , boxSizing contentBox
+            , height (pct 100)
             , verticalAlign top
             , paddingLeft (px 5)
             , paddingRight (px 5)
