@@ -49,7 +49,7 @@ import Grid.Colors exposing (black, darkGrey2, lightGreen, lightGrey, lightGrey2
 import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Html
 import Html.Events.Extra.Mouse as Mouse
-import Html.Styled exposing (Attribute, Html, div, input, label, text, toUnstyled)
+import Html.Styled exposing (Attribute, Html, div, input, label, span, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
@@ -1155,7 +1155,7 @@ viewHeader model columnConfig index =
 
          else
             [ viewMoveHandle columnConfig
-            , viewTitle columnConfig
+            , viewTitle model columnConfig
             , viewDropZone model columnConfig
             , viewSortingSymbol model columnConfig
             , viewFilter model columnConfig
@@ -1227,9 +1227,28 @@ viewDropZone model columnConfig =
             noContent
 
 
-viewTitle : ColumnConfig a -> Html (Msg a)
-viewTitle columnConfig =
-    text <| columnConfig.properties.title
+viewTitle : Model a -> ColumnConfig a -> Html (Msg a)
+viewTitle model columnConfig =
+    let
+        titleFontStyle =
+            case model.sortedBy of
+                Just column ->
+                    if column.properties.id == columnConfig.properties.id then
+                        fontStyle italic
+
+                    else
+                        fontStyle normal
+
+                Nothing ->
+                    fontStyle normal
+    in
+    span
+        [ css
+            [ titleFontStyle
+            ]
+        ]
+        [ text <| columnConfig.properties.title
+        ]
 
 
 viewSortingSymbol : Model a -> ColumnConfig a -> Html (Msg a)
