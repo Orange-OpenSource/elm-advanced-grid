@@ -343,15 +343,15 @@ update msg model =
             )
 
         _ ->
-            ( updateWithNoCmd msg model, Cmd.none )
+            ( modelUpdate msg model, Cmd.none )
 
 
 
 {- update for messages for which no command is generated -}
 
 
-updateWithNoCmd : Msg a -> Model a -> Model a
-updateWithNoCmd msg model =
+modelUpdate : Msg a -> Model a -> Model a
+modelUpdate msg model =
     case msg of
         CursorEnteredDropZone columnConfig ( x, _ ) ->
             case model.movingColumn of
