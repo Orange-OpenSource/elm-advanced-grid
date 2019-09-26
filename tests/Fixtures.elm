@@ -1,4 +1,4 @@
-module Fixtures exposing (Item, columns, gridConfig, isValidColumn, item1, item2, item3, item4, items, model, scoreColumn, titleColumn)
+module Fixtures exposing (Item, columns, gridConfig, isValidColumn, item1, item2, item3, item4, item5, items, model, scoreColumn, titleColumn)
 
 import Grid exposing (ColumnConfig, Model, Sorting(..), boolColumnConfig, floatColumnConfig, stringColumnConfig)
 
@@ -49,6 +49,16 @@ item4 =
     , score = 3.0
     , selected = False
     , title = "ITEM 4"
+    }
+
+
+item5 : Item
+item5 =
+    { index = 3526
+    , isValid = True
+    , score = 3.1415926
+    , selected = False
+    , title = "ITEM 5"
     }
 
 
