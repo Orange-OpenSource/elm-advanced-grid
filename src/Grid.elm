@@ -137,6 +137,8 @@ type Msg a
     | FilterModified (ColumnConfig a) String
     | InitializeFilters (Dict String String) -- column ID, filter value
     | InitializeSorting String Sorting -- column ID, Ascending or Descending
+    | NoOp
+    | ScrollTo Int
     | ShowPreferences
     | UserClickedHeader (ColumnConfig a)
     | UserClickedFilter
@@ -326,14 +328,14 @@ columnsX model =
 
 {-| Updates the grid model
 -}
-update : Msg a -> Model a -> Model a
+update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
     case Debug.log "msg" msg of
         CursorEnteredDropZone columnConfig ( x, _ ) ->
             case model.movingColumn of
                 Just movingColumn ->
                     if columnConfig.properties.id == movingColumn.properties.id then
-                        model
+                        ( model, Cmd.none )
 
                     else
                         let
@@ -363,10 +365,10 @@ update msg model =
                                     , dragStartX = x
                                 }
                         in
-                        { updatedModel | columnsX = columnsX updatedModel }
+                        ( { updatedModel | columnsX = columnsX updatedModel }, Cmd.none )
 
                 Nothing ->
-                    model
+                    ( model, Cmd.none )
 
         FilterModified columnConfig string ->
             let
@@ -382,13 +384,13 @@ update msg model =
                 newConfig =
                     { oldConfig | columns = newColumns }
             in
-            { model | config = newConfig }
+            ( { model | config = newConfig }, Cmd.none )
 
         InfListMsg infList ->
-            { model | infList = infList }
+            ( { model | infList = infList }, Cmd.none )
 
         FilterLostFocus ->
-            { model | filterHasFocus = False }
+            ( { model | filterHasFocus = False }, Cmd.none )
 
         InitializeFilters filterValues ->
             let
@@ -401,9 +403,11 @@ update msg model =
                 newConfig =
                     { currentConfig | columns = newColumns }
             in
-            { model
+            ( { model
                 | config = newConfig
-            }
+              }
+            , Cmd.none
+            )
 
         InitializeSorting columnId sorting ->
             let
@@ -412,47 +416,70 @@ update msg model =
             in
             case sortedColumnConfig of
                 Just columnConfig ->
-                    sort model columnConfig sorting orderBy
+                    ( sort model columnConfig sorting orderBy, Cmd.none )
 
                 Nothing ->
-                    model
+                    ( model, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
+
+        ScrollTo idx ->
+            ( model
+            , IL.scrollToNthItem
+                { postScrollMessage = NoOp
+                , listHtmlId = gridHtmlId
+                , itemIndex = idx
+                , configValue = gridConfig model
+                , items = model.content
+                }
+            )
+
+        ShowPreferences ->
+            ( { model | showPreferences = True }, Cmd.none )
 
         UserClickedFilter ->
-            { model | filterHasFocus = True }
+            ( { model | filterHasFocus = True }, Cmd.none )
 
         UserClickedHeader columnConfig ->
             if model.filterHasFocus then
-                model
+                ( model, Cmd.none )
 
             else
-                sort model columnConfig model.order toggleOrder
+                ( sort model columnConfig model.order toggleOrder, Cmd.none )
 
         UserClickedLine item ->
-            { model | clickedItem = Just item }
+            ( { model | clickedItem = Just item }, Cmd.none )
 
         UserClickedMoveHandle columnConfig ( x, _ ) ->
-            { model
+            ( { model
                 | movingColumn = Just columnConfig
                 , dragStartX = x
-            }
+              }
+            , Cmd.none
+            )
 
         UserClickedResizeHandle columnConfig ( x, _ ) ->
-            { model
+            ( { model
                 | resizingColumn = Just columnConfig
                 , dragStartX = x
-            }
+              }
+            , Cmd.none
+            )
 
         UserEndedMouseInteraction ->
-            { model
+            ( { model
                 | resizingColumn = Nothing
                 , movingColumn = Nothing
-            }
+              }
+            , Cmd.none
+            )
 
         UserMovedColumn ( x, _ ) ->
-            moveColumnTo model x
+            ( moveColumnTo model x, Cmd.none )
 
         UserMovedResizeHandle ( x, _ ) ->
-            resizeColumn model x
+            ( resizeColumn model x, Cmd.none )
 
         UserToggledAllItemSelection ->
             let
@@ -462,10 +489,12 @@ update msg model =
                 newContent =
                     List.map (\item -> { item | selected = newStatus }) model.content
             in
-            { model
+            ( { model
                 | isAllSelected = newStatus
                 , content = newContent
-            }
+              }
+            , Cmd.none
+            )
 
         UserToggledColumnVisibilty columnConfig ->
             let
@@ -486,20 +515,17 @@ update msg model =
                 updatedModel =
                     { model | config = newGridConfig }
             in
-            { updatedModel | columnsX = columnsX updatedModel }
+            ( { updatedModel | columnsX = columnsX updatedModel }, Cmd.none )
 
         UserToggledSelection item ->
             let
                 newContent =
                     List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
             in
-            { model | content = newContent }
+            ( { model | content = newContent }, Cmd.none )
 
         UserClickedPreferenceCloseButton ->
-            { model | showPreferences = False }
-
-        ShowPreferences ->
-            { model | showPreferences = True }
+            ( { model | showPreferences = False }, Cmd.none )
 
 
 initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
@@ -640,6 +666,10 @@ view model =
             viewGrid model
 
 
+gridHtmlId =
+    "grid"
+
+
 {-| Renders the grid
 -}
 viewGrid : Model a -> Html (Msg a)
@@ -694,6 +724,7 @@ viewRows model =
                 , border3 (px 1) solid lightGrey
                 ]
             , fromUnstyled <| IL.onScroll InfListMsg
+            , id gridHtmlId
             ]
             [ Html.Styled.fromUnstyled <| IL.view (gridConfig model) model.infList (filteredItems model) ]
         ]
