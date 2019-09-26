@@ -337,17 +337,17 @@ update msg model =
 
                     else
                         let
-                            unchangedColumns =
+                            notDraggedColumns =
                                 model.config.columns
                                     |> List.filter (\c -> c.properties.id /= movingColumn.properties.id)
 
                             leftColumns =
-                                List.Extra.takeWhile (\c -> c.properties.id /= columnConfig.properties.id) unchangedColumns
+                                List.Extra.takeWhile (\c -> c.properties.id /= columnConfig.properties.id) notDraggedColumns
 
                             rightColumns =
-                                List.Extra.dropWhile (\c -> c.properties.id /= columnConfig.properties.id) unchangedColumns
+                                List.Extra.dropWhile (\c -> c.properties.id /= columnConfig.properties.id) notDraggedColumns
 
-                            newColumns =
+                            reorderedColumns =
                                 List.concat [ leftColumns, [ movingColumn ], rightColumns ]
 
                             currentConfig =
@@ -355,6 +355,7 @@ update msg model =
 
                             newConfig =
                                 { currentConfig | columns = newColumns }
+                                { currentConfig | columns = reorderedColumns }
 
                             updatedModel =
                                 { model
