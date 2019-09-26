@@ -137,6 +137,8 @@ type Msg a
     | FilterModified (ColumnConfig a) String
     | InitializeFilters (Dict String String) -- column ID, filter value
     | InitializeSorting String Sorting -- column ID, Ascending or Descending
+    | NoOp
+    | ScrollTo Int
     | ShowPreferences
     | UserClickedHeader (ColumnConfig a)
     | UserClickedFilter
@@ -326,8 +328,30 @@ columnsX model =
 
 {-| Updates the grid model
 -}
-update : Msg a -> Model a -> Model a
+update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
+    case Debug.log "msg" msg of
+        ScrollTo idx ->
+            ( model
+            , IL.scrollToNthItem
+                { postScrollMessage = NoOp
+                , listHtmlId = gridHtmlId
+                , itemIndex = idx
+                , configValue = gridConfig model
+                , items = model.content
+                }
+            )
+
+        _ ->
+            ( modelUpdate msg model, Cmd.none )
+
+
+
+{- update for messages for which no command is generated -}
+
+
+modelUpdate : Msg a -> Model a -> Model a
+modelUpdate msg model =
     case msg of
         CursorEnteredDropZone columnConfig ( x, _ ) ->
             case model.movingColumn of
@@ -501,6 +525,13 @@ update msg model =
         ShowPreferences ->
             { model | showPreferences = True }
 
+        NoOp ->
+            model
+
+        -- The rest is handled in the `update` function
+        ScrollTo int ->
+            model
+
 
 initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
 initializeFilter filterValues columnConfig =
@@ -640,6 +671,10 @@ view model =
             viewGrid model
 
 
+gridHtmlId =
+    "grid"
+
+
 {-| Renders the grid
 -}
 viewGrid : Model a -> Html (Msg a)
@@ -694,6 +729,7 @@ viewRows model =
                 , border3 (px 1) solid lightGrey
                 ]
             , fromUnstyled <| IL.onScroll InfListMsg
+            , id gridHtmlId
             ]
             [ Html.Styled.fromUnstyled <| IL.view (gridConfig model) model.infList (filteredItems model) ]
         ]
