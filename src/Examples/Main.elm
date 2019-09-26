@@ -261,13 +261,11 @@ rowClass item =
         ""
 
 
+{-| TODO implement
+-}
 localize : String -> String
 localize string =
     string
-
-
-
--- TODO implement
 
 
 columns : List (ColumnConfig Item)
