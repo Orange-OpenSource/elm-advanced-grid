@@ -330,7 +330,7 @@ columnsX model =
 -}
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
-    case Debug.log "msg" msg of
+    case msg of
         ScrollTo idx ->
             ( model
             , IL.scrollToNthItem
