@@ -1,10 +1,11 @@
 module Grid exposing
     ( Config
-    , ColumnConfig
-    , compareBoolField
-    , viewBool, viewProgressBar
-    , Model, init, update, view
-    , ColumnProperties, Msg(..), Sorting(..), boolColumnConfig, cellStyles, compareFields, cumulatedBorderWidth, filteredItems, floatColumnConfig, intColumnConfig, isSelectionColumn, isSelectionColumnProperties, selectionColumn, stringColumnConfig, visibleColumns
+    , ColumnConfig, ColumnProperties, stringColumnConfig, intColumnConfig, floatColumnConfig, boolColumnConfig
+    , Sorting(..), compareFields, compareBoolField
+    , viewBool, viewFloat, viewInt, viewProgressBar, viewString, cumulatedBorderWidth, cellStyles
+    , Model, Msg(..), init, update, view
+    , filteredItems
+    , visibleColumns, isSelectionColumn, isSelectionColumnProperties
     )
 
 {-| This library displays a grid of data.
@@ -23,22 +24,32 @@ The list of data can be very long, thanks to the use of [FabienHenon/elm-infinit
 
 # Configure a column
 
-@docs ColumnConfig
+@docs ColumnConfig, ColumnProperties, stringColumnConfig, intColumnConfig, floatColumnConfig, boolColumnConfig
 
 
 # Configure the column sorting
 
-@docs Sorting(..), compareBoolField, compareFloatField, compareIntField, compareStringField
+@docs Sorting, compareFields, compareBoolField
 
 
-# Configure the column rendering
+# Configure the rendering
 
-@docs viewBool, viewFloat, viewInt, viewProgressBar, viewString
+@docs viewBool, viewFloat, viewInt, viewProgressBar, viewString, cumulatedBorderWidth, cellStyles
 
 
 # Boilerplate
 
-@docs Model, Msg(..), init, update, view
+@docs Model, Msg, init, update, view
+
+
+# Get data
+
+@docs filteredItems
+
+
+# Get grid config
+
+@docs visibleColumns, isSelectionColumn, isSelectionColumnProperties
 
 -}
 
@@ -175,6 +186,11 @@ type Sorting
 {-| The configuration for a column. The grid content is described
 using a list of ColumnConfigs.
 
+NB: This is a "low level API", useful to define custom column types.
+In order to define common column types, you may want to use higher level API,
+i.e. stringColumnConfig, intColumnConfig, floatColumnConfig,
+boolColumnConfig
+
     idColumnConfig =
         { properties =
             { id = "Id"
@@ -183,10 +199,11 @@ using a list of ColumnConfigs.
             , visible = True
             , width = 50
             }
+        , comparator = compareIntField (\item -> item.id)
         , filters = IntFilter <| intFilter (\item -> item.id)
         , filteringValue = Nothing
+        , toString = String.fromInt (\item -> item.id)
         , renderer = viewInt (\item -> item.id)
-        , comparator = compareIntField (\item -> item.id)
         }
 
 -}
@@ -201,6 +218,11 @@ type alias ColumnConfig a =
 
 
 {-| ColumnProperties are a part of the configuration for a column.
+
+NB: This is a "low level API", useful to define custom column types.
+In order to define common column types, you may want to use higher level API,
+i.e. stringColumnConfig, intColumnConfig, floatColumnConfig,
+boolColumnConfig
 
     properties =
         { id = "name"
@@ -230,7 +252,7 @@ type alias Model a =
     , columnsX : List Int
     , content : List (Item a)
     , dragStartX : Float
-    , filterHasFocus : Bool -- Prevents click in filter to trigger a sort
+    , filterHasFocus : Bool -- Prevents clicking in an input field to trigger a sort
     , hoveredColumn : Maybe (ColumnConfig a)
     , infList : IL.Model
     , isAllSelected : Bool
@@ -316,7 +338,7 @@ init config items =
     { initialModel | columnsX = columnsX initialModel }
 
 
-{-| the X coordinate of each column
+{-| the list of X coordinate of each column; coordinates are expressed in pixel. The first one it a 0.
 -}
 columnsX : Model a -> List Int
 columnsX model =
@@ -705,6 +727,8 @@ columnFilters model =
         |> List.filterMap (\c -> parseFilteringString c.filteringValue c.filters)
 
 
+{-| The list of items satisfying the current filtering values
+-}
 filteredItems : Model a -> List (Item a)
 filteredItems model =
     columnFilters model
@@ -951,7 +975,7 @@ viewProgressBar barHeight field properties item =
         ]
 
 
-{-| View column visibility panel
+{-| Renders the column visibility panel
 -}
 viewPreferences : Model a -> Html (Msg a)
 viewPreferences model =
@@ -1070,6 +1094,10 @@ compareBoolField field item1 item2 =
             LT
 
 
+{-| The list of visible columns according to their current configuration.
+This list ignores the actual position of the columns; some of them may require
+an horizontal scrolling to be seen
+-}
 visibleColumns : Model a -> List (ColumnConfig a)
 visibleColumns model =
     List.filter (\column -> column.properties.visible) model.config.columns
@@ -1177,11 +1205,17 @@ viewMultiSelectionCheckbox model columnConfig =
         []
 
 
+{-| Returns true when the given ColumnConfig is the one of the multiple selection column,
+provided by Grid when row selection is activated
+-}
 isSelectionColumn : ColumnConfig a -> Bool
 isSelectionColumn columnConfig =
     isSelectionColumnProperties columnConfig.properties
 
 
+{-| Returns true when the given Properties are the one of the multiple selection column,
+provided by Grid when row selection is activated
+-}
 isSelectionColumnProperties : { a | id : String } -> Bool
 isSelectionColumnProperties columnProperties =
     columnProperties.id == selectionColumn.properties.id
@@ -1384,6 +1418,8 @@ cumulatedBorderWidth =
     6
 
 
+{-| Common attributes for cell renderers
+-}
 cellStyles : ColumnProperties -> List (Html.Styled.Attribute (Msg a))
 cellStyles properties =
     [ attribute "data-testid" properties.id

@@ -8,6 +8,9 @@ cypress:
 	./node_modules/.bin/cypress open
 
 build:
-	./elm make src/Examples/Main.elm --output=example.js
+	elm make src/Examples/Main.elm --output=example.js
 
-.PHONY: cypress
+doc:
+	elm make --docs=docs.json
+
+.PHONY: cypress doc
