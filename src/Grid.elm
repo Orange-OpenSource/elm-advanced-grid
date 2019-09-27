@@ -9,8 +9,8 @@ module Grid exposing
     )
 
 {-| This library displays a grid of data.
-It offers filtering, sorting, multiple selection, click event listener and
-customizable rendering of the lines, cells and columns.
+It offers in-place filtering and sorting, multiple selection, click event listener and
+customizable rendering of the rows and cells.
 
 A grid is defined using a `Config`
 
