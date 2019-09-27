@@ -3,9 +3,9 @@ module Examples.Main exposing (main)
 import Browser
 import Dict
 import Grid exposing (ColumnConfig, Msg(..), Sorting(..), floatColumnConfig, intColumnConfig, stringColumnConfig, viewProgressBar)
-import Html exposing (Html, button, div, li, text, ul)
+import Html exposing (Html, button, div, input, label, li, text, ul)
 import Html.Attributes exposing (attribute, style)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onInput)
 import List.Extra
 
 
@@ -33,14 +33,16 @@ type Msg
     | SetFilters
     | SetAscendingOrder
     | SetDecendingOrder
+    | UserChangedScrollIndex String
 
 
 main : Program () Model Msg
 main =
-    Browser.sandbox
+    Browser.element
         { init = init
         , view = view
         , update = update
+        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -80,6 +82,15 @@ view model =
             , button [ onClick SetAscendingOrder, style "margin" "10px" ] [ text "Sort cities ascending" ]
             , button [ onClick SetDecendingOrder, style "margin" "10px" ] [ text "Sort cities descending" ]
             ]
+        , div (centeredWithId "InputBar") [ viewInput ]
+        ]
+
+
+viewInput : Html Msg
+viewInput =
+    label []
+        [ text "Scroll to item number:"
+        , input [ onInput UserChangedScrollIndex ] []
         ]
 
 
@@ -97,44 +108,50 @@ viewItem item =
     text ("id:" ++ String.fromInt item.id ++ " - name: " ++ item.name ++ "")
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         DisplayPreferences ->
             let
-                newGridModel =
+                ( newGridModel, gridCmd ) =
                     Grid.update ShowPreferences model.gridModel
             in
-            { model
+            ( { model
                 | gridModel = newGridModel
-            }
+              }
+            , Cmd.map GridMsg gridCmd
+            )
 
         GridMsg (UserClickedLine item) ->
             let
-                newGridModel =
+                ( newGridModel, gridCmd ) =
                     Grid.update (UserClickedLine item) model.gridModel
             in
-            { model
+            ( { model
                 | gridModel = newGridModel
                 , clickedItem = Just item
-            }
+              }
+            , Cmd.map GridMsg gridCmd
+            )
 
         GridMsg (UserToggledSelection item) ->
             let
-                newGridModel =
+                ( newGridModel, gridCmd ) =
                     Grid.update (UserToggledSelection item) model.gridModel
 
                 selectedItems =
                     List.filter .selected newGridModel.content
             in
-            { model
+            ( { model
                 | gridModel = newGridModel
                 , selectedItems = selectedItems
-            }
+              }
+            , Cmd.map GridMsg gridCmd
+            )
 
         GridMsg UserToggledAllItemSelection ->
             let
-                newGridModel =
+                ( newGridModel, gridCmd ) =
                     Grid.update UserToggledAllItemSelection model.gridModel
 
                 selectedItems =
@@ -144,27 +161,33 @@ update msg model =
                     else
                         []
             in
-            { model
+            ( { model
                 | gridModel = newGridModel
                 , selectedItems = selectedItems
-            }
+              }
+            , Cmd.map GridMsg gridCmd
+            )
 
         GridMsg message ->
             let
-                newGridModel =
+                ( newGridModel, gridCmd ) =
                     Grid.update message model.gridModel
             in
-            { model | gridModel = newGridModel }
+            ( { model | gridModel = newGridModel }
+            , Cmd.map GridMsg gridCmd
+            )
 
         ResetFilters ->
             let
                 message =
                     Grid.InitializeFilters Dict.empty
 
-                newGridModel =
+                ( newGridModel, gridCmd ) =
                     Grid.update message model.gridModel
             in
-            { model | gridModel = newGridModel }
+            ( { model | gridModel = newGridModel }
+            , Cmd.map GridMsg gridCmd
+            )
 
         SetFilters ->
             let
@@ -174,39 +197,62 @@ update msg model =
                 message =
                     Grid.InitializeFilters filters
 
-                newGridModel =
+                ( newGridModel, gridCmd ) =
                     Grid.update message model.gridModel
             in
-            { model | gridModel = newGridModel }
+            ( { model | gridModel = newGridModel }
+            , Cmd.map GridMsg gridCmd
+            )
 
         SetAscendingOrder ->
             let
                 message =
                     Grid.InitializeSorting "City" Ascending
 
-                newGridModel =
+                ( newGridModel, gridCmd ) =
                     Grid.update message model.gridModel
             in
-            { model | gridModel = newGridModel }
+            ( { model | gridModel = newGridModel }
+            , Cmd.map GridMsg gridCmd
+            )
 
         SetDecendingOrder ->
             let
                 message =
                     Grid.InitializeSorting "City" Descending
 
-                newGridModel =
+                ( newGridModel, gridCmd ) =
                     Grid.update message model.gridModel
             in
-            { model | gridModel = newGridModel }
+            ( { model | gridModel = newGridModel }
+            , Cmd.map GridMsg gridCmd
+            )
+
+        UserChangedScrollIndex string ->
+            case String.toInt string of
+                Just idx ->
+                    let
+                        message =
+                            Grid.ScrollTo idx
+
+                        ( newGridModel, gridCmd ) =
+                            Grid.update message model.gridModel
+                    in
+                    ( { model | gridModel = newGridModel }
+                    , Cmd.map GridMsg gridCmd
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
 
 itemCount : Int
 itemCount =
-    4
+    List.length cities
 
 
 cities =
-    [ "Paris", "London", "New York", "Moscow", "Roma", "Berlin" ]
+    [ "Paris", "London", "New York", "Moscow", "Roma", "Berlin", "Tokyo", "Delhi", "Shanghai", "Sao Paulo", "Mexico City", "Cairo", "Dhaka", "Mumbai", "Beijing", "Osaka", "Karachi", "Chongqing", "Buenos Aires", "Istanbul", "Kolkata", "Lagos", "Manila", "Tianjin", "Rio De Janeiro", "Guangzhou", "Moscow", "Lahore", "Shenzhen", "Bangalore", "Paris", "Bogota", "Chennai", "Jakarta", "Lima", "Bangkok", "Seoul", "Hyderabad", "London", "Tehran", "Chengdu", "New York", "Wuhan", "Ahmedabad", "Kuala Lumpur", "Riyadh", "Surat", "Santiago", "Madrid", "Pune", "Dar Es Salaam", "Toronto", "Johannesburg", "Barcelona", "St Petersburg", "Yangon", "Alexandria", "Guadalajara", "Ankara", "Melbourne", "Sydney", "Brasilia", "Nairobi", "Cape Town", "Rome", "Montreal", "Tel Aviv", "Los Angeles", "Medellin", "Jaipur", "Casablanca", "Lucknow", "Berlin", "Busan", "Athens", "Milan", "Kanpur", "Abuja", "Lisbon", "Surabaya", "Dubai", "Cali", "Manchester" ]
 
 
 items : List Item
@@ -224,12 +270,14 @@ items =
             )
 
 
-init : Model
-init =
-    { gridModel = Grid.init gridConfig items
-    , clickedItem = Nothing
-    , selectedItems = []
-    }
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { gridModel = Grid.init gridConfig items
+      , clickedItem = Nothing
+      , selectedItems = []
+      }
+    , Cmd.none
+    )
 
 
 gridConfig : Grid.Config Item
@@ -261,13 +309,11 @@ rowClass item =
         ""
 
 
+{-| TODO implement
+-}
 localize : String -> String
 localize string =
     string
-
-
-
--- TODO implement
 
 
 columns : List (ColumnConfig Item)

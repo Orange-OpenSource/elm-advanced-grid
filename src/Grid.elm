@@ -49,7 +49,7 @@ import Grid.Colors exposing (black, darkGrey2, lightGreen, lightGrey, lightGrey2
 import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Html
 import Html.Events.Extra.Mouse as Mouse
-import Html.Styled exposing (Attribute, Html, div, input, label, text, toUnstyled)
+import Html.Styled exposing (Attribute, Html, div, input, label, span, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
@@ -137,6 +137,8 @@ type Msg a
     | FilterModified (ColumnConfig a) String
     | InitializeFilters (Dict String String) -- column ID, filter value
     | InitializeSorting String Sorting -- column ID, Ascending or Descending
+    | NoOp
+    | ScrollTo Int
     | ShowPreferences
     | UserClickedHeader (ColumnConfig a)
     | UserClickedFilter
@@ -326,9 +328,31 @@ columnsX model =
 
 {-| Updates the grid model
 -}
-update : Msg a -> Model a -> Model a
+update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
     case Debug.log "msg" msg of
+        ScrollTo idx ->
+            ( model
+            , IL.scrollToNthItem
+                { postScrollMessage = NoOp
+                , listHtmlId = gridHtmlId
+                , itemIndex = idx
+                , configValue = gridConfig model
+                , items = model.content
+                }
+            )
+
+        _ ->
+            ( modelUpdate msg model, Cmd.none )
+
+
+
+{- update for messages for which no command is generated -}
+
+
+modelUpdate : Msg a -> Model a -> Model a
+modelUpdate msg model =
+    case msg of
         CursorEnteredDropZone columnConfig ( x, _ ) ->
             case model.movingColumn of
                 Just movingColumn ->
@@ -337,24 +361,24 @@ update msg model =
 
                     else
                         let
-                            unchangedColumns =
+                            notDraggedColumns =
                                 model.config.columns
                                     |> List.filter (\c -> c.properties.id /= movingColumn.properties.id)
 
                             leftColumns =
-                                List.Extra.takeWhile (\c -> c.properties.id /= columnConfig.properties.id) unchangedColumns
+                                List.Extra.takeWhile (\c -> c.properties.id /= columnConfig.properties.id) notDraggedColumns
 
                             rightColumns =
-                                List.Extra.dropWhile (\c -> c.properties.id /= columnConfig.properties.id) unchangedColumns
+                                List.Extra.dropWhile (\c -> c.properties.id /= columnConfig.properties.id) notDraggedColumns
 
-                            newColumns =
+                            reorderedColumns =
                                 List.concat [ leftColumns, [ movingColumn ], rightColumns ]
 
                             currentConfig =
                                 model.config
 
                             newConfig =
-                                { currentConfig | columns = newColumns }
+                                { currentConfig | columns = reorderedColumns }
 
                             updatedModel =
                                 { model
@@ -501,6 +525,13 @@ update msg model =
         ShowPreferences ->
             { model | showPreferences = True }
 
+        NoOp ->
+            model
+
+        -- The rest is handled in the `update` function
+        ScrollTo int ->
+            model
+
 
 initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
 initializeFilter filterValues columnConfig =
@@ -640,6 +671,10 @@ view model =
             viewGrid model
 
 
+gridHtmlId =
+    "grid"
+
+
 {-| Renders the grid
 -}
 viewGrid : Model a -> Html (Msg a)
@@ -694,6 +729,7 @@ viewRows model =
                 , border3 (px 1) solid lightGrey
                 ]
             , fromUnstyled <| IL.onScroll InfListMsg
+            , id gridHtmlId
             ]
             [ Html.Styled.fromUnstyled <| IL.view (gridConfig model) model.infList (filteredItems model) ]
         ]
@@ -1155,7 +1191,7 @@ viewHeader model columnConfig index =
 
          else
             [ viewMoveHandle columnConfig
-            , viewTitle columnConfig
+            , viewTitle model columnConfig
             , viewDropZone model columnConfig
             , viewSortingSymbol model columnConfig
             , viewFilter model columnConfig
@@ -1227,9 +1263,28 @@ viewDropZone model columnConfig =
             noContent
 
 
-viewTitle : ColumnConfig a -> Html (Msg a)
-viewTitle columnConfig =
-    text <| columnConfig.properties.title
+viewTitle : Model a -> ColumnConfig a -> Html (Msg a)
+viewTitle model columnConfig =
+    let
+        titleFontStyle =
+            case model.sortedBy of
+                Just column ->
+                    if column.properties.id == columnConfig.properties.id then
+                        fontStyle italic
+
+                    else
+                        fontStyle normal
+
+                Nothing ->
+                    fontStyle normal
+    in
+    span
+        [ css
+            [ titleFontStyle
+            ]
+        ]
+        [ text <| columnConfig.properties.title
+        ]
 
 
 viewSortingSymbol : Model a -> ColumnConfig a -> Html (Msg a)
@@ -1257,7 +1312,7 @@ viewMoveHandle columnConfig =
             [ cursor move
             , display block
             , fontSize (px 0.1)
-            , height (px 20)
+            , height (pct 100)
             , float left
             , visibility hidden
             , width (px 10)

@@ -1,7 +1,7 @@
 module FiltersTest exposing (boolFilters, describeFilterParsing, floatFilters, intFilters, removeComparisonOperator, stringFilters, suite, testBoolComparisonParsingFails, testBoolComparisonParsingSucceeds, testFloatComparisonParsingFails, testFloatComparisonParsingSucceeds, testIntComparisonParsingFails, testIntComparisonParsingSucceeds, testStringComparisonParsingFails, testStringComparisonParsingSucceeds)
 
 import Expect
-import Fixtures exposing (columns, item1, item2)
+import Fixtures exposing (columns, item1, item2, item5)
 import Fuzz exposing (string)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Test exposing (..)
@@ -21,10 +21,16 @@ describeFilterParsing =
                     |> Expect.equal Nothing
         , test "should detect if an int is equal to another" <|
             \_ ->
-                testIntComparisonParsingSucceeds "1" item2
+                testIntComparisonParsingSucceeds "=1" item2
         , test "should detect if an int is different than another" <|
             \_ ->
-                testIntComparisonParsingFails "0" item2
+                testIntComparisonParsingFails "=0" item2
+        , test "should detect if an int contains another" <|
+            \_ ->
+                testIntComparisonParsingSucceeds "52" item5
+        , test "should detect if an int does not contain another" <|
+            \_ ->
+                testIntComparisonParsingFails "53" item5
         , test "should detect if an int is lesser than another" <|
             \_ ->
                 testIntComparisonParsingSucceeds "<1" item1
@@ -45,10 +51,21 @@ describeFilterParsing =
                     |> Expect.equal Nothing
         , test "should detect if a float is equal to another" <|
             \_ ->
-                testFloatComparisonParsingSucceeds "2.0" item2
+                testFloatComparisonParsingSucceeds "=2.0" item2
         , test "should detect if a float is different than another" <|
             \_ ->
                 testFloatComparisonParsingFails "=3.0" item2
+        , test "should detect if a float contains another" <|
+            \_ ->
+                testFloatComparisonParsingSucceeds "3" item5
+
+        -- TODO : not implemented
+        --        , test "should detect if a float contains another one beginning by a dot" <|
+        --            \_ ->
+        --                testFloatComparisonParsingSucceeds ".14" item5
+        , test "should detect if a float does not contain another" <|
+            \_ ->
+                testFloatComparisonParsingFails "42" item5
         , test "should detect if a float is lesser than another" <|
             \_ ->
                 testFloatComparisonParsingSucceeds "<1.1" item1
@@ -69,10 +86,24 @@ describeFilterParsing =
                     |> Expect.equal Nothing
         , test "should detect if a bool is equal to another" <|
             \_ ->
-                testBoolComparisonParsingSucceeds "true" item1
+                testBoolComparisonParsingSucceeds "=true" item1
         , test "should detect if a bool is different than another" <|
             \_ ->
+                testBoolComparisonParsingFails "=false" item1
+        , test "should detect if a bool contains another" <|
+            \_ ->
+                testBoolComparisonParsingSucceeds "true" item1
+        , test "should detect if a bool does not contain another" <|
+            \_ ->
                 testBoolComparisonParsingFails "false" item1
+
+        -- TODO : not implemented
+        --        , test "should detect if a bool contains a substring" <|
+        --            \_ ->
+        --                testBoolComparisonParsingSucceeds "tr" item1
+        --        , test "should detect if a bool contains a substring with capital letters" <|
+        --            \_ ->
+        --                testBoolComparisonParsingSucceeds "TR" item1
         , test "should detect if a bool is lesser than another" <|
             \_ ->
                 testBoolComparisonParsingSucceeds "< true" item2
@@ -93,19 +124,37 @@ describeFilterParsing =
                     |> Expect.equal Nothing
         , test "should detect if a String is equal to another" <|
             \_ ->
-                testStringComparisonParsingSucceeds "ITEM 2" item2
-        , test "should detect if a String is different than another" <|
+                testStringComparisonParsingSucceeds "=ITEM 2" item2
+        , test "should detect if a String is equal to another, doing a case-insensitive comparison" <|
             \_ ->
-                testStringComparisonParsingFails "=ABCD" item2
+                testStringComparisonParsingSucceeds "=itEM 2" item2
+        , test "should detect if a String is different to another" <|
+            \_ ->
+                testStringComparisonParsingFails "=ITEM" item2
+        , test "should detect if a String contains another" <|
+            \_ ->
+                testStringComparisonParsingSucceeds "ITEM" item2
+        , test "should detect if a String contains another, doing a case-insensitive comparison" <|
+            \_ ->
+                testStringComparisonParsingSucceeds "tem" item2
+        , test "should detect if a String does not contain another" <|
+            \_ ->
+                testStringComparisonParsingFails "ITEM2" item2
         , test "should detect if a String is lesser than another" <|
             \_ ->
                 testStringComparisonParsingSucceeds "<ITEM 42" item1
+        , test "should detect if a String is not lesser than another, doing a case-insensitive comparison" <|
+            \_ ->
+                testStringComparisonParsingFails "<a" item1
         , test "should detect if a String is not lesser than another" <|
             \_ ->
                 testStringComparisonParsingFails "<ITEM 1" item2
         , test "should detect if a String is greater than another" <|
             \_ ->
                 testStringComparisonParsingSucceeds ">ITEM 1" item2
+        , test "should detect if a String is greater than another, doing a case-insensitive comparison" <|
+            \_ ->
+                testStringComparisonParsingSucceeds ">item 1" item2
         , test "should detect if a String is not greater than another" <|
             \_ ->
                 testStringComparisonParsingFails ">ITEM 3" item2
