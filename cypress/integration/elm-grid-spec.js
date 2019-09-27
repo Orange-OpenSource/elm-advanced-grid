@@ -253,4 +253,15 @@ describe('elm grid example', function () {
             cy.wrap($cell).should('not.contain', 'City')
         })
    })
+
+    it('should display the last line when using the "scroll to item number" field', function () {
+        cy.visit(url)
+        cy.scrollToItemNumber(60)
+
+        let lastRow = cy.get('div[data-testid="row"]').last().click()
+
+        let status = cy.get('div[data-testid="clickedItem"]')
+        status.contains("Clicked Item = id:82 - name: name82")
+    })
+
 })
