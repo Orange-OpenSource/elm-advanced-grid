@@ -1,8 +1,13 @@
 describe('elm grid example', function () {
 
    const url = 'http://127.0.0.1:9999'
-   const sortCitiesAscending = ['London', 'Moscow', 'New York', 'Paris']
-   const sortCitiesDescending = ['Paris', 'New York', 'Moscow', 'London']
+   const defaultOrderCities = ['Paris', 'London', 'New York', 'Moscow']
+   const setFilterCityList = ['London', 'New York', 'Moscow', 'Roma', 'Tokyo']
+   const sortCitiesAscending = ['Abuja', 'Ahmedabad', 'Alexandria', 'Ankara']
+   const sortCitiesDescending = ['Yangon', 'Wuhan', 'Toronto', 'Tokyo']
+   const citiesWithARA = ['Karachi', 'Guadalajara', 'Ankara']
+   const valuesGreaterThan95 = ['95.18072289156626', '96.3855421686747', '97.59036144578313', '98.79518072289156']
+   const valuesLesserThan4 = ['0', '1.2048192771084338', '2.4096385542168677', '3.614457831325301']
 
    it('should have headers', function () {
         cy.visit(url)
@@ -21,9 +26,9 @@ describe('elm grid example', function () {
         cy.get('input[data-testid="filter-Value"]')
     })
 
-    it('should contain 4 rows of data when none is filtered', function () {
+    it('should contain 56 rows of data when none is filtered', function () {
         cy.visit(url)
-        cy.get('div[data-testid="row"]').should('have.length', 4)
+        cy.get('div[data-testid="row"]').should('have.length', 56)
     })
 
     it('should display unsorted and unfiltered data in default order', function () {
@@ -35,38 +40,43 @@ describe('elm grid example', function () {
 
     it('should filter elements containing an exact given value', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-Value"]').type("25")
+        cy.get('input[data-testid="filter-City"]').type("=paris")
         let rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 1)
-        cy.get('div[data-testid="Value"]').contains("25")
+        rows.should('have.length', 2)
+        cy.get('div[data-testid="City"]').contains("Paris")
     })
 
     it('should filter elements containing at least the given string', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-City"]').type("o")
-        let rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 3)
-        cy.get('div[data-testid="City"]').contains("New York")
-        cy.get('div[data-testid="City"]').contains("London")
-        cy.get('div[data-testid="City"]').contains("Moscow")
+        cy.get('input[data-testid="filter-City"]').type("ara")
+        cy.get('div[data-testid="City"]').then (function($citiesList){
+            expect($citiesList).to.have.length(3)
+            for (let i=0; i<3; i++){
+              expect ($citiesList.eq(`${i}`)).to.contain(`${citiesWithARA[`${i}`]}`)
+            }
+        })
     })
 
     it('should filter elements greater than a given value', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-Value"]').type(">25")
-        let rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 2)
-        cy.get('div[data-testid="Value"]').contains("50")
-        cy.get('div[data-testid="Value"]').contains("75")
+        cy.get('input[data-testid="filter-Value"]').type(">95")
+        cy.get('div[data-testid="Value"]').then (function($valuesList){
+            expect($valuesList).to.have.length(4)
+            for (let i=0; i<3; i++){
+              expect ($valuesList.eq(`${i}`)).to.contain(`${valuesGreaterThan95[`${i}`]}`)
+            }
+        })
     })
 
     it('should filter elements lesser than a given value', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-Value"]').type("<50")
-        let rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 2)
-        cy.get('div[data-testid="Value"]').contains("0")
-        cy.get('div[data-testid="Value"]').contains("25")
+        cy.get('input[data-testid="filter-Value"]').type("<4")
+        cy.get('div[data-testid="Value"]').then (function($valuesList){
+            expect($valuesList).to.have.length(4)
+            for (let i=0; i<3; i++){
+              expect ($valuesList.eq(`${i}`)).to.contain(`${valuesLesserThan4[`${i}`]}`)
+            }
+        })
     })
 
     it('should detect click on first line', function () {
@@ -80,23 +90,12 @@ describe('elm grid example', function () {
         status.contains("Clicked Item = id:0 - name: name0")
     })
 
-    it('should detect click on last line', function () {
-        cy.visit(url)
-        let status = cy.get('div[data-testid="clickedItem"]')
-        status.contains("Clicked Item = None")
-
-        let firstRow = cy.get('div[data-testid="row"]').last().click()
-
-        status = cy.get('div[data-testid="clickedItem"]')
-        status.contains("Clicked Item = id:3 - name: name3")
-    })
-
     it('should display data sorted by id when clicking the id header', function () {
         cy.visit(url)
-        cy.get('[data-testid=header-Name]').click().click()
+        cy.get('[data-testid=header-Id]').click().click()
 
         cy.get('div[data-testid="Name"]').each(($cell, index, $row) => {
-            cy.wrap($cell).contains(3-index)
+            cy.wrap($cell).contains(82-index)
         })
     })
 
@@ -117,7 +116,6 @@ describe('elm grid example', function () {
 
         let status = cy.get('div[data-testid="clickedItem"]')
         status.contains("Clicked Item = None.")
-
     })
 
     it('should select all rows when clicking the multiple selection button', function () {
@@ -125,7 +123,7 @@ describe('elm grid example', function () {
         cy.get('div[data-testid="header-_MultipleSelection_"] > input').click()
 
         let selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
-        selectedItems.should('have.length', 4)
+        selectedItems.should('have.length', 83)
         selectedItems.first().contains("id:0 - name: name0")
             .next().contains("id:1 - name: name1")
             .next().contains("id:2 - name: name2")
@@ -141,7 +139,7 @@ describe('elm grid example', function () {
 
         cy.get('div[data-testid="header-_MultipleSelection_"] > input').click()
         selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
-        selectedItems.should('have.length', 4)
+        selectedItems.should('have.length', 83)
         selectedItems.first().contains("id:0 - name: name0")
             .next().contains("id:1 - name: name1")
             .next().contains("id:2 - name: name2")
@@ -170,69 +168,68 @@ describe('elm grid example', function () {
 
     it('should filter elements containing at least the given string when clicking the "set filters" button', function () {
         cy.visit(url)
-        cy.get('div[data-testid="buttonBar"]').children().first().click()
+        cy.setFilters()
 
-        let rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 3)
-        cy.get('div[data-testid="City"]').contains("New York")
-        cy.get('div[data-testid="City"]').contains("London")
-        cy.get('div[data-testid="City"]').contains("Moscow")
+        cy.get('div[data-testid="City"]').then (function($citiesList){
+            expect($citiesList).to.have.length(36)
+            for (let i=0; i<5; i++){
+              expect ($citiesList.eq(`${i}`)).to.contain(`${setFilterCityList[`${i}`]}`)
+            }
+        })
     })
 
     it('should reset filters when clicking on "Reset filters" button', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-Id"]').type("<2")
-        cy.get('input[data-testid="filter-Name"]').type("me")
-        cy.get('input[data-testid="filter-Progress"]').type("<30")
-        cy.get('input[data-testid="filter-Value"]').type("25")
-        cy.get('input[data-testid="filter-City"]').type("ond")
+        cy.get('input[data-testid="filter-Id"]').type("<25")
+        cy.get('input[data-testid="filter-Name"]').type("me1")
+        cy.get('input[data-testid="filter-Progress"]').type(">15")
+        cy.get('input[data-testid="filter-Value"]').type("66")
+        cy.get('input[data-testid="filter-City"]').type("sa")
         let rows = cy.get('div[data-testid="row"]')
         rows.should('have.length', 1)
-        cy.get('div[data-testid="City"]').contains("London")
+        cy.get('div[data-testid="City"]').contains("Osaka")
 
-        cy.get('div[data-testid="buttonBar"]').children().first().next().click()
+        cy.resetFilters()
 
-        rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 4)
-        cy.get('div[data-testid="City"]').contains("Paris")
-        cy.get('div[data-testid="City"]').contains("New York")
-        cy.get('div[data-testid="City"]').contains("London")
-        cy.get('div[data-testid="City"]').contains("Moscow")
+        cy.get('div[data-testid="City"]').then (function($citiesList){
+            expect($citiesList).to.have.length(56)
+            for (let i=0; i<4; i++){
+              expect ($citiesList.eq(`${i}`)).to.contain(`${defaultOrderCities[`${i}`]}`)
+            }
+        })
     })
 
    it('should filter elements containing exactly the given string', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-City"]').type("=o")
+        cy.get('input[data-testid="filter-City"]').type("=ondon")
         let rows = cy.get('div[data-testid="row"]')
         rows.should('have.length', 0)
         cy.get('input[data-testid="filter-City"]').clear()
 
         cy.get('input[data-testid="filter-City"]').type("=london")
         rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 0)
+        rows.should('have.length', 2)
         cy.get('input[data-testid="filter-City"]').clear()
 
         cy.get('input[data-testid="filter-City"]').type("=London")
         rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 1)
+        rows.should('have.length', 2)
         cy.get('div[data-testid="City"]').contains("London")
     })
 
     it('should sort cities when clicking the "sort cities" buttons', function () {
         cy.visit(url)
-        //Cities are sorted ascending
-        cy.get('div[data-testid="buttonBar"]').children().first().next().next().click()
+        cy.sortCitiesAscending()
         cy.get('div[data-testid="City"]').then (function($citiesList){
-            expect($citiesList).to.have.length(4)
+            expect($citiesList).to.have.length(56)
             for (let i=0; i<4; i++){
               expect ($citiesList.eq(`${i}`)).to.contain(`${sortCitiesAscending[`${i}`]}`)
             }
         })
 
-        //Cities are sorted descending
-        cy.get('div[data-testid="buttonBar"]').children().first().next().next().next().click()
+        cy.sortCitiesDescending()
         cy.get('div[data-testid="City"]').then (function($citiesList){
-            expect($citiesList).to.have.length(4)
+            expect($citiesList).to.have.length(56)
             for (let i=0; i<4; i++){
               expect ($citiesList.eq(`${i}`)).to.contain(`${sortCitiesDescending[`${i}`]}`)
             }
@@ -256,5 +253,4 @@ describe('elm grid example', function () {
             cy.wrap($cell).should('not.contain', 'City')
         })
    })
-
 })
