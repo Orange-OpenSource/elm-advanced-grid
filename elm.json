@@ -10,6 +10,7 @@
     "version": "1.0.0",
     "exposed-modules": [
         "Grid"
+        , "Grid.Csv"
     ],
     "dependencies": {
         "FabienHenon/elm-infinite-list-view": "3.0.0 <= v < 4.0.0",

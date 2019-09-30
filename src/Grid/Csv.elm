@@ -1,5 +1,14 @@
 module Grid.Csv exposing (visibleItemsToCsv)
 
+{-| The CSV module provides a function to export the visible rows and columns as CSV.
+
+
+# Configure the grid
+
+@docs visibleItemsToCsv
+
+-}
+
 import Grid exposing (ColumnConfig, Model, filteredItems, isSelectionColumn, visibleColumns)
 import Grid.Filters exposing (Item)
 
@@ -8,7 +17,7 @@ csvEndOfLine =
     "\u{000D}\n"
 
 
-{-| Converts the list visible items and properties to a Comma Separated Values string
+{-| Converts the visible items and properties to a Comma Separated Values UTF-8 string
 -}
 visibleItemsToCsv : String -> Model a -> String
 visibleItemsToCsv separator model =
