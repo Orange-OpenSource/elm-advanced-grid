@@ -330,7 +330,7 @@ columnsX model =
 -}
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
-    case Debug.log "msg" msg of
+    case msg of
         ScrollTo idx ->
             ( model
             , IL.scrollToNthItem
@@ -958,6 +958,7 @@ viewProgressBar barHeight field properties item =
             [ display inlineBlock
             , border3 (px 1) solid lightGrey
             , boxSizing contentBox
+            , height (pct 100)
             , verticalAlign top
             , paddingLeft (px 5)
             , paddingRight (px 5)

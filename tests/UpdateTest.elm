@@ -12,7 +12,6 @@ suite =
         describeHeaderClicked
 
 
-
 describeHeaderClicked =
     [ describe "receiving HeaderClicked"
         [ test "scoreColumn msg once should order items by ascending score and update indexes" <|
@@ -76,7 +75,11 @@ describeHeaderClicked =
 
 
 simulateHeaderClick model =
-    update (UserClickedHeader scoreColumn) model
+    let
+        ( newModel, _ ) =
+            update (UserClickedHeader scoreColumn) model
+    in
+    newModel
 
 
 modelSortedByAscendingScore =
