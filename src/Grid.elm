@@ -722,8 +722,7 @@ viewRows model =
     div []
         [ div
             [ css
-                [ cursor pointer
-                , height (px <| toFloat model.config.containerHeight)
+                [ height (px <| toFloat model.config.containerHeight)
                 , width (px <| toFloat <| totalWidth model)
                 , overflowX hidden
                 , overflowY auto
