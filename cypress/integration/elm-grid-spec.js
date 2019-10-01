@@ -26,9 +26,9 @@ describe('elm grid example', function () {
         cy.get('input[data-testid="filter-Value"]')
     })
 
-    it('should contain 56 rows of data when none is filtered', function () {
+    it('should contain 45 rows of data when none is filtered', function () {
         cy.visit(url)
-        cy.get('div[data-testid="row"]').should('have.length', 56)
+        cy.get('div[data-testid="row"]').should('have.length', 45)
     })
 
     it('should display unsorted and unfiltered data in default order', function () {
@@ -88,15 +88,6 @@ describe('elm grid example', function () {
 
         status = cy.get('div[data-testid="clickedItem"]')
         status.contains("Clicked Item = id:0 - name: name0")
-    })
-
-    it('should display data sorted by id when clicking the id header', function () {
-        cy.visit(url)
-        cy.get('[data-testid=header-Id]').click().click()
-
-        cy.get('div[data-testid="Name"]').each(($cell, index, $row) => {
-            cy.wrap($cell).contains(82-index)
-        })
     })
 
     it('should select items when checkboxes are selected', function () {
@@ -192,7 +183,7 @@ describe('elm grid example', function () {
         cy.resetFilters()
 
         cy.get('div[data-testid="City"]').then (function($citiesList){
-            expect($citiesList).to.have.length(56)
+            expect($citiesList).to.have.length(45)
             for (let i=0; i<4; i++){
               expect ($citiesList.eq(`${i}`)).to.contain(`${defaultOrderCities[`${i}`]}`)
             }
@@ -221,7 +212,7 @@ describe('elm grid example', function () {
         cy.visit(url)
         cy.sortCitiesAscending()
         cy.get('div[data-testid="City"]').then (function($citiesList){
-            expect($citiesList).to.have.length(56)
+            expect($citiesList).to.have.length(45)
             for (let i=0; i<4; i++){
               expect ($citiesList.eq(`${i}`)).to.contain(`${sortCitiesAscending[`${i}`]}`)
             }
@@ -229,7 +220,7 @@ describe('elm grid example', function () {
 
         cy.sortCitiesDescending()
         cy.get('div[data-testid="City"]').then (function($citiesList){
-            expect($citiesList).to.have.length(56)
+            expect($citiesList).to.have.length(45)
             for (let i=0; i<4; i++){
               expect ($citiesList.eq(`${i}`)).to.contain(`${sortCitiesDescending[`${i}`]}`)
             }
@@ -256,10 +247,15 @@ describe('elm grid example', function () {
 
     it('should display the last line when using the "scroll to item number" field', function () {
         cy.visit(url)
-        cy.scrollToItemNumber(60)
+        let rows = cy.get('div[data-testid="row"]')
+        rows.should('not.contain', 'Dubai')
 
-        let lastRow = cy.get('div[data-testid="row"]').last().click()
+        cy.scrollToItemNumber(80)
 
+        rows = cy.get('div[data-testid="row"]')
+        rows.should('contain', 'Dubai')
+
+        rows.last().click()
         let status = cy.get('div[data-testid="clickedItem"]')
         status.contains("Clicked Item = id:82 - name: name82")
     })
