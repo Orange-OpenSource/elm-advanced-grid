@@ -76,7 +76,7 @@ view model =
                 ]
                 [ text "Show Preferences" ]
             ]
-        , div (centeredWithId "ButtonBar")
+        , div (centeredWithId "buttonBar")
             [ button [ onClick SetFilters, style "margin" "10px" ] [ text "Set Filters" ]
             , button [ onClick ResetFilters, style "margin" "10px" ] [ text "Reset Filters" ]
             , button [ onClick SetAscendingOrder, style "margin" "10px" ] [ text "Sort cities ascending" ]
