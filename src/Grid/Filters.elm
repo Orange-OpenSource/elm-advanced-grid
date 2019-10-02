@@ -18,7 +18,7 @@ module Grid.Filters exposing
 
 -}
 
-import Grid.Parsers exposing (..)
+import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, stringParser)
 import Parser exposing ((|=), DeadEnd, Parser)
 
 

@@ -7,7 +7,7 @@ module Grid.Parsers exposing
     , stringParser
     )
 
-import Parser exposing ((|.), (|=), Parser, chompUntilEndOr, getChompedString, keyword, oneOf, spaces, succeed, symbol)
+import Parser exposing ((|.), Parser, chompUntilEndOr, getChompedString, keyword, oneOf, spaces, succeed, symbol)
 
 
 equalityParser : Parser (a -> a)

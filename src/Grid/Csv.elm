@@ -4,6 +4,7 @@ import Grid exposing (ColumnConfig, Model, filteredItems, isSelectionColumn, vis
 import Grid.Filters exposing (Item)
 
 
+csvEndOfLine : String
 csvEndOfLine =
     "\u{000D}\n"
 

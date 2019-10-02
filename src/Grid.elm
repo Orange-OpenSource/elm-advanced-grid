@@ -54,7 +54,7 @@ import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
-import List.Extra exposing (findIndex, getAt, swapAt, takeWhile)
+import List.Extra exposing (getAt)
 import String
 
 
@@ -441,6 +441,9 @@ modelUpdate msg model =
                 Nothing ->
                     model
 
+        NoOp ->
+            model
+
         UserClickedFilter ->
             { model | filterHasFocus = True }
 
@@ -522,15 +525,12 @@ modelUpdate msg model =
         UserClickedPreferenceCloseButton ->
             { model | showPreferences = False }
 
-        ShowPreferences ->
-            { model | showPreferences = True }
-
-        NoOp ->
-            model
-
-        -- The rest is handled in the `update` function
+        -- The ScrollTo message is handled in the `update` function
         ScrollTo int ->
             model
+
+        ShowPreferences ->
+            { model | showPreferences = True }
 
 
 initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
@@ -579,11 +579,6 @@ orderBy model columnConfig order =
 
         Unsorted ->
             ( model.content, Unsorted )
-
-
-indexOfColumn : ColumnConfig a -> Model a -> Maybe Int
-indexOfColumn columnConfig model =
-    findIndex (\col -> col.properties.id == columnConfig.properties.id) model.config.columns
 
 
 moveColumnTo : Model a -> Float -> Model a
@@ -671,6 +666,7 @@ view model =
             viewGrid model
 
 
+gridHtmlId : String
 gridHtmlId =
     "grid"
 
@@ -1204,7 +1200,7 @@ viewHeader model columnConfig index =
 {-| specific header content for the selection column
 -}
 viewMultiSelectionCheckbox : Model a -> ColumnConfig a -> Html (Msg a)
-viewMultiSelectionCheckbox model columnConfig =
+viewMultiSelectionCheckbox _ _ =
     input
         [ type_ "checkbox"
         , Html.Styled.Attributes.checked False
@@ -1375,6 +1371,7 @@ arrowDown =
     arrow borderTop3
 
 
+arrow : (Px -> BorderStyle (TextDecorationStyle {}) -> Color -> Style) -> Html msg
 arrow horizontalBorder =
     div
         [ css
