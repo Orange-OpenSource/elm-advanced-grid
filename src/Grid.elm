@@ -1,44 +1,61 @@
+{- Copyright 2019 Orange SA
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-}
+
+
 module Grid exposing
     ( Config
-    , ColumnConfig
-    , compareBoolField
-    , viewBool, viewProgressBar
-    , Model, init, update, view
-    , ColumnProperties, Msg(..), Sorting(..), boolColumnConfig, cellStyles, compareFields, cumulatedBorderWidth, filteredItems, floatColumnConfig, intColumnConfig, isSelectionColumn, isSelectionColumnProperties, selectionColumn, stringColumnConfig, visibleColumns
+    , ColumnConfig, ColumnProperties, stringColumnConfig, intColumnConfig, floatColumnConfig, boolColumnConfig
+    , Sorting(..), compareFields, compareBoolField
+    , viewBool, viewFloat, viewInt, viewProgressBar, viewString, cumulatedBorderWidth, cellAttributes
+    , Model, Msg(..), init, update, view
+    , filteredItems
+    , visibleColumns, isSelectionColumn, isSelectionColumnProperties
     )
 
-{-| This library displays a grid of data.
-It offers filtering, sorting, multiple selection, click event listener and
-customizable rendering of the lines, cells and columns.
-
-A grid is defined using a `Config`
-
-The list of data can be very long, thanks to the use of [FabienHenon/elm-infinite-list-view](https://package.elm-lang.org/packages/FabienHenon/elm-infinite-list-view/latest/) under the hood.
+{-| This module allows to create dynamically configurable data grid.
 
 
 # Configure the grid
+
+A grid is defined using a `Config`
 
 @docs Config
 
 
 # Configure a column
 
-@docs ColumnConfig
+@docs ColumnConfig, ColumnProperties, stringColumnConfig, intColumnConfig, floatColumnConfig, boolColumnConfig
 
 
 # Configure the column sorting
 
-@docs Sorting(..), compareBoolField, compareFloatField, compareIntField, compareStringField
+@docs Sorting, compareFields, compareBoolField
 
 
-# Configure the column rendering
+# Configure the rendering when a custom one is needed
 
-@docs viewBool, viewFloat, viewInt, viewProgressBar, viewString
+@docs viewBool, viewFloat, viewInt, viewProgressBar, viewString, cumulatedBorderWidth, cellAttributes
 
 
 # Boilerplate
 
-@docs Model, Msg(..), init, update, view
+@docs Model, Msg, init, update, view
+
+
+# Get data
+
+@docs filteredItems
+
+
+# Get grid config
+
+@docs visibleColumns, isSelectionColumn, isSelectionColumnProperties
 
 -}
 
@@ -58,7 +75,11 @@ import List.Extra exposing (getAt)
 import String
 
 
-{-| The configuration for the grid. You should define the css classes, if you want to use some.
+{-| The configuration for the grid. The grid content is described
+using a list of ColumnConfig.
+You should define the css classes, if you want to use some.
+By example you could add to all rows a "cursor: pointer" style,
+if you define some behaviour to be triggered when the user clicks a line.
 
     gridConfig =
         { canSelectRows = True
@@ -93,19 +114,30 @@ type alias Config a =
 
 {-| The messages the grid view can emit.
 
-The messages constructed with LineClicked (Item a)
+The messages constructed with UserClickedLine (Item a)
 are emitted when an item is clicked, so you can update the model of your app.
+If you use this message, you'll probably want to define a cursor of type pointer for the rows
+(see the rowClass property of the Config type )
 
-The messages using the SelectionToggled constructor let you know a line selection status changed,
+The messages using the UserToggledSelection constructor let you know a line selection status changed,
 so you can update the list of selected items if you use it.
+
+The ShowPreferences message constructor is to be used when you want to trigger the display of the column visibility panel.
+It must be sent by the parent module. There is no way to trigger it from Grid.
+
+UserToggledColumnVisibility, and UserEndedMouseInteraction may be used in the parent module to save the grid configuration
+(if you want to make persistant the changes of columns' width, position and/or visibility by example).
+
+If you want to trigger a scrolling of the grid from your program, you can call Grid's update function with ScrollTo message.
+ScrollTo takes one argument: the index of the row to be displayed on top after the scrolling.
 
 You probably should not use the other constructors.
 
     case msg of
-        GridMsg (LineClicked item) ->
+        GridMsg (UserClickedLine item) ->
             let
                 ( newGridModel, cmd ) =
-                    Grid.update (LineClicked item) model.gridModel
+                    Grid.update (UserClickedLine item) model.gridModel
             in
             ( { model
                 | gridModel = newGridModel
@@ -114,10 +146,10 @@ You probably should not use the other constructors.
             , Cmd.map GridMsg cmd
             )
 
-        GridMsg (SelectionToggled item status) ->
+        GridMsg (UserToggledSelection item status) ->
             let
                 ( newGridModel, cmd ) =
-                    Grid.update (SelectionToggled item status) model.gridModel
+                    Grid.update (UserToggledSelection item status) model.gridModel
 
                 selectedItems =
                     List.filter .selected newGridModel.content
@@ -150,11 +182,14 @@ type Msg a
     | UserMovedColumn ( Float, Float ) -- param is clienttPos
     | UserMovedResizeHandle ( Float, Float ) -- param is clienttPos
     | UserToggledAllItemSelection
-    | UserToggledColumnVisibilty (ColumnConfig a)
+    | UserToggledColumnVisibility (ColumnConfig a)
     | UserToggledSelection (Item a)
 
 
 {-| The sorting options for a column, to be used in the properties of a ColumnConfig.
+
+NB: This type is useful to define custom column types. You wont need it for common usages.
+
 By default should use "Unsorted" as the value for the order field.
 If you give any other value (Ascending or Descending), it must match the order
 of the data provided to initialize the grid model.
@@ -177,6 +212,11 @@ type Sorting
 {-| The configuration for a column. The grid content is described
 using a list of ColumnConfigs.
 
+NB: This is a "low level API", useful to define custom column types.
+In order to define common column types, you may want to use higher level API,
+i.e. stringColumnConfig, intColumnConfig, floatColumnConfig,
+boolColumnConfig
+
     idColumnConfig =
         { properties =
             { id = "Id"
@@ -185,10 +225,11 @@ using a list of ColumnConfigs.
             , visible = True
             , width = 50
             }
+        , comparator = compareIntField (\item -> item.id)
         , filters = IntFilter <| intFilter (\item -> item.id)
         , filteringValue = Nothing
+        , toString = String.fromInt (\item -> item.id)
         , renderer = viewInt (\item -> item.id)
-        , comparator = compareIntField (\item -> item.id)
         }
 
 -}
@@ -203,6 +244,11 @@ type alias ColumnConfig a =
 
 
 {-| ColumnProperties are a part of the configuration for a column.
+
+NB: This is a "low level API", useful to define custom column types.
+In order to define common column types, you may want to use higher level API,
+i.e. stringColumnConfig, intColumnConfig, floatColumnConfig,
+boolColumnConfig
 
     properties =
         { id = "name"
@@ -232,7 +278,7 @@ type alias Model a =
     , columnsX : List Int
     , content : List (Item a)
     , dragStartX : Float
-    , filterHasFocus : Bool -- Prevents click in filter to trigger a sort
+    , filterHasFocus : Bool -- Prevents clicking in an input field to trigger a sort
     , hoveredColumn : Maybe (ColumnConfig a)
     , infList : IL.Model
     , isAllSelected : Bool
@@ -318,7 +364,7 @@ init config items =
     { initialModel | columnsX = columnsX initialModel }
 
 
-{-| the X coordinate of each column
+{-| the list of X coordinates of columns; coordinates are expressed in pixel. The first one is at 0.
 -}
 columnsX : Model a -> List Int
 columnsX model =
@@ -494,7 +540,7 @@ modelUpdate msg model =
                 , content = newContent
             }
 
-        UserToggledColumnVisibilty columnConfig ->
+        UserToggledColumnVisibility columnConfig ->
             let
                 toggleVisibility properties =
                     { properties | visible = not properties.visible }
@@ -737,6 +783,8 @@ columnFilters model =
         |> List.filterMap (\c -> parseFilteringString c.filteringValue c.filters)
 
 
+{-| The list of items satisfying the current filtering values
+-}
 filteredItems : Model a -> List (Item a)
 filteredItems model =
     columnFilters model
@@ -784,7 +832,7 @@ returns the field to be displayed in this column.
 viewInt : (Item a -> Int) -> ColumnProperties -> Item a -> Html (Msg a)
 viewInt field properties item =
     div
-        (cellStyles properties)
+        (cellAttributes properties)
         [ text <| String.fromInt (field item) ]
 
 
@@ -800,7 +848,7 @@ returns the field to be displayed in this column.
 viewBool : (Item a -> Bool) -> ColumnProperties -> Item a -> Html (Msg a)
 viewBool field properties item =
     div
-        (cellStyles properties)
+        (cellAttributes properties)
         [ input
             [ type_ "checkbox"
             , Html.Styled.Attributes.checked (field item)
@@ -823,6 +871,12 @@ alwaysPreventDefault msg =
 
 
 {-| Create a ColumnConfig for a column containing a string value
+
+getter is usually a simple field access function, like ".age" to get the age field of a Person record.
+
+localize takes the title or the tooltip of the column as a parameter, and returns its translation, if you need internationalization.
+If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
+
 -}
 stringColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> String, localize : String -> String } -> ColumnConfig a
 stringColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
@@ -837,6 +891,12 @@ stringColumnConfig ({ id, title, tooltip, width, getter, localize } as propertie
 
 
 {-| Create a ColumnConfig for a column containing a float value
+
+getter is usually a simple field access function, like ".age" to get the age field of a Person record.
+
+localize takes the title or the tooltip of the column as a parameter, and returns its translation, if you need internationalization.
+If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
+
 -}
 floatColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> Float, localize : String -> String } -> ColumnConfig a
 floatColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
@@ -851,6 +911,12 @@ floatColumnConfig ({ id, title, tooltip, width, getter, localize } as properties
 
 
 {-| Create a ColumnConfig for a column containing an integer value
+
+getter is usually a simple field access function, like ".age" to get the age field of a Person record.
+
+localize takes the title or the tooltip of the column as a parameter, and returns its translation, if you need internationalization.
+If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
+
 -}
 intColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> Int, localize : String -> String } -> ColumnConfig a
 intColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
@@ -865,6 +931,10 @@ intColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) 
 
 
 {-| Create a ColumnConfig for a column containing a boolean value
+
+localize takes the title or the tooltip of the column as a parameter, and returns its translation, if you need internationalization.
+If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
+
 -}
 boolColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> Bool, localize : String -> String } -> ColumnConfig a
 boolColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
@@ -910,7 +980,7 @@ returns the field to be displayed in this column.
 viewFloat : (Item a -> Float) -> ColumnProperties -> Item a -> Html (Msg a)
 viewFloat field properties item =
     div
-        (cellStyles properties)
+        (cellAttributes properties)
         [ text <| String.fromFloat (field item) ]
 
 
@@ -926,7 +996,7 @@ returns the field to be displayed in this column.
 viewString : (Item a -> String) -> ColumnProperties -> Item a -> Html (Msg a)
 viewString field properties item =
     div
-        (cellStyles properties)
+        (cellAttributes properties)
         [ text <| field item ]
 
 
@@ -983,7 +1053,7 @@ viewProgressBar barHeight field properties item =
         ]
 
 
-{-| View column visibility panel
+{-| Renders the column visibility panel
 -}
 viewPreferences : Model a -> Html (Msg a)
 viewPreferences model =
@@ -1049,7 +1119,7 @@ viewColumnVisibilitySelector columnConfig =
             [ id columnConfig.properties.id
             , type_ "checkbox"
             , Html.Styled.Attributes.checked columnConfig.properties.visible
-            , onClick (UserToggledColumnVisibilty columnConfig)
+            , onClick (UserToggledColumnVisibility columnConfig)
             ]
             []
         , label
@@ -1102,6 +1172,10 @@ compareBoolField field item1 item2 =
             LT
 
 
+{-| The list of visible columns according to their current configuration.
+This list ignores the actual position of the columns; some of them may require
+an horizontal scrolling to be seen
+-}
 visibleColumns : Model a -> List (ColumnConfig a)
 visibleColumns model =
     List.filter (\column -> column.properties.visible) model.config.columns
@@ -1209,11 +1283,17 @@ viewMultiSelectionCheckbox _ _ =
         []
 
 
+{-| Returns true when the given ColumnConfig corresponds to the multiple selection column
+(column added by Grid when row selection is activated)
+-}
 isSelectionColumn : ColumnConfig a -> Bool
 isSelectionColumn columnConfig =
     isSelectionColumnProperties columnConfig.properties
 
 
+{-| Returns true when the given Properties are the one of the multiple selection column,
+provided by Grid when row selection is activated
+-}
 isSelectionColumnProperties : { a | id : String } -> Bool
 isSelectionColumnProperties columnProperties =
     columnProperties.id == selectionColumn.properties.id
@@ -1410,15 +1490,17 @@ viewFilter model columnConfig =
 
 
 {-| Left + right cell border width, including padding, in px.
-Useful to take in account the borders when calculating the total grid width
+Useful to take into account the borders when calculating the total grid width
 -}
 cumulatedBorderWidth : Int
 cumulatedBorderWidth =
     6
 
 
-cellStyles : ColumnProperties -> List (Html.Styled.Attribute (Msg a))
-cellStyles properties =
+{-| Common attributes for cell renderers
+-}
+cellAttributes : ColumnProperties -> List (Html.Styled.Attribute (Msg a))
+cellAttributes properties =
     [ attribute "data-testid" properties.id
     , css
         [ display inlineBlock

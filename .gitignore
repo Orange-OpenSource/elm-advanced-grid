@@ -1,6 +1,7 @@
 .idea
 
+index.html
 elm-stuff
 example.js
-
+docs.json
 node_modules
