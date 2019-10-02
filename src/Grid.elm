@@ -441,6 +441,9 @@ modelUpdate msg model =
                 Nothing ->
                     model
 
+        NoOp ->
+            model
+
         UserClickedFilter ->
             { model | filterHasFocus = True }
 
@@ -522,11 +525,12 @@ modelUpdate msg model =
         UserClickedPreferenceCloseButton ->
             { model | showPreferences = False }
 
+        -- The ScrollTo message is handled in the `update` function
+        ScrollTo int ->
+            model
+
         ShowPreferences ->
             { model | showPreferences = True }
-
-        _ ->
-            model
 
 
 initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
