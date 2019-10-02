@@ -61,6 +61,7 @@ visibleItemsToCsv separator model =
 
 itemToCsv : List (ColumnConfig a) -> String -> Item a -> String
 itemToCsv columnConfigs separator item =
+    columnConfigs
         |> List.map (columnToString item)
         |> String.join separator
 
