@@ -72,7 +72,7 @@ import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
-import List.Extra exposing (getAt)
+import List.Extra exposing (findIndex, getAt)
 import String
 
 
@@ -130,7 +130,8 @@ UserToggledColumnVisibility, and UserEndedMouseInteraction may be used in the pa
 (if you want to make persistant the changes of columns' width, position and/or visibility by example).
 
 If you want to trigger a scrolling of the grid from your program, you can call Grid's update function with ScrollTo message.
-ScrollTo takes one argument: the index of the row to be displayed on top after the scrolling.
+ScrollTo takes one argument: a selection function. The row diplayed on top after the scrolling is the first one for which
+the selection function returns True.
 
 You probably should not use the other constructors.
 
@@ -171,7 +172,7 @@ type Msg a
     | InitializeFilters (Dict String String) -- column ID, filter value
     | InitializeSorting String Sorting -- column ID, Ascending or Descending
     | NoOp
-    | ScrollTo Int
+    | ScrollTo (Item a -> Bool) -- scroll to the first item for which the function returns True
     | ShowPreferences
     | UserClickedHeader (ColumnConfig a)
     | UserClickedFilter
@@ -378,14 +379,21 @@ columnsX model =
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
     case msg of
-        ScrollTo idx ->
+        ScrollTo isOnTopItem ->
+            let
+                filteredContent =
+                    filteredItems model
+
+                onTopItemIndex =
+                    Maybe.withDefault 0 <| findIndex isOnTopItem filteredContent
+            in
             ( model
             , IL.scrollToNthItem
                 { postScrollMessage = NoOp
                 , listHtmlId = gridHtmlId
-                , itemIndex = idx
+                , itemIndex = onTopItemIndex
                 , configValue = gridConfig model
-                , items = model.content
+                , items = filteredContent
                 }
             )
 

@@ -44,7 +44,7 @@ type Msg
     | SetFilters
     | SetAscendingOrder
     | SetDecendingOrder
-    | UserChangedScrollIndex String
+    | UserChangedScrolledCity String
 
 
 main : Program () Model Msg
@@ -100,8 +100,8 @@ view model =
 viewInput : Html Msg
 viewInput =
     label []
-        [ text "Scroll to item number:"
-        , input [ onInput UserChangedScrollIndex ] []
+        [ text "Scroll to first city starting with:"
+        , input [ onInput UserChangedScrolledCity, style "margin-left" "10px" ] []
         ]
 
 
@@ -239,22 +239,17 @@ update msg model =
             , Cmd.map GridMsg gridCmd
             )
 
-        UserChangedScrollIndex string ->
-            case String.toInt string of
-                Just idx ->
-                    let
-                        message =
-                            Grid.ScrollTo idx
+        UserChangedScrolledCity city ->
+            let
+                message =
+                    Grid.ScrollTo (\item -> String.startsWith (String.toLower city) (String.toLower item.city))
 
-                        ( newGridModel, gridCmd ) =
-                            Grid.update message model.gridModel
-                    in
-                    ( { model | gridModel = newGridModel }
-                    , Cmd.map GridMsg gridCmd
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+                ( newGridModel, gridCmd ) =
+                    Grid.update message model.gridModel
+            in
+            ( { model | gridModel = newGridModel }
+            , Cmd.map GridMsg gridCmd
+            )
 
 
 itemCount : Int
