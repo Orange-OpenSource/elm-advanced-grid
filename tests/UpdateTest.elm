@@ -3,6 +3,7 @@ module UpdateTest exposing (describeHeaderClicked, suite)
 import Expect
 import Fixtures exposing (..)
 import Grid exposing (..)
+import List.Extra
 import Test exposing (..)
 
 
@@ -71,6 +72,36 @@ describeHeaderClicked =
                 in
                 Expect.equal Ascending newModel.order
         ]
+    , describe "receiving UserToggledColumnVisibility msg"
+        [ test "should clear the filtering value" <|
+            \_ ->
+                let
+                    -- TODO: simplify the setup for this test
+                    filteredScoreColumn =
+                        { scoreColumn | filteringValue = Just "> 10" }
+
+                    filteredColumns =
+                        model.config.columns
+                            |> List.Extra.updateIf isScoreColumn (\_ -> filteredScoreColumn)
+
+                    currentConfig =
+                        model.config
+
+                    filteredConfig =
+                        { currentConfig | columns = filteredColumns }
+
+                    filteredModel =
+                        { model | config = filteredConfig }
+
+                    ( newModel, _ ) =
+                        update (UserToggledColumnVisibilty filteredScoreColumn) filteredModel
+
+                    updatedScoreColumn =
+                        List.Extra.find isScoreColumn newModel.config.columns
+                            |> Maybe.withDefault filteredScoreColumn
+                in
+                Expect.equal Nothing updatedScoreColumn.filteringValue
+        ]
     ]
 
 
@@ -106,3 +137,8 @@ modelSortedByDescendingScore =
         , order = Descending
         , sortedBy = Just scoreColumn
     }
+
+
+isScoreColumn : ColumnConfig Item -> Bool
+isScoreColumn columnConfig =
+    columnConfig.properties.id == scoreColumn.properties.id
