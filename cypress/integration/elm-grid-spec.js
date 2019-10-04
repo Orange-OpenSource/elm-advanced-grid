@@ -17,8 +17,8 @@ describe('elm grid example', function () {
    const sortCitiesAscending = ['Abuja', 'Ahmedabad', 'Alexandria', 'Ankara']
    const sortCitiesDescending = ['Yangon', 'Wuhan', 'Toronto', 'Tokyo']
    const citiesWithARA = ['Karachi', 'Guadalajara', 'Ankara']
-   const valuesGreaterThan95 = ['95.18072289156626', '96.3855421686747', '97.59036144578313', '98.79518072289156']
-   const valuesLesserThan4 = ['0', '1.2048192771084338', '2.4096385542168677', '3.614457831325301']
+   const valuesGreaterThan95 = ['95.1', '96.3', '97.5', '98.7']
+   const valuesLesserThan4 = ['0', '1.2', '2.4', '3.6']
 
    it('should have headers', function () {
         cy.visit(url)
@@ -185,7 +185,7 @@ describe('elm grid example', function () {
         cy.get('input[data-testid="filter-Id"]').type("<25")
         cy.get('input[data-testid="filter-Name"]').type("me1")
         cy.get('input[data-testid="filter-Progress"]').type(">15")
-        cy.get('input[data-testid="filter-Value"]').type("66")
+        cy.get('input[data-testid="filter-Value"]').type("8")
         cy.get('input[data-testid="filter-City"]').type("sa")
         let rows = cy.get('div[data-testid="row"]')
         rows.should('have.length', 1)
@@ -256,16 +256,19 @@ describe('elm grid example', function () {
         })
    })
 
-    it('should display the last line when using the "scroll to item number" field', function () {
+    it('should display the wished city when using the "scroll to first city starting with" field', function () {
         cy.visit(url)
         let rows = cy.get('div[data-testid="row"]')
-        rows.should('not.contain', 'Dubai')
+        rows.should('not.contain', 'Brasilia')
+            .should('not.contain', 'Manchester')
 
-        cy.scrollToItemNumber(80)
-
+        cy.scrollToCityStartingWith('br')
         rows = cy.get('div[data-testid="row"]')
-        rows.should('contain', 'Dubai')
+        rows.should('contain', 'Brasilia')
 
+        cy.scrollToCityStartingWith('manch')
+        rows = cy.get('div[data-testid="row"]')
+        rows.should('contain', 'Manchester')
         rows.last().click()
         let status = cy.get('div[data-testid="clickedItem"]')
         status.contains("Clicked Item = id:82 - name: name82")
