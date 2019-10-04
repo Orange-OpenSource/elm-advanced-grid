@@ -629,11 +629,6 @@ orderBy model columnConfig order =
             ( model.content, Unsorted )
 
 
-indexOfColumn : ColumnConfig a -> Model a -> Maybe Int
-indexOfColumn columnConfig model =
-    List.Extra.findIndex (isColumn columnConfig) model.config.columns
-
-
 hasId : String -> ColumnConfig a -> Bool
 hasId id columnConfig =
     columnConfig.properties.id == id
