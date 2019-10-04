@@ -9461,7 +9461,7 @@ var pascallemerrer$elm_advanced_grid$Grid$update = F2(
 				return _Utils_update(
 					model,
 					{content: newContent, isAllSelected: newStatus});
-			case 'UserToggledColumnVisibilty':
+			case 'UserToggledColumnVisibility':
 				var columnConfig = msg.a;
 				var toggleVisibility = function (properties) {
 					return _Utils_update(
@@ -11532,8 +11532,8 @@ var pascallemerrer$elm_advanced_grid$Grid$viewClosebutton = A2(
 			rtfeldman$elm_css$Html$Styled$Events$onClick(pascallemerrer$elm_advanced_grid$Grid$UserClickedPreferenceCloseButton)
 		]),
 	_List_Nil);
-var pascallemerrer$elm_advanced_grid$Grid$UserToggledColumnVisibilty = function (a) {
-	return {$: 'UserToggledColumnVisibilty', a: a};
+var pascallemerrer$elm_advanced_grid$Grid$UserToggledColumnVisibility = function (a) {
+	return {$: 'UserToggledColumnVisibility', a: a};
 };
 var rtfeldman$elm_css$Css$marginLeft = rtfeldman$elm_css$Css$prop1('margin-left');
 var rtfeldman$elm_css$Html$Styled$label = rtfeldman$elm_css$Html$Styled$node('label');
@@ -11553,7 +11553,7 @@ var pascallemerrer$elm_advanced_grid$Grid$viewColumnVisibilitySelector = functio
 						rtfeldman$elm_css$Html$Styled$Attributes$type_('checkbox'),
 						rtfeldman$elm_css$Html$Styled$Attributes$checked(columnConfig.properties.visible),
 						rtfeldman$elm_css$Html$Styled$Events$onClick(
-						pascallemerrer$elm_advanced_grid$Grid$UserToggledColumnVisibilty(columnConfig))
+						pascallemerrer$elm_advanced_grid$Grid$UserToggledColumnVisibility(columnConfig))
 					]),
 				_List_Nil),
 				A2(

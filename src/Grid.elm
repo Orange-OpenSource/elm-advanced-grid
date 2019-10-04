@@ -453,7 +453,7 @@ modelUpdate msg model =
                     { columnConfig | filteringValue = Just string }
 
                 newColumns =
-                    List.Extra.setIf (\item -> item.properties.id == columnConfig.properties.id) newColumnconfig model.config.columns
+                    List.Extra.setIf (isColumn columnConfig) newColumnconfig model.config.columns
 
                 oldConfig =
                     model.config
@@ -487,7 +487,7 @@ modelUpdate msg model =
         InitializeSorting columnId sorting ->
             let
                 sortedColumnConfig =
-                    List.Extra.find (\column -> column.properties.id == columnId) model.config.columns
+                    List.Extra.find (hasId columnId) model.config.columns
             in
             case sortedColumnConfig of
                 Just columnConfig ->
@@ -556,6 +556,7 @@ modelUpdate msg model =
 
                 newColumns =
                     updateColumnProperties toggleVisibility model columnConfig.properties.id
+                        |> List.Extra.updateIf (isColumn columnConfig) (\col -> { col | filteringValue = Nothing })
 
                 currentGridConfig =
                     model.config
@@ -636,6 +637,16 @@ orderBy model columnConfig order =
             ( model.content, Unsorted )
 
 
+hasId : String -> ColumnConfig a -> Bool
+hasId id columnConfig =
+    columnConfig.properties.id == id
+
+
+isColumn : ColumnConfig a -> ColumnConfig a -> Bool
+isColumn firstColumnConfig secondColumnConfig =
+    firstColumnConfig.properties.id == secondColumnConfig.properties.id
+
+
 moveColumnTo : Model a -> Float -> Model a
 moveColumnTo model x =
     { model | movingColumnDeltaX = x - model.dragStartX }
@@ -678,8 +689,8 @@ updateColumnWidthProperty model columnConfig width =
 
 
 updateColumnProperties : (ColumnProperties -> ColumnProperties) -> Model a -> String -> List (ColumnConfig a)
-updateColumnProperties updateFunction model id =
-    List.Extra.updateIf (\col -> col.properties.id == id)
+updateColumnProperties updateFunction model columnId =
+    List.Extra.updateIf (hasId columnId)
         (updatePropertiesInColumnConfig updateFunction)
         model.config.columns
 
