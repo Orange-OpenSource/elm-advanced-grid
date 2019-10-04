@@ -1,7 +1,18 @@
+{- Copyright (c) 2019 Orange
+   This code is released under the MIT license.
+
+      Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+      The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-}
+
+
 module Examples.Main exposing (main)
 
 import Browser
-import Dict
+import Dict exposing (Dict)
 import Grid exposing (ColumnConfig, Msg(..), Sorting(..), floatColumnConfig, intColumnConfig, stringColumnConfig, viewProgressBar)
 import Html exposing (Html, button, div, input, label, li, text, ul)
 import Html.Attributes exposing (attribute, style)
@@ -76,7 +87,7 @@ view model =
                 ]
                 [ text "Show Preferences" ]
             ]
-        , div (centeredWithId "ButtonBar")
+        , div (centeredWithId "buttonBar")
             [ button [ onClick SetFilters, style "margin" "10px" ] [ text "Set Filters" ]
             , button [ onClick ResetFilters, style "margin" "10px" ] [ text "Reset Filters" ]
             , button [ onClick SetAscendingOrder, style "margin" "10px" ] [ text "Sort cities ascending" ]
@@ -251,6 +262,7 @@ itemCount =
     List.length cities
 
 
+cities : List String
 cities =
     [ "Paris", "London", "New York", "Moscow", "Roma", "Berlin", "Tokyo", "Delhi", "Shanghai", "Sao Paulo", "Mexico City", "Cairo", "Dhaka", "Mumbai", "Beijing", "Osaka", "Karachi", "Chongqing", "Buenos Aires", "Istanbul", "Kolkata", "Lagos", "Manila", "Tianjin", "Rio De Janeiro", "Guangzhou", "Moscow", "Lahore", "Shenzhen", "Bangalore", "Paris", "Bogota", "Chennai", "Jakarta", "Lima", "Bangkok", "Seoul", "Hyderabad", "London", "Tehran", "Chengdu", "New York", "Wuhan", "Ahmedabad", "Kuala Lumpur", "Riyadh", "Surat", "Santiago", "Madrid", "Pune", "Dar Es Salaam", "Toronto", "Johannesburg", "Barcelona", "St Petersburg", "Yangon", "Alexandria", "Guadalajara", "Ankara", "Melbourne", "Sydney", "Brasilia", "Nairobi", "Cape Town", "Rome", "Montreal", "Tel Aviv", "Los Angeles", "Medellin", "Jaipur", "Casablanca", "Lucknow", "Berlin", "Busan", "Athens", "Milan", "Kanpur", "Abuja", "Lisbon", "Surabaya", "Dubai", "Cali", "Manchester" ]
 
@@ -309,11 +321,8 @@ rowClass item =
         ""
 
 
-{-| TODO implement
--}
-localize : String -> String
-localize string =
-    string
+
+{- the definition of the columns of the grid -}
 
 
 columns : List (ColumnConfig Item)
@@ -323,15 +332,15 @@ columns =
         , getter = .id
         , localize = localize
         , title = "Id"
-        , tooltip = "A hint for Id column"
+        , tooltip = "Une indication pour la colonne Id"
         , width = 50
         }
     , stringColumnConfig
         { id = "Name"
         , getter = .name
         , localize = localize
-        , title = "Name"
-        , tooltip = "A hint for Name column"
+        , title = "Nom"
+        , tooltip = "Une indication pour la colonne Nom"
         , width = 100
         }
     , let
@@ -340,26 +349,74 @@ columns =
                 { id = "Progress"
                 , getter = .value
                 , localize = localize
-                , title = "Progress"
-                , tooltip = "A hint for Progress column"
+                , title = "Progrès"
+                , tooltip = "Une indication pour la colonne Progrès"
                 , width = 100
                 }
       in
       { progressColumnConfig | renderer = viewProgressBar 8 (\item -> item.value) }
     , floatColumnConfig
         { id = "Value"
-        , getter = .value
+        , getter = .value >> truncateDecimals
         , localize = localize
-        , title = "Value"
-        , tooltip = "A hint for Value column"
+        , title = "Valeur"
+        , tooltip = "Une indication pour la colonne Valeur"
         , width = 100
         }
     , stringColumnConfig
         { id = "City"
         , getter = .city
         , localize = localize
-        , title = "City"
-        , tooltip = "A hint for City column"
+        , title = "Ville"
+        , tooltip = "Une indication pour la colonne Ville"
         , width = 300
         }
     ]
+
+
+
+{- A simple example of i18n -}
+
+
+type alias Translations =
+    Dict String String
+
+
+translations =
+    Dict.fromList
+        [ ( "Nom", "Name" )
+        , ( "Progrès", "Progress" )
+        , ( "Valeur", "Value" )
+        , ( "Ville", "City" )
+        , ( "Une indication pour la colonne Id", "A hint for Id column" )
+        , ( "Une indication pour la colonne Nom", "A hint for Name column" )
+        , ( "Une indication pour la colonne Valeur", "A hint for Value column" )
+        , ( "Une indication pour la colonne Progrès", "A hint for Progress column" )
+        , ( "Une indication pour la colonne Ville", "A hint for City column" )
+        ]
+
+
+localize : String -> String
+localize key =
+    Maybe.withDefault key <| Dict.get key translations
+
+
+
+{- an example of tranformation which can be applied ot a given column value -}
+
+
+truncateDecimals : Float -> Float
+truncateDecimals value =
+    let
+        valueAsString =
+            String.fromFloat value
+
+        pointIndex =
+            String.indexes "." valueAsString
+                |> List.head
+                |> Maybe.withDefault (String.length valueAsString)
+    in
+    valueAsString
+        |> String.left (pointIndex + 2)
+        |> String.toFloat
+        |> Maybe.withDefault 0
