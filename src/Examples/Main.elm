@@ -44,7 +44,7 @@ type Msg
     | SetFilters
     | SetAscendingOrder
     | SetDecendingOrder
-    | UserChangedScrolledCity String
+    | UserRequiredScrollingToCity String
 
 
 main : Program () Model Msg
@@ -101,7 +101,7 @@ viewInput : Html Msg
 viewInput =
     label []
         [ text "Scroll to first city starting with:"
-        , input [ onInput UserChangedScrolledCity, style "margin-left" "10px" ] []
+        , input [ onInput UserRequiredScrollingToCity, style "margin-left" "10px" ] []
         ]
 
 
@@ -239,7 +239,7 @@ update msg model =
             , Cmd.map GridMsg gridCmd
             )
 
-        UserChangedScrolledCity city ->
+        UserRequiredScrollingToCity city ->
             let
                 message =
                     Grid.ScrollTo (\item -> String.startsWith (String.toLower city) (String.toLower item.city))

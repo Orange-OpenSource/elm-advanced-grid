@@ -379,19 +379,19 @@ columnsX model =
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
     case msg of
-        ScrollTo isOnTopItem ->
+        ScrollTo isTargetItem ->
             let
                 filteredContent =
                     filteredItems model
 
-                onTopItemIndex =
-                    Maybe.withDefault 0 <| findIndex isOnTopItem filteredContent
+                targetItemIndex =
+                    Maybe.withDefault 0 <| findIndex isTargetItem filteredContent
             in
             ( model
             , IL.scrollToNthItem
                 { postScrollMessage = NoOp
                 , listHtmlId = gridHtmlId
-                , itemIndex = onTopItemIndex
+                , itemIndex = targetItemIndex
                 , configValue = gridConfig model
                 , items = filteredContent
                 }
