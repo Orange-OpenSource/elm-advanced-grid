@@ -1203,8 +1203,9 @@ viewHeaders model =
     in
     div
         ([ css
-            [ backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
+            [ backgroundColor darkGrey
             , height (px <| toFloat model.config.headerHeight)
+            , displayFlex
             ]
          ]
             ++ conditionalAttributes
@@ -1235,18 +1236,20 @@ viewHeader model columnConfig index =
          ]
             ++ conditionalAttributes
         )
-        (if isSelectionColumn columnConfig then
-            [ viewSelectionHeader model columnConfig ]
+        [ if isSelectionColumn columnConfig then
+            viewSelectionHeader model columnConfig
 
-         else
+          else
             viewDataHeader model columnConfig index columnId
-        )
+        ]
 
 
 headerStyles : Model a -> ColumnConfig a -> Attribute (Msg a)
 headerStyles model columnConfig =
     css
-        [ display inlineBlock
+        [ backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
+        , display inlineFlex
+        , flexDirection row
         , border3 (px 1) solid lightGrey2
         , boxSizing contentBox
         , height (px <| toFloat <| model.config.headerHeight - cumulatedBorderWidth)
@@ -1258,7 +1261,7 @@ headerStyles model columnConfig =
                 [ typeSelector "div"
                     [ visibility visible -- makes the move handle visible when hover the column
                     , withAttribute "data-handle"
-                        [ display inlineBlock ]
+                        [ display inlineFlex ]
                     ]
                 ]
             ]
@@ -1279,14 +1282,37 @@ viewSelectionHeader _ _ =
 
 {-| header content for data columns
 -}
-viewDataHeader : Model a -> ColumnConfig a -> Int -> String -> List (Html (Msg a))
+viewDataHeader : Model a -> ColumnConfig a -> Int -> String -> Html (Msg a)
 viewDataHeader model columnConfig index columnId =
-    [ viewMoveHandle model columnConfig index columnId
-    , viewTitle model columnConfig
-    , viewSortingSymbol model columnConfig
-    , viewFilter model columnConfig
-    , viewResizeHandle columnConfig
-    ]
+    div
+        [ css
+            [ displayFlex
+            , flexDirection row
+            ]
+        ]
+        [ div
+            [ css
+                [ displayFlex
+                , flexDirection column
+                , alignItems flexStart
+                ]
+            ]
+            [ div
+                [ css
+                    [ displayFlex
+                    , flexDirection row
+                    , flexGrow (num 1)
+                    , justifyContent flexStart
+                    ]
+                ]
+                [ viewMoveHandle model columnConfig index columnId
+                , viewTitle model columnConfig
+                , viewSortingSymbol model columnConfig
+                ]
+            , viewFilter model columnConfig
+            ]
+        , viewResizeHandle columnConfig
+        ]
 
 
 viewGhostHeader : Model a -> Html (Msg a)
@@ -1300,14 +1326,10 @@ viewGhostHeader model =
     case maybeDragColumn of
         Just columnConfig ->
             div
-                ([ headerStyles model columnConfig
-                 , css
-                    [ backgroundColor lightGrey ]
-                 ]
-                    ++ (List.map fromUnstyled <| system.ghostStyles model.dnd)
+                (headerStyles model columnConfig
+                    :: (List.map fromUnstyled <| system.ghostStyles model.dnd)
                 )
-                [ text columnConfig.properties.title
-                ]
+                [ viewDataHeader model columnConfig -1 "" ]
 
         Nothing ->
             noContent
@@ -1327,15 +1349,6 @@ provided by Grid when row selection is activated
 isSelectionColumnProperties : { a | id : String } -> Bool
 isSelectionColumnProperties columnProperties =
     columnProperties.id == selectionColumn.properties.id
-
-
-columnX : Model a -> ColumnConfig a -> Int -> Float
-columnX model columnConfig index =
-    let
-        initialX =
-            toFloat <| Maybe.withDefault 0 <| getAt index model.columnsX
-    in
-    initialX
 
 
 viewTitle : Model a -> ColumnConfig a -> Html (Msg a)
@@ -1384,25 +1397,26 @@ viewMoveHandle : Model a -> ColumnConfig a -> Int -> String -> Html (Msg a)
 viewMoveHandle model columnConfig index columnId =
     let
         conditionnalAttributes =
-            case system.info model.dnd of
-                Just { dragIndex } ->
-                    if dragIndex /= index then
-                        List.map fromUnstyled (system.dropEvents index columnId)
+            if index >= 0 then
+                case system.info model.dnd of
+                    Just { dragIndex } ->
+                        if dragIndex /= index then
+                            List.map fromUnstyled (system.dropEvents index columnId)
 
-                    else
-                        -- should be style dimGray
-                        [ css [ opacity (num 0.5) ] ]
+                        else
+                            []
 
-                Nothing ->
-                    List.map fromUnstyled (system.dragEvents index columnId)
+                    Nothing ->
+                        List.map fromUnstyled (system.dragEvents index columnId)
+
+            else
+                []
     in
     div
         ([ css
             [ cursor move
-            , display block
             , fontSize (px 0.1)
             , height (pct 100)
-            , float left
             , visibility hidden
             , width (px 10)
             , zIndex (int 5)
@@ -1433,14 +1447,10 @@ viewResizeHandle columnConfig =
         [ attribute "data-handle" ""
         , css
             [ cursor colResize
-            , display block
             , fontSize (px 0.1)
             , height (pct 100)
-            , position absolute
-            , right (px -5)
-            , top (px 0)
             , width (px 9)
-            , zIndex (int 1)
+            , zIndex (int 10)
             ]
         , fromUnstyled <| Mouse.onDown (\event -> UserClickedResizeHandle columnConfig event.clientPos)
         , onBlur UserEndedMouseInteraction
@@ -1472,8 +1482,6 @@ arrow horizontalBorder =
             , borderLeft3 (px 5) solid transparent
             , borderRight3 (px 5) solid transparent
             , horizontalBorder (px 5) solid black
-            , display inlineBlock
-            , float right
             , margin (px 5)
             ]
         ]
@@ -1485,9 +1493,7 @@ viewFilter model columnConfig =
     input
         [ attribute "data-testid" <| "filter-" ++ columnConfig.properties.id
         , css
-            [ position sticky
-            , bottom (px 2)
-            , left (px 1)
+            [ flexGrow (num 1)
             , border (px 0)
             , paddingLeft (px 2)
             , paddingRight (px 2)
