@@ -642,6 +642,11 @@ isColumn firstColumnConfig secondColumnConfig =
     firstColumnConfig.properties.id == secondColumnConfig.properties.id
 
 
+minColumnWidth : Int
+minColumnWidth =
+    25
+
+
 resizeColumn : Model a -> Float -> Model a
 resizeColumn model x =
     case model.resizingColumn of
@@ -655,7 +660,11 @@ resizeColumn model x =
                         + Basics.round deltaX
 
                 newColumns =
-                    updateColumnWidthProperty model columnConfig newWidth
+                    if newWidth > minColumnWidth then
+                        updateColumnWidthProperty model columnConfig newWidth
+
+                    else
+                        model.config.columns
 
                 config =
                     model.config
@@ -810,7 +819,8 @@ viewRow model idx listIdx item =
             [ attribute "data-testid" "row"
             , class (model.config.rowClass item)
             , css
-                [ height (px <| toFloat model.config.lineHeight)
+                [ displayFlex
+                , height (px <| toFloat model.config.lineHeight)
                 , width (px <| toFloat <| totalWidth model)
                 ]
             , onClick (UserClickedLine item)
@@ -1030,18 +1040,18 @@ viewProgressBar barHeight field properties item =
     in
     div
         [ css
-            [ display inlineBlock
+            [ displayFlex
+            , alignItems center
             , border3 (px 1) solid lightGrey
             , boxSizing contentBox
             , height (pct 100)
-            , verticalAlign top
             , paddingLeft (px 5)
             , paddingRight (px 5)
             ]
         ]
         [ div
             [ css
-                [ display inlineBlock
+                [ displayFlex
                 , backgroundColor white
                 , borderRadius (px 5)
                 , border3 (px 1) solid lightGrey
@@ -1497,7 +1507,6 @@ viewFilter model columnConfig =
             , border (px 0)
             , paddingLeft (px 2)
             , paddingRight (px 2)
-            , height (px <| toFloat <| model.config.lineHeight)
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth * 2))
             ]
         , onClick UserClickedFilter
@@ -1522,7 +1531,8 @@ cellAttributes : ColumnProperties -> List (Html.Styled.Attribute (Msg a))
 cellAttributes properties =
     [ attribute "data-testid" properties.id
     , css
-        [ display inlineBlock
+        [ alignItems center
+        , display inlineFlex
         , border3 (px 1) solid lightGrey
         , boxSizing contentBox
         , minHeight (pct 100) -- 100% min height forces empty divs to be correctly rendered
