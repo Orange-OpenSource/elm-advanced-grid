@@ -19,10 +19,10 @@ test_gui: build
 	./node_modules/.bin/cypress open
 
 build:
-	elm make src/Examples/Main.elm
+	elm make src/Examples/Main.elm --output=example.js
 
 doc:
-	elm make --docs=docs.json
-	elm make src/Examples/Main.elm; mv index.html docs/index.html
+	elm make src/Examples/Main.elm --output=docs/example.js
+	#elm make --docs=docs.json
 
 .PHONY: cypress doc

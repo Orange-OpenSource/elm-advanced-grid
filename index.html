@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Example</title>
+  <script src="example.js"></script>
+  <style>
+    .selected-row {
+      background-color: rgb(137, 166, 220)
+    }
+    .even-row {
+      background-color: rgb(225, 224, 224)
+    }
+  </style>
+</head>
+<body>
+<div id="grid"></div>
+<script>
+  Elm.Examples.Main.init({
+    node: document.getElementById("grid")
+  })
+</script>
+</body>
+</html>
