@@ -321,8 +321,8 @@ dndConfig =
     }
 
 
-system : DnDList.System (ColumnConfig a) (Msg a)
-system =
+dndSystem : DnDList.System (ColumnConfig a) (Msg a)
+dndSystem =
     DnDList.create dndConfig DndMsg
 
 
@@ -369,7 +369,7 @@ init config items =
             , columnsX = []
             , content = indexedItems
             , dragStartX = 0
-            , dnd = system.model
+            , dnd = dndSystem.model
             , filterHasFocus = False
             , hoveredColumn = Nothing
             , infList = IL.init
@@ -385,7 +385,7 @@ init config items =
 
 subscriptions : Model a -> Sub (Msg a)
 subscriptions model =
-    system.subscriptions model.dnd
+    dndSystem.subscriptions model.dnd
 
 
 {-| the list of X coordinates of columns; coordinates are expressed in pixel. The first one is at 0.
@@ -421,11 +421,8 @@ update msg model =
 
         DndMsg dndMsg ->
             let
-                _ =
-                    Debug.log "dndMsg" dndMsg
-
                 ( newDnd, newColumns ) =
-                    system.update dndMsg model.dnd model.config.columns
+                    dndSystem.update dndMsg model.dnd model.config.columns
 
                 currentConfig =
                     model.config
@@ -434,7 +431,7 @@ update msg model =
                     { currentConfig | columns = newColumns }
             in
             ( { model | dnd = newDnd, config = newConfig }
-            , system.commands model.dnd
+            , dndSystem.commands model.dnd
             )
 
         _ ->
@@ -1296,13 +1293,14 @@ viewDataHeader : Model a -> ColumnConfig a -> Int -> String -> Html (Msg a)
 viewDataHeader model columnConfig index columnId =
     let
         conditionnalAttributes =
-            case system.info model.dnd of
+            case dndSystem.info model.dnd of
                 Just { dragIndex } ->
-                    if dragIndex /= index then
-                        List.map fromUnstyled (system.dropEvents index columnId)
+                    if dragIndex == index then
+                        -- make the drop zone look empty
+                        [ css [ opacity (num 0) ] ]
 
                     else
-                        [ css [ opacity (num 0) ] ]
+                        List.map fromUnstyled (dndSystem.dropEvents index columnId)
 
                 Nothing ->
                     []
@@ -1345,14 +1343,14 @@ viewGhostHeader model =
     let
         maybeDragColumn : Maybe (ColumnConfig a)
         maybeDragColumn =
-            system.info model.dnd
+            dndSystem.info model.dnd
                 |> Maybe.andThen (\{ dragIndex } -> model.config.columns |> List.drop dragIndex |> List.head)
     in
     case maybeDragColumn of
         Just columnConfig ->
             div
                 (headerStyles model columnConfig
-                    :: (List.map fromUnstyled <| system.ghostStyles model.dnd)
+                    :: (List.map fromUnstyled <| dndSystem.ghostStyles model.dnd)
                 )
                 [ viewDataHeader model columnConfig -1 "" ]
 
@@ -1423,12 +1421,12 @@ viewMoveHandle model index columnId =
     let
         conditionnalAttributes =
             if index >= 0 then
-                case system.info model.dnd of
+                case dndSystem.info model.dnd of
                     Just { dragIndex } ->
                         []
 
                     Nothing ->
-                        List.map fromUnstyled (system.dragEvents index columnId)
+                        List.map fromUnstyled (dndSystem.dragEvents index columnId)
 
             else
                 []
