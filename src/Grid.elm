@@ -1302,7 +1302,7 @@ viewDataHeader model columnConfig index columnId =
                         List.map fromUnstyled (system.dropEvents index columnId)
 
                     else
-                        []
+                        [ css [ opacity (num 0) ] ]
 
                 Nothing ->
                     []
