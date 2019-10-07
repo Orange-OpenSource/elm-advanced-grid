@@ -1294,12 +1294,27 @@ viewSelectionHeader _ _ =
 -}
 viewDataHeader : Model a -> ColumnConfig a -> Int -> String -> Html (Msg a)
 viewDataHeader model columnConfig index columnId =
+    let
+        conditionnalAttributes =
+            case system.info model.dnd of
+                Just { dragIndex } ->
+                    if dragIndex /= index then
+                        List.map fromUnstyled (system.dropEvents index columnId)
+
+                    else
+                        []
+
+                Nothing ->
+                    []
+    in
     div
-        [ css
+        ([ css
             [ displayFlex
             , flexDirection row
             ]
-        ]
+         ]
+            ++ conditionnalAttributes
+        )
         [ div
             [ css
                 [ displayFlex
@@ -1315,7 +1330,7 @@ viewDataHeader model columnConfig index columnId =
                     , justifyContent flexStart
                     ]
                 ]
-                [ viewMoveHandle model columnConfig index columnId
+                [ viewMoveHandle model index columnId
                 , viewTitle model columnConfig
                 , viewSortingSymbol model columnConfig
                 ]
@@ -1403,18 +1418,14 @@ viewSortingSymbol model columnConfig =
             noContent
 
 
-viewMoveHandle : Model a -> ColumnConfig a -> Int -> String -> Html (Msg a)
-viewMoveHandle model columnConfig index columnId =
+viewMoveHandle : Model a -> Int -> String -> Html (Msg a)
+viewMoveHandle model index columnId =
     let
         conditionnalAttributes =
             if index >= 0 then
                 case system.info model.dnd of
                     Just { dragIndex } ->
-                        if dragIndex /= index then
-                            List.map fromUnstyled (system.dropEvents index columnId)
-
-                        else
-                            []
+                        []
 
                     Nothing ->
                         List.map fromUnstyled (system.dragEvents index columnId)
