@@ -315,7 +315,7 @@ selectionColumn =
 dndConfig : DnDList.Config (ColumnConfig a)
 dndConfig =
     { beforeUpdate = \_ _ list -> list
-    , movement = DnDList.Free
+    , movement = DnDList.Horizontal
     , listen = DnDList.OnDrag
     , operation = DnDList.Rotate
     }
@@ -1338,19 +1338,26 @@ viewDataHeader model columnConfig index columnId =
         ]
 
 
+{-| Renders the dragged header
+-}
 viewGhostHeader : Model a -> Html (Msg a)
 viewGhostHeader model =
     let
         maybeDragColumn : Maybe (ColumnConfig a)
         maybeDragColumn =
             dndSystem.info model.dnd
-                |> Maybe.andThen (\{ dragIndex } -> model.config.columns |> List.drop dragIndex |> List.head)
+                |> Maybe.andThen
+                    (\{ dragIndex } ->
+                        model.config.columns
+                            |> List.drop dragIndex
+                            |> List.head
+                    )
     in
     case maybeDragColumn of
         Just columnConfig ->
             div
                 (headerStyles model columnConfig
-                    :: (List.map fromUnstyled <| dndSystem.ghostStyles model.dnd)
+                    :: (List.map fromUnstyled <| Debug.log "ghostStyles" <| dndSystem.ghostStyles model.dnd)
                 )
                 [ viewDataHeader model columnConfig -1 "" ]
 
@@ -1433,7 +1440,9 @@ viewMoveHandle model index columnId =
     in
     div
         ([ css
-            [ cursor move
+            [ displayFlex
+            , flexDirection row
+            , cursor move
             , fontSize (px 0.1)
             , height (pct 100)
             , visibility hidden
@@ -1444,7 +1453,7 @@ viewMoveHandle model index columnId =
             ++ conditionnalAttributes
         )
         (List.repeat 2 <|
-            div [ css [ display inlineBlock ] ] <|
+            div [] <|
                 List.repeat 4 <|
                     div
                         [ css
@@ -1512,8 +1521,8 @@ viewFilter model columnConfig =
     input
         [ attribute "data-testid" <| "filter-" ++ columnConfig.properties.id
         , css
-            [ flexGrow (num 1)
-            , border (px 0)
+            [ border (px 0)
+            , height (px <| toFloat <| model.config.lineHeight)
             , paddingLeft (px 2)
             , paddingRight (px 2)
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth * 2))

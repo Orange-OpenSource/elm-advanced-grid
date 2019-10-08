@@ -11,7 +11,6 @@
     "elm-version": "0.19.0 <= v < 0.19.2",
     "dependencies": {
         "FabienHenon/elm-infinite-list-view": "3.1.0 <= v < 4.0.0",
-        "annaghi/dnd-list": "5.0.0 <= v < 6.0.0",
         "elm/browser": "1.0.1 <= v < 2.0.0",
         "elm/core": "1.0.2 <= v < 2.0.0",
         "elm/html": "1.0.0 <= v < 2.0.0",
