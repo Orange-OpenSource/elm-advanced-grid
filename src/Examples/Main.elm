@@ -377,6 +377,7 @@ type alias Translations =
     Dict String String
 
 
+translations : Translations
 translations =
     Dict.fromList
         [ ( "Nom", "Name" )

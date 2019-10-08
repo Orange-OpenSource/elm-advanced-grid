@@ -74,9 +74,8 @@ import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
-import List.Extra exposing (findIndex, getAt)
+import List.Extra exposing (findIndex)
 import String
-import Svg.Styled.Attributes exposing (y)
 
 
 {-| The configuration for the grid. The grid content is described
@@ -574,7 +573,7 @@ modelUpdate msg model =
             { model | showPreferences = False }
 
         -- The ScrollTo message is handled in the `update` function
-        ScrollTo int ->
+        ScrollTo _ ->
             model
 
         ShowPreferences ->
@@ -746,13 +745,12 @@ viewGrid model =
                 []
     in
     div
-        ([ css
+        (css
             [ width (px <| toFloat (model.config.containerWidth + cumulatedBorderWidth))
             , overflow auto
             , margin auto
             ]
-         ]
-            ++ conditionalAttributes
+            :: conditionalAttributes
         )
     <|
         if model.config.hasFilters then
@@ -1209,13 +1207,12 @@ viewHeaders model =
                 []
     in
     div
-        ([ css
+        (css
             [ backgroundColor darkGrey
             , height (px <| toFloat model.config.headerHeight)
             , displayFlex
             ]
-         ]
-            ++ conditionalAttributes
+            :: conditionalAttributes
         )
     <|
         (List.indexedMap (\index column -> viewHeader model column index) <| visibleColumns model)
@@ -1306,12 +1303,11 @@ viewDataHeader model columnConfig index columnId =
                     []
     in
     div
-        ([ css
+        (css
             [ displayFlex
             , flexDirection row
             ]
-         ]
-            ++ conditionnalAttributes
+            :: conditionnalAttributes
         )
         [ div
             [ css
@@ -1357,7 +1353,7 @@ viewGhostHeader model =
         Just columnConfig ->
             div
                 (headerStyles model columnConfig
-                    :: (List.map fromUnstyled <| Debug.log "ghostStyles" <| dndSystem.ghostStyles model.dnd)
+                    :: (List.map fromUnstyled <| dndSystem.ghostStyles model.dnd)
                 )
                 [ viewDataHeader model columnConfig -1 "" ]
 
@@ -1429,7 +1425,7 @@ viewMoveHandle model index columnId =
         conditionnalAttributes =
             if index >= 0 then
                 case dndSystem.info model.dnd of
-                    Just { dragIndex } ->
+                    Just _ ->
                         []
 
                     Nothing ->
@@ -1439,7 +1435,7 @@ viewMoveHandle model index columnId =
                 []
     in
     div
-        ([ css
+        (css
             [ displayFlex
             , flexDirection row
             , cursor move
@@ -1449,8 +1445,7 @@ viewMoveHandle model index columnId =
             , width (px 10)
             , zIndex (int 5)
             ]
-         ]
-            ++ conditionnalAttributes
+            :: conditionnalAttributes
         )
         (List.repeat 2 <|
             div [] <|
