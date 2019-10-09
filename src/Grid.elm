@@ -1275,10 +1275,14 @@ headerStyles model columnConfig =
 {-| specific header content for the selection column
 -}
 viewSelectionHeader : Model a -> ColumnConfig a -> Html (Msg a)
-viewSelectionHeader _ _ =
+viewSelectionHeader model _ =
+    let
+        allRowsAreSelected =
+            List.all .selected model.content
+    in
     input
         [ type_ "checkbox"
-        , Html.Styled.Attributes.checked False
+        , Html.Styled.Attributes.checked allRowsAreSelected
         , stopPropagationOnClick UserToggledAllItemSelection
         ]
         []
