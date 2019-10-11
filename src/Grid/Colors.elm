@@ -9,9 +9,9 @@
 -}
 
 
-module Grid.Colors exposing (black, darkGrey, darkGrey2, lightGreen, lightGrey, lightGrey2, slightlyTransparentBlack, white, white2)
+module Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, white, white2)
 
-import Css exposing (Color, hex, rgba)
+import Css exposing (Color, hex)
 
 
 black : Color
@@ -29,6 +29,11 @@ darkGrey2 =
     hex "888"
 
 
+darkGrey3 : Color
+darkGrey3 =
+    hex "AAA"
+
+
 lightGreen : Color
 lightGreen =
     hex "4d4"
@@ -42,11 +47,6 @@ lightGrey =
 lightGrey2 : Color
 lightGrey2 =
     hex "BBB"
-
-
-slightlyTransparentBlack : Color
-slightlyTransparentBlack =
-    rgba 0 0 0 0.75
 
 
 white2 : Color
