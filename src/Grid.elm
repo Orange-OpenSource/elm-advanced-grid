@@ -61,6 +61,7 @@ A grid is defined using a `Config`
 
 -}
 
+import Browser.Dom
 import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector, withAttribute)
 import Dict exposing (Dict)
@@ -73,9 +74,11 @@ import Html.Styled exposing (Attribute, Html, div, input, label, span, text, toU
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
+import Internal.Common.Utils
 import Json.Decode
 import List.Extra exposing (findIndex)
 import String
+import Task
 
 
 {-| The configuration for the grid. The grid content is described
@@ -174,11 +177,13 @@ type Msg a
     | InitializeFilters (Dict String String) -- column ID, filter value
     | InitializeSorting String Sorting -- column ID, Ascending or Descending
     | NoOp
+    | GotHeaderContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | ScrollTo (Item a -> Bool) -- scroll to the first item for which the function returns True
     | ShowPreferences
     | UserClickedHeader (ColumnConfig a)
     | UserClickedFilter
     | UserClickedLine (Item a)
+    | UserClickedMoveHandle
     | UserClickedPreferenceCloseButton
     | UserClickedResizeHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
     | UserEndedMouseInteraction
@@ -285,6 +290,7 @@ type alias Model a =
     , hoveredColumn : Maybe (ColumnConfig a)
     , infList : IL.Model
     , isAllSelected : Bool
+    , headerContainerPosition : Internal.Common.Utils.Position
     , order : Sorting
     , resizingColumn : Maybe (ColumnConfig a)
     , showPreferences : Bool
@@ -374,6 +380,7 @@ init config items =
             , infList = IL.init
             , isAllSelected = False
             , order = Unsorted
+            , headerContainerPosition = { x = 0, y = 0 }
             , resizingColumn = Nothing
             , showPreferences = False
             , sortedBy = Nothing
@@ -400,6 +407,28 @@ columnsX model =
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
     case msg of
+        UserClickedMoveHandle ->
+            ( model
+              -- get the position of the header container, in order to fix the ghost header position
+            , Browser.Dom.getElement headerContainerId
+                |> Task.attempt GotHeaderContainerInfo
+            )
+
+        DndMsg dndMsg ->
+            let
+                ( newDnd, newColumns ) =
+                    dndSystem.update dndMsg model.dnd model.config.columns
+
+                currentConfig =
+                    model.config
+
+                newConfig =
+                    { currentConfig | columns = newColumns }
+            in
+            ( { model | dnd = newDnd, config = newConfig }
+            , dndSystem.commands model.dnd
+            )
+
         ScrollTo isTargetItem ->
             let
                 filteredContent =
@@ -416,21 +445,6 @@ update msg model =
                 , configValue = gridConfig model
                 , items = filteredContent
                 }
-            )
-
-        DndMsg dndMsg ->
-            let
-                ( newDnd, newColumns ) =
-                    dndSystem.update dndMsg model.dnd model.config.columns
-
-                currentConfig =
-                    model.config
-
-                newConfig =
-                    { currentConfig | columns = newColumns }
-            in
-            ( { model | dnd = newDnd, config = newConfig }
-            , dndSystem.commands model.dnd
             )
 
         _ ->
@@ -463,6 +477,12 @@ modelUpdate msg model =
                     { oldConfig | columns = newColumns }
             in
             { model | config = newConfig }
+
+        GotHeaderContainerInfo (Ok info) ->
+            { model | headerContainerPosition = { x = info.element.x, y = info.element.y } }
+
+        GotHeaderContainerInfo (Err _) ->
+            model
 
         InfListMsg infList ->
             { model | infList = infList }
@@ -512,6 +532,10 @@ modelUpdate msg model =
 
         UserClickedLine item ->
             { model | clickedItem = Just item }
+
+        -- The UserClickMoveHandle message is handled in the `update` function
+        UserClickedMoveHandle ->
+            model
 
         UserClickedResizeHandle columnConfig ( x, _ ) ->
             { model
@@ -1200,8 +1224,7 @@ viewHeaders model =
     let
         conditionalAttributes =
             if model.resizingColumn /= Nothing then
-                [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle event.clientPos)
-                ]
+                [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle event.clientPos) ]
 
             else
                 []
@@ -1352,12 +1375,17 @@ viewGhostHeader model =
                             |> List.drop dragIndex
                             |> List.head
                     )
+
+        offset =
+            { x = -model.headerContainerPosition.x
+            , y = -model.headerContainerPosition.y
+            }
     in
     case maybeDragColumn of
         Just columnConfig ->
             div
                 (headerStyles model columnConfig
-                    :: (List.map fromUnstyled <| dndSystem.ghostStyles model.dnd)
+                    :: (List.map fromUnstyled <| DnDList.customGhostStyles offset model.dnd)
                 )
                 [ viewDataHeader model columnConfig -1 "" ]
 
@@ -1428,8 +1456,9 @@ viewMoveHandle model index columnId =
     let
         conditionnalAttributes =
             if index >= 0 then
+                -- TODO extract in subfunction for readability?
                 case dndSystem.info model.dnd of
-                    Just _ ->
+                    Just { dragIndex } ->
                         []
 
                     Nothing ->
@@ -1439,7 +1468,7 @@ viewMoveHandle model index columnId =
                 []
     in
     div
-        (css
+        ([ css
             [ displayFlex
             , flexDirection row
             , cursor move
@@ -1449,7 +1478,9 @@ viewMoveHandle model index columnId =
             , width (px 10)
             , zIndex (int 5)
             ]
-            :: conditionnalAttributes
+         , Html.Styled.Events.onMouseEnter UserClickedMoveHandle
+         ]
+            ++ conditionnalAttributes
         )
         (List.repeat 2 <|
             div [] <|
