@@ -597,7 +597,7 @@ modelUpdate msg model =
             { model | showPreferences = False }
 
         -- The ScrollTo message is handled in the `update` function
-        ScrollTo _ ->
+        ScrollTo int ->
             model
 
         ShowPreferences ->
@@ -761,6 +761,15 @@ gridHtmlId =
 viewGrid : Model a -> Html (Msg a)
 viewGrid model =
     let
+        attributes =
+            [ css
+                [ width (px <| toFloat (model.config.containerWidth + cumulatedBorderWidth))
+                , overflow auto
+                , margin auto
+                , position relative
+                ]
+            ]
+
         conditionalAttributes =
             if model.resizingColumn /= Nothing then
                 [ onMouseUp UserEndedMouseInteraction ]
@@ -769,13 +778,7 @@ viewGrid model =
                 []
     in
     div
-        (css
-            [ width (px <| toFloat (model.config.containerWidth + cumulatedBorderWidth))
-            , overflow auto
-            , margin auto
-            ]
-            :: conditionalAttributes
-        )
+        (attributes ++ conditionalAttributes)
     <|
         if model.config.hasFilters then
             [ div
@@ -785,13 +788,13 @@ viewGrid model =
                     , width (px <| toFloat <| totalWidth model)
                     ]
                 ]
-                [ viewHeaders model
+                [ viewHeaderContainer model
                 ]
             , viewRows model
             ]
 
         else
-            [ viewHeaders model
+            [ viewHeaderContainer model
             , viewRows model
             ]
 
@@ -1219,9 +1222,18 @@ visibleColumns model =
     List.filter (\column -> column.properties.visible) model.config.columns
 
 
-viewHeaders : Model a -> Html (Msg a)
-viewHeaders model =
+viewHeaderContainer : Model a -> Html (Msg a)
+viewHeaderContainer model =
     let
+        attributes =
+            [ css
+                [ backgroundColor darkGrey
+                , displayFlex
+                , height (px <| toFloat model.config.headerHeight)
+                ]
+            , id headerContainerId
+            ]
+
         conditionalAttributes =
             if model.resizingColumn /= Nothing then
                 [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle event.clientPos) ]
@@ -1230,23 +1242,32 @@ viewHeaders model =
                 []
     in
     div
-        (css
-            [ backgroundColor darkGrey
-            , height (px <| toFloat model.config.headerHeight)
-            , displayFlex
-            ]
-            :: conditionalAttributes
-        )
-    <|
-        (List.indexedMap (\index column -> viewHeader model column index) <| visibleColumns model)
-            ++ [ viewGhostHeader model ]
+        (attributes ++ conditionalAttributes)
+        (viewHeaders model ++ [ viewGhostHeader model ])
+
+
+viewHeaders : Model a -> List (Html (Msg a))
+viewHeaders model =
+    List.indexedMap (\index column -> viewHeader model column index) <| visibleColumns model
+
+
+headerContainerId : String
+headerContainerId =
+    "_header_-_container_"
 
 
 viewHeader : Model a -> ColumnConfig a -> Int -> Html (Msg a)
 viewHeader model columnConfig index =
     let
-        columnId =
+        headerId =
             "header-" ++ columnConfig.properties.id
+
+        attributes =
+            [ attribute "data-testid" headerId
+            , id headerId
+            , headerStyles model columnConfig
+            , title columnConfig.properties.tooltip
+            ]
 
         conditionalAttributes =
             if model.resizingColumn == Nothing then
@@ -1256,18 +1277,12 @@ viewHeader model columnConfig index =
                 []
     in
     div
-        ([ attribute "data-testid" columnId
-         , id columnId
-         , headerStyles model columnConfig
-         , title columnConfig.properties.tooltip
-         ]
-            ++ conditionalAttributes
-        )
+        (attributes ++ conditionalAttributes)
         [ if isSelectionColumn columnConfig then
             viewSelectionHeader model columnConfig
 
           else
-            viewDataHeader model columnConfig index columnId
+            viewDataHeader model columnConfig index headerId
         ]
 
 
@@ -1298,14 +1313,10 @@ headerStyles model columnConfig =
 {-| specific header content for the selection column
 -}
 viewSelectionHeader : Model a -> ColumnConfig a -> Html (Msg a)
-viewSelectionHeader model _ =
-    let
-        allRowsAreSelected =
-            List.all .selected model.content
-    in
+viewSelectionHeader _ _ =
     input
         [ type_ "checkbox"
-        , Html.Styled.Attributes.checked allRowsAreSelected
+        , Html.Styled.Attributes.checked False
         , stopPropagationOnClick UserToggledAllItemSelection
         ]
         []
@@ -1316,7 +1327,15 @@ viewSelectionHeader model _ =
 viewDataHeader : Model a -> ColumnConfig a -> Int -> String -> Html (Msg a)
 viewDataHeader model columnConfig index columnId =
     let
-        conditionnalAttributes =
+        attributes =
+            [ css
+                [ displayFlex
+                , flexDirection row
+                ]
+            ]
+
+        conditionalAttributes =
+            -- TODO extract in subfunction for readability
             case dndSystem.info model.dnd of
                 Just { dragIndex } ->
                     if dragIndex == index then
@@ -1330,12 +1349,7 @@ viewDataHeader model columnConfig index columnId =
                     []
     in
     div
-        (css
-            [ displayFlex
-            , flexDirection row
-            ]
-            :: conditionnalAttributes
-        )
+        (attributes ++ conditionalAttributes)
         [ div
             [ css
                 [ displayFlex
