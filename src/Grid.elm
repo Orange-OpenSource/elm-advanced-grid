@@ -66,7 +66,7 @@ import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector, withAttribute)
 import Dict exposing (Dict)
 import DnDList
-import Grid.Colors exposing (black, darkGrey, darkGrey2, lightGreen, lightGrey, lightGrey2, white, white2)
+import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, white, white2)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Html
 import Html.Events.Extra.Mouse as Mouse
@@ -1290,29 +1290,28 @@ headerStyles model columnConfig =
         , border3 (px 1) solid lightGrey2
         , boxSizing contentBox
         , height (px <| toFloat <| model.config.headerHeight - cumulatedBorderWidth)
-        , padding (px 2)
-        , overflow hidden
-        , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
         , hover
             [ descendants
                 [ typeSelector "div"
                     [ visibility visible -- makes the move handle visible when hover the column
-                    , withAttribute "data-handle"
-                        [ display inlineFlex ]
                     ]
                 ]
             ]
+        , padding (px 2)
         ]
 
 
 {-| specific header content for the selection column
 -}
 viewSelectionHeader : Model a -> ColumnConfig a -> Html (Msg a)
-viewSelectionHeader _ _ =
+viewSelectionHeader _ columnConfig =
     input
         [ type_ "checkbox"
         , Html.Styled.Attributes.checked False
         , stopPropagationOnClick UserToggledAllItemSelection
+        , css
+            [ width (px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
+            ]
         ]
         []
 
@@ -1350,6 +1349,8 @@ viewDataHeader model columnConfig index columnId =
                 [ displayFlex
                 , flexDirection column
                 , alignItems flexStart
+                , overflow hidden
+                , width (px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth) - resizeHandleWidth)
                 ]
             ]
             [ div
@@ -1511,18 +1512,36 @@ viewMoveHandle model index columnId =
 viewResizeHandle : ColumnConfig a -> Html (Msg a)
 viewResizeHandle columnConfig =
     div
-        [ attribute "data-handle" ""
-        , css
+        [ css
             [ cursor colResize
+            , displayFlex
+            , justifyContent spaceAround
             , fontSize (px 0.1)
             , height (pct 100)
-            , width (px 9)
-            , zIndex (int 10)
+            , visibility hidden
+            , width (px resizeHandleWidth)
             ]
         , fromUnstyled <| Mouse.onDown (\event -> UserClickedResizeHandle columnConfig event.clientPos)
         , onBlur UserEndedMouseInteraction
         ]
+        [ viewVerticalBar, viewVerticalBar ]
+
+
+viewVerticalBar : Html msg
+viewVerticalBar =
+    div
+        [ css
+            [ width (px 1)
+            , height (px 10)
+            , backgroundColor darkGrey3
+            ]
+        ]
         []
+
+
+resizeHandleWidth : Float
+resizeHandleWidth =
+    5
 
 
 noContent : Html msg
