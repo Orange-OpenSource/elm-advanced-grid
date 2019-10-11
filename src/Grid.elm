@@ -17,7 +17,7 @@ module Grid exposing
     , Model, Msg(..), init, update, view
     , filteredItems
     , visibleColumns, isSelectionColumn, isSelectionColumnProperties
-    , subscriptions
+    , subscriptions, withConfig
     )
 
 {-| This module allows to create dynamically configurable data grid.
@@ -170,7 +170,8 @@ You probably should not use the other constructors.
 
 -}
 type Msg a
-    = DndMsg DnDList.Msg
+    = ColumnsModificationRequested (List (ColumnConfig a))
+    | DndMsg DnDList.Msg
     | InfListMsg IL.Model
     | FilterLostFocus
     | FilterModified (ColumnConfig a) String
@@ -296,6 +297,20 @@ type alias Model a =
     , showPreferences : Bool
     , sortedBy : Maybe (ColumnConfig a)
     }
+
+
+withConfig : Config a -> Model a -> Model a
+withConfig config model =
+    { model | config = config }
+
+
+withColumns : List (ColumnConfig a) -> Model a -> Model a
+withColumns columns model =
+    let
+        config =
+            model.config
+    in
+    model |> withConfig { config | columns = columns }
 
 
 {-| Definition for the row selection column,
@@ -458,6 +473,9 @@ update msg model =
 modelUpdate : Msg a -> Model a -> Model a
 modelUpdate msg model =
     case msg of
+        ColumnsModificationRequested columns ->
+            model |> withColumns columns
+
         -- Case handled by update
         DndMsg _ ->
             model
@@ -469,14 +487,8 @@ modelUpdate msg model =
 
                 newColumns =
                     List.Extra.setIf (isColumn columnConfig) newColumnconfig model.config.columns
-
-                oldConfig =
-                    model.config
-
-                newConfig =
-                    { oldConfig | columns = newColumns }
             in
-            { model | config = newConfig }
+            model |> withColumns newColumns
 
         GotHeaderContainerInfo (Ok info) ->
             { model | headerContainerPosition = { x = info.element.x, y = info.element.y } }
@@ -494,16 +506,8 @@ modelUpdate msg model =
             let
                 newColumns =
                     List.map (initializeFilter filterValues) model.config.columns
-
-                currentConfig =
-                    model.config
-
-                newConfig =
-                    { currentConfig | columns = newColumns }
             in
-            { model
-                | config = newConfig
-            }
+            model |> withColumns newColumns
 
         InitializeSorting columnId sorting ->
             let
@@ -573,16 +577,8 @@ modelUpdate msg model =
                     updateColumnProperties toggleVisibility model columnConfig.properties.id
                         |> List.Extra.updateIf (isColumn columnConfig) (\col -> { col | filteringValue = Nothing })
 
-                currentGridConfig =
-                    model.config
-
-                newGridConfig =
-                    { currentGridConfig
-                        | columns = newColumns
-                    }
-
                 updatedModel =
-                    { model | config = newGridConfig }
+                    model |> withColumns newColumns
             in
             { updatedModel | columnsX = columnsX updatedModel }
 
@@ -686,12 +682,11 @@ resizeColumn model x =
                     else
                         model.config.columns
 
-                config =
-                    model.config
+                newModel =
+                    model |> withColumns newColumns
             in
-            { model
-                | config = { config | columns = newColumns }
-                , columnsX = columnsX model
+            { newModel
+                | columnsX = columnsX model
             }
 
         _ ->
