@@ -1305,15 +1305,18 @@ headerStyles model columnConfig =
 -}
 viewSelectionHeader : Model a -> ColumnConfig a -> Html (Msg a)
 viewSelectionHeader _ columnConfig =
-    input
-        [ type_ "checkbox"
-        , Html.Styled.Attributes.checked False
-        , stopPropagationOnClick UserToggledAllItemSelection
-        , css
-            [ width (px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth))
+    div
+        [ css
+            [ width (px <| (toFloat <| selectionColumn.properties.width - cumulatedBorderWidth))
             ]
         ]
-        []
+        [ input
+            [ type_ "checkbox"
+            , Html.Styled.Attributes.checked False
+            , stopPropagationOnClick UserToggledAllItemSelection
+            ]
+            []
+        ]
 
 
 {-| header content for data columns
