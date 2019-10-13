@@ -453,10 +453,8 @@ update msg model =
             ( modelUpdate msg model, Cmd.none )
 
 
-
-{- update for messages for which no command is generated -}
-
-
+{-| update for messages for which no command is generated
+-}
 modelUpdate : Msg a -> Model a -> Model a
 modelUpdate msg model =
     case msg of
@@ -507,33 +505,19 @@ modelUpdate msg model =
         NoOp ->
             model
 
-        -- The ScrollTo message is handled in the `update` function
-        ScrollTo int ->
+        ScrollTo _ ->
+            -- This message is handled in the `update` function
             model
 
         ShowPreferences ->
             { model | showPreferences = True }
 
-        UserClickedDragHandle columnConfig position ->
+        UserClickedDragHandle columnConfig mousePosition ->
             let
-                columnIndex =
-                    List.Extra.findIndex (isColumn columnConfig) model.config.columns
-                        -- the default value will never be used
-                        |> Maybe.withDefault -1
-
-                draggedColumnX : Float
-                draggedColumnX =
-                    columnsX model
-                        |> List.Extra.getAt columnIndex
-                        |> Maybe.withDefault -1
-                        -- the default value will never be used
-                        |> toFloat
-
-                draggedColumn : DraggedColumn a
                 draggedColumn =
-                    { x = draggedColumnX
+                    { x = mousePosition.x
                     , column = columnConfig
-                    , dragStartX = position.x
+                    , dragStartX = mousePosition.x
                     }
             in
             { model
@@ -582,7 +566,7 @@ modelUpdate msg model =
             }
 
         UserHoveredDragHandle ->
-            -- The UserHoveredDragHandle message is handled in the `update` function
+            -- This message is handled in the `update` function
             model
 
         UserMovedResizeHandle position ->
@@ -1378,19 +1362,20 @@ viewDataHeader model columnConfig conditionalAttributes =
                 , flexDirection row
                 ]
             ]
-                ++ conditionalAttributes
     in
     div
         attributes
         [ div
-            [ css
+            ([ css
                 [ displayFlex
                 , flexDirection column
                 , alignItems flexStart
                 , overflow hidden
                 , width (px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth) - resizeHandleWidth)
                 ]
-            ]
+             ]
+                ++ conditionalAttributes
+            )
             [ div
                 [ css
                     [ displayFlex
@@ -1439,8 +1424,8 @@ viewGhostHeader model =
                             [ position absolute
                             , left (px <| draggedColumn.x - model.headerContainerPosition.x)
                             , top (px 2)
+                            , pointerEvents none
                             ]
-                       , fromUnstyled <| Mouse.onUp (\_ -> UserEndedMouseInteraction)
                        ]
                 )
                 [ viewDataHeader model draggedColumn.column [] ]
@@ -1553,7 +1538,6 @@ viewResizeHandle columnConfig =
             [ cursor colResize
             , displayFlex
             , justifyContent spaceAround
-            , fontSize (px 0.1)
             , height (pct 100)
             , visibility hidden
             , width (px resizeHandleWidth)
@@ -1620,6 +1604,7 @@ viewFilter model columnConfig =
             , height (px <| toFloat <| model.config.lineHeight)
             , paddingLeft (px 2)
             , paddingRight (px 2)
+            , marginLeft (px resizeHandleWidth) -- for visual centering in the header
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth * 2))
             ]
         , onClick UserClickedFilter
