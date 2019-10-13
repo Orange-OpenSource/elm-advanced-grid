@@ -615,7 +615,7 @@ modelUpdate msg model =
                     case model.draggedColumn of
                         Just draggedColumn ->
                             Just
-                                { draggedColumn | x = Debug.log "mousePosition.x" mousePosition.x }
+                                { draggedColumn | x = mousePosition.x }
 
                         Nothing ->
                             Nothing
@@ -1325,7 +1325,7 @@ viewHeader model columnConfig index =
             viewSelectionHeader model columnConfig
 
           else
-            viewDataHeader model columnConfig
+            viewDataHeader model columnConfig (draggingAttributes model columnConfig)
         ]
 
 
@@ -1369,8 +1369,8 @@ viewSelectionHeader _ _ =
 
 {-| header content for data columns
 -}
-viewDataHeader : Model a -> ColumnConfig a -> Html (Msg a)
-viewDataHeader model columnConfig =
+viewDataHeader : Model a -> ColumnConfig a -> List (Attribute (Msg a)) -> Html (Msg a)
+viewDataHeader model columnConfig conditionalAttributes =
     let
         attributes =
             [ css
@@ -1378,7 +1378,7 @@ viewDataHeader model columnConfig =
                 , flexDirection row
                 ]
             ]
-                ++ draggingAttributes model columnConfig
+                ++ conditionalAttributes
     in
     div
         attributes
@@ -1443,7 +1443,7 @@ viewGhostHeader model =
                        , fromUnstyled <| Mouse.onUp (\_ -> UserEndedMouseInteraction)
                        ]
                 )
-                [ viewDataHeader model draggedColumn.column ]
+                [ viewDataHeader model draggedColumn.column [] ]
 
         Nothing ->
             noContent
@@ -1522,7 +1522,7 @@ viewDragHandle columnConfig =
             ]
         , fromUnstyled <| Mouse.onOver (\_ -> UserHoveredDragHandle)
         , fromUnstyled <| Mouse.onDown (\event -> UserClickedDragHandle columnConfig (event |> toPosition))
-        , fromUnstyled <| Mouse.onUp (\event -> UserEndedMouseInteraction)
+        , fromUnstyled <| Mouse.onUp (\_ -> UserEndedMouseInteraction)
         ]
         (List.repeat 2 <|
             div [] <|
