@@ -73,7 +73,6 @@ import Html.Styled exposing (Attribute, Html, div, input, label, span, text, toU
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseLeave, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
-import Internal.Common.Utils
 import Json.Decode
 import List.Extra exposing (findIndex)
 import String
