@@ -181,13 +181,13 @@ type Msg a
     | UserClickedHeader (ColumnConfig a)
     | UserClickedFilter
     | UserClickedLine (Item a)
-    | UserClickedDragHandle (ColumnConfig a) ( Float, Float ) -- second param is clientPos (x, y)
+    | UserClickedDragHandle (ColumnConfig a) Position
     | UserHoveredDragHandle
     | UserClickedPreferenceCloseButton
-    | UserClickedResizeHandle (ColumnConfig a) ( Float, Float ) -- second param is clientPos (x, y)
-    | UserDraggedColumn ( Float, Float ) -- param is clientPos (x, y)
+    | UserClickedResizeHandle (ColumnConfig a) Position
+    | UserDraggedColumn Position
     | UserEndedMouseInteraction
-    | UserMovedResizeHandle ( Float, Float ) -- param is clientPos (x, y)
+    | UserMovedResizeHandle Position
     | UserSwappedColumns (ColumnConfig a) (ColumnConfig a)
     | UserToggledAllItemSelection
     | UserToggledColumnVisibility (ColumnConfig a)
@@ -284,6 +284,12 @@ type alias DraggedColumn a =
     }
 
 
+type alias Position =
+    { x : Float
+    , y : Float
+    }
+
+
 {-| The grid model. You'll use it but should not have to access its fields,
 and definitely should not modify them directly
 -}
@@ -298,7 +304,7 @@ type alias Model a =
     , hoveredColumn : Maybe (ColumnConfig a)
     , infList : IL.Model
     , isAllSelected : Bool
-    , headerContainerPosition : Internal.Common.Utils.Position
+    , headerContainerPosition : Position
     , order : Sorting
     , resizedColumn : Maybe (ColumnConfig a)
     , showPreferences : Bool
@@ -518,7 +524,7 @@ modelUpdate msg model =
         UserClickedLine item ->
             { model | clickedItem = Just item }
 
-        UserClickedDragHandle columnConfig ( dragStartX, _ ) ->
+        UserClickedDragHandle columnConfig position ->
             let
                 columnIndex =
                     List.Extra.findIndex (isColumn columnConfig) model.config.columns
@@ -537,17 +543,17 @@ modelUpdate msg model =
                 draggedColumn =
                     { x = draggedColumnX
                     , column = columnConfig
-                    , dragStartX = dragStartX
+                    , dragStartX = position.x
                     }
             in
             { model
                 | draggedColumn = Just draggedColumn
             }
 
-        UserClickedResizeHandle columnConfig ( x, _ ) ->
+        UserClickedResizeHandle columnConfig position ->
             { model
                 | resizedColumn = Just columnConfig
-                , dragStartX = x
+                , dragStartX = position.x
             }
 
         UserClickedPreferenceCloseButton ->
@@ -563,8 +569,8 @@ modelUpdate msg model =
             -- The UserHoveredDragHandle message is handled in the `update` function
             model
 
-        UserMovedResizeHandle ( x, _ ) ->
-            resizeColumn model x
+        UserMovedResizeHandle position ->
+            resizeColumn model position.x
 
         UserToggledAllItemSelection ->
             let
@@ -600,15 +606,13 @@ modelUpdate msg model =
             in
             { model | content = newContent }
 
-        UserDraggedColumn ( mouseX, mouseY ) ->
+        UserDraggedColumn mousePosition ->
             let
                 newDraggedColumn =
                     case model.draggedColumn of
                         Just draggedColumn ->
                             Just
-                                { draggedColumn
-                                    | x = mouseX - draggedColumn.dragStartX + draggedColumn.dragStartX
-                                }
+                                { draggedColumn | x = mousePosition.x }
 
                         Nothing ->
                             Nothing
@@ -1270,10 +1274,10 @@ viewHeaderContainer model =
 
         conditionalAttributes =
             if model.resizedColumn /= Nothing then
-                [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle event.clientPos) ]
+                [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle (event |> toPosition)) ]
 
             else if model.draggedColumn /= Nothing then
-                [ fromUnstyled <| Mouse.onMove (\event -> UserDraggedColumn event.clientPos) ]
+                [ fromUnstyled <| Mouse.onMove (\event -> UserDraggedColumn (event |> toPosition)) ]
 
             else
                 []
@@ -1380,7 +1384,9 @@ viewDataHeader model columnConfig index columnId =
                         hiddenHeaderStyles
 
                     else
-                        [ fromUnstyled <| Mouse.onEnter (\event -> UserSwappedColumns columnConfig draggedColumn.column) ]
+                        [ fromUnstyled <| Mouse.onEnter (\_ -> Debug.log "onEnter" UserSwappedColumns columnConfig draggedColumn.column)
+                        , fromUnstyled <| Mouse.onLeave (\_ -> Debug.log "onLeave" NoOp)
+                        ]
 
                 Nothing ->
                     []
@@ -1423,13 +1429,6 @@ hiddenHeaderStyles =
 -}
 viewGhostHeader : Model a -> Html (Msg a)
 viewGhostHeader model =
-    let
-        offset =
-            { x = -model.headerContainerPosition.x
-            , y = -model.headerContainerPosition.y
-            }
-    in
-    case Debug.log "model.draggedColumn" model.draggedColumn of
         Just draggedColumn ->
             div
                 (headerStyles model draggedColumn.column
@@ -1532,7 +1531,7 @@ viewDragHandle model index columnConfig =
             , zIndex (int 5)
             ]
          , fromUnstyled <| Mouse.onOver (\_ -> UserHoveredDragHandle)
-         , fromUnstyled <| Mouse.onDown (\event -> UserClickedDragHandle columnConfig event.clientPos)
+         , fromUnstyled <| Mouse.onDown (\event -> UserClickedDragHandle columnConfig (event |> toPosition))
          , fromUnstyled <| Mouse.onUp (\event -> UserEndedMouseInteraction)
          ]
             ++ conditionnalAttributes
@@ -1554,6 +1553,11 @@ viewDragHandle model index columnConfig =
         )
 
 
+toPosition : { a | clientPos : ( Float, Float ) } -> Position
+toPosition event =
+    { x = Tuple.first event.clientPos, y = Tuple.second event.clientPos }
+
+
 viewResizeHandle : ColumnConfig a -> Html (Msg a)
 viewResizeHandle columnConfig =
     div
@@ -1566,7 +1570,7 @@ viewResizeHandle columnConfig =
             , visibility hidden
             , width (px resizeHandleWidth)
             ]
-        , fromUnstyled <| Mouse.onDown (\event -> UserClickedResizeHandle columnConfig event.clientPos)
+        , fromUnstyled <| Mouse.onDown (\event -> UserClickedResizeHandle columnConfig (event |> toPosition))
         , onBlur UserEndedMouseInteraction
         ]
         [ viewVerticalBar, viewVerticalBar ]
