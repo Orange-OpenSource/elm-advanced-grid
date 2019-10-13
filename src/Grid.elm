@@ -514,19 +514,6 @@ modelUpdate msg model =
         ShowPreferences ->
             { model | showPreferences = True }
 
-        UserClickedFilter ->
-            { model | filterHasFocus = True }
-
-        UserClickedHeader columnConfig ->
-            if model.filterHasFocus then
-                model
-
-            else
-                sort model columnConfig model.order toggleOrder
-
-        UserClickedLine item ->
-            { model | clickedItem = Just item }
-
         UserClickedDragHandle columnConfig position ->
             let
                 columnIndex =
@@ -553,14 +540,40 @@ modelUpdate msg model =
                 | draggedColumn = Just draggedColumn
             }
 
+        UserClickedFilter ->
+            { model | filterHasFocus = True }
+
+        UserClickedHeader columnConfig ->
+            if model.filterHasFocus then
+                model
+
+            else
+                sort model columnConfig model.order toggleOrder
+
+        UserClickedLine item ->
+            { model | clickedItem = Just item }
+
+        UserClickedPreferenceCloseButton ->
+            { model | showPreferences = False }
+
         UserClickedResizeHandle columnConfig position ->
             { model
                 | resizedColumn = Just columnConfig
                 , dragStartX = position.x
             }
 
-        UserClickedPreferenceCloseButton ->
-            { model | showPreferences = False }
+        UserDraggedColumn mousePosition ->
+            let
+                newDraggedColumn =
+                    case model.draggedColumn of
+                        Just draggedColumn ->
+                            Just
+                                { draggedColumn | x = mousePosition.x }
+
+                        Nothing ->
+                            Nothing
+            in
+            { model | draggedColumn = newDraggedColumn }
 
         UserEndedMouseInteraction ->
             { model
@@ -574,6 +587,13 @@ modelUpdate msg model =
 
         UserMovedResizeHandle position ->
             resizeColumn model position.x
+
+        UserSwappedColumns columnConfig draggedColumnConfig ->
+            let
+                newColumns =
+                    swapColumns columnConfig draggedColumnConfig model.config.columns
+            in
+            model |> withColumns newColumns
 
         UserToggledAllItemSelection ->
             let
@@ -608,26 +628,6 @@ modelUpdate msg model =
                     List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
             in
             { model | content = newContent }
-
-        UserDraggedColumn mousePosition ->
-            let
-                newDraggedColumn =
-                    case model.draggedColumn of
-                        Just draggedColumn ->
-                            Just
-                                { draggedColumn | x = mousePosition.x }
-
-                        Nothing ->
-                            Nothing
-            in
-            { model | draggedColumn = newDraggedColumn }
-
-        UserSwappedColumns columnConfig draggedColumnConfig ->
-            let
-                newColumns =
-                    swapColumns columnConfig draggedColumnConfig model.config.columns
-            in
-            model |> withColumns newColumns
 
 
 initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
