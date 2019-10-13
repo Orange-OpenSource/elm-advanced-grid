@@ -615,7 +615,7 @@ modelUpdate msg model =
                     case model.draggedColumn of
                         Just draggedColumn ->
                             Just
-                                { draggedColumn | x = mousePosition.x }
+                                { draggedColumn | x = Debug.log "mousePosition.x" mousePosition.x }
 
                         Nothing ->
                             Nothing
@@ -1281,9 +1281,6 @@ viewHeaderContainer model =
             if model.resizedColumn /= Nothing then
                 [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle (event |> toPosition)) ]
 
-            else if model.draggedColumn /= Nothing then
-                [ fromUnstyled <| Mouse.onMove (\event -> UserDraggedColumn (event |> toPosition)) ]
-
             else
                 []
     in
@@ -1311,7 +1308,7 @@ viewHeader model columnConfig index =
         attributes =
             [ attribute "data-testid" headerId
             , id headerId
-            , headerStyles model columnConfig
+            , headerStyles model
             , title columnConfig.properties.tooltip
             ]
 
@@ -1328,12 +1325,12 @@ viewHeader model columnConfig index =
             viewSelectionHeader model columnConfig
 
           else
-            viewDataHeader model columnConfig index headerId
+            viewDataHeader model columnConfig
         ]
 
 
-headerStyles : Model a -> ColumnConfig a -> Attribute (Msg a)
-headerStyles model columnConfig =
+headerStyles : Model a -> Attribute (Msg a)
+headerStyles model =
     css
         [ backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
         , display inlineFlex
@@ -1355,7 +1352,7 @@ headerStyles model columnConfig =
 {-| specific header content for the selection column
 -}
 viewSelectionHeader : Model a -> ColumnConfig a -> Html (Msg a)
-viewSelectionHeader _ columnConfig =
+viewSelectionHeader _ _ =
     div
         [ css
             [ width (px <| (toFloat <| selectionColumn.properties.width - cumulatedBorderWidth))
@@ -1372,8 +1369,8 @@ viewSelectionHeader _ columnConfig =
 
 {-| header content for data columns
 -}
-viewDataHeader : Model a -> ColumnConfig a -> Int -> String -> Html (Msg a)
-viewDataHeader model columnConfig index columnId =
+viewDataHeader : Model a -> ColumnConfig a -> Html (Msg a)
+viewDataHeader model columnConfig =
     let
         attributes =
             [ css
@@ -1381,23 +1378,10 @@ viewDataHeader model columnConfig index columnId =
                 , flexDirection row
                 ]
             ]
-
-        conditionalAttributes =
-            case model.draggedColumn of
-                Just draggedColumn ->
-                    if isColumn columnConfig draggedColumn.column then
-                        hiddenHeaderStyles
-
-                    else
-                        [ fromUnstyled <|
-                            Mouse.onEnter (\_ -> UserSwappedColumns columnConfig draggedColumn.column)
-                        ]
-
-                Nothing ->
-                    []
+                ++ draggingAttributes model columnConfig
     in
     div
-        (attributes ++ conditionalAttributes)
+        attributes
         [ div
             [ css
                 [ displayFlex
@@ -1415,7 +1399,7 @@ viewDataHeader model columnConfig index columnId =
                     , justifyContent flexStart
                     ]
                 ]
-                [ viewDragHandle model index columnConfig
+                [ viewDragHandle columnConfig
                 , viewTitle model columnConfig
                 , viewSortingSymbol model columnConfig
                 ]
@@ -1425,9 +1409,22 @@ viewDataHeader model columnConfig index columnId =
         ]
 
 
-hiddenHeaderStyles : List (Attribute msg)
-hiddenHeaderStyles =
-    [ css [ opacity (num 0) ] ]
+draggingAttributes : Model a -> ColumnConfig a -> List (Attribute (Msg a))
+draggingAttributes model currentColumn =
+    case model.draggedColumn of
+        Just draggedColumn ->
+            [ fromUnstyled <| Mouse.onMove (\event -> UserDraggedColumn (event |> toPosition)) ]
+                ++ (if isColumn currentColumn draggedColumn.column then
+                        [ css [ opacity (num 0) ] ]
+
+                    else
+                        [ fromUnstyled <|
+                            Mouse.onEnter (\_ -> UserSwappedColumns currentColumn draggedColumn.column)
+                        ]
+                   )
+
+        Nothing ->
+            []
 
 
 {-| Renders the dragged header
@@ -1437,7 +1434,7 @@ viewGhostHeader model =
     case model.draggedColumn of
         Just draggedColumn ->
             div
-                (headerStyles model draggedColumn.column
+                (headerStyles model
                     :: [ css
                             [ position absolute
                             , left (px <| draggedColumn.x - model.headerContainerPosition.x)
@@ -1446,7 +1443,7 @@ viewGhostHeader model =
                        , fromUnstyled <| Mouse.onUp (\_ -> UserEndedMouseInteraction)
                        ]
                 )
-                [ viewDataHeader model draggedColumn.column -1 "" ]
+                [ viewDataHeader model draggedColumn.column ]
 
         Nothing ->
             noContent
@@ -1510,24 +1507,10 @@ viewSortingSymbol model columnConfig =
             noContent
 
 
-viewDragHandle : Model a -> Int -> ColumnConfig a -> Html (Msg a)
-viewDragHandle model index columnConfig =
-    let
-        conditionnalAttributes =
-            --            if index >= 0 then
-            --                -- TODO extract in subfunction for readability?
-            --                case dndSystem.info model.dnd of
-            --                    Just { dragIndex } ->
-            --                        []
-            --
-            --                    Nothing ->
-            --                        List.map fromUnstyled (dndSystem.dragEvents index columnConfig.properties.id)
-            --
-            --            else
-            []
-    in
+viewDragHandle : ColumnConfig a -> Html (Msg a)
+viewDragHandle columnConfig =
     div
-        ([ css
+        [ css
             [ displayFlex
             , flexDirection row
             , cursor move
@@ -1537,12 +1520,10 @@ viewDragHandle model index columnConfig =
             , width (px 10)
             , zIndex (int 5)
             ]
-         , fromUnstyled <| Mouse.onOver (\_ -> UserHoveredDragHandle)
-         , fromUnstyled <| Mouse.onDown (\event -> UserClickedDragHandle columnConfig (event |> toPosition))
-         , fromUnstyled <| Mouse.onUp (\event -> UserEndedMouseInteraction)
-         ]
-            ++ conditionnalAttributes
-        )
+        , fromUnstyled <| Mouse.onOver (\_ -> UserHoveredDragHandle)
+        , fromUnstyled <| Mouse.onDown (\event -> UserClickedDragHandle columnConfig (event |> toPosition))
+        , fromUnstyled <| Mouse.onUp (\event -> UserEndedMouseInteraction)
+        ]
         (List.repeat 2 <|
             div [] <|
                 List.repeat 4 <|
