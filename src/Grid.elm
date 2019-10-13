@@ -63,7 +63,7 @@ A grid is defined using a `Config`
 
 import Browser.Dom
 import Css exposing (..)
-import Css.Global exposing (descendants, typeSelector, withAttribute)
+import Css.Global exposing (descendants, typeSelector)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, white, white2)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
@@ -71,7 +71,7 @@ import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, input, label, span, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
-import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseLeave, onMouseUp, stopPropagationOn)
+import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
 import List.Extra exposing (findIndex)
@@ -810,8 +810,10 @@ viewGrid model =
             ]
 
         conditionalAttributes =
-            if model.resizedColumn /= Nothing then
-                [ onMouseUp UserEndedMouseInteraction ]
+            if model.resizedColumn /= Nothing || model.draggedColumn /= Nothing then
+                [ onMouseUp UserEndedMouseInteraction
+                , fromUnstyled <| Mouse.onLeave (\_ -> UserEndedMouseInteraction)
+                ]
 
             else
                 []
@@ -1387,8 +1389,8 @@ viewDataHeader model columnConfig index columnId =
                         hiddenHeaderStyles
 
                     else
-                        [ fromUnstyled <| Mouse.onEnter (\_ -> Debug.log "onEnter" UserSwappedColumns columnConfig draggedColumn.column)
-                        , fromUnstyled <| Mouse.onLeave (\_ -> Debug.log "onLeave" NoOp)
+                        [ fromUnstyled <|
+                            Mouse.onEnter (\_ -> UserSwappedColumns columnConfig draggedColumn.column)
                         ]
 
                 Nothing ->
@@ -1432,6 +1434,7 @@ hiddenHeaderStyles =
 -}
 viewGhostHeader : Model a -> Html (Msg a)
 viewGhostHeader model =
+    case model.draggedColumn of
         Just draggedColumn ->
             div
                 (headerStyles model draggedColumn.column
@@ -1440,6 +1443,7 @@ viewGhostHeader model =
                             , left (px <| draggedColumn.x - model.headerContainerPosition.x)
                             , top (px 2)
                             ]
+                       , fromUnstyled <| Mouse.onUp (\_ -> UserEndedMouseInteraction)
                        ]
                 )
                 [ viewDataHeader model draggedColumn.column -1 "" ]
