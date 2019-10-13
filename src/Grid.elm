@@ -317,13 +317,20 @@ withConfig config model =
     { model | config = config }
 
 
+withColumnsX : Model a -> Model a
+withColumnsX model =
+    { model | columnsX = columnsX model }
+
+
 withColumns : List (ColumnConfig a) -> Model a -> Model a
 withColumns columns model =
     let
         config =
             model.config
     in
-    model |> withConfig { config | columns = columns }
+    model
+        |> withConfig { config | columns = columns }
+        |> withColumnsX
 
 
 {-| Definition for the row selection column,
