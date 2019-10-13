@@ -477,10 +477,6 @@ modelUpdate msg model =
             model |> withColumns newColumns
 
         GotHeaderContainerInfo (Ok info) ->
-            let
-                _ =
-                    Debug.log "info" info
-            in
             { model | headerContainerPosition = { x = info.element.x, y = info.element.y } }
 
         GotHeaderContainerInfo (Err _) ->
