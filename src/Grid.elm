@@ -70,7 +70,7 @@ import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilt
 import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, input, label, span, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
+import Html.Styled.Attributes exposing (attribute, checked, class, css, for, fromUnstyled, id, title, type_, value)
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
@@ -1348,7 +1348,11 @@ headerStyles model =
 {-| specific header content for the selection column
 -}
 viewSelectionHeader : Model a -> ColumnConfig a -> Html (Msg a)
-viewSelectionHeader _ _ =
+viewSelectionHeader model _ =
+    let
+        areAllItemsChecked =
+            List.all .selected model.content
+    in
     div
         [ css
             [ width <| px <| toFloat <| selectionColumn.properties.width - cumulatedBorderWidth
@@ -1356,7 +1360,7 @@ viewSelectionHeader _ _ =
         ]
         [ input
             [ type_ "checkbox"
-            , Html.Styled.Attributes.checked False
+            , Html.Styled.Attributes.checked areAllItemsChecked
             , stopPropagationOnClick UserToggledAllItemSelection
             ]
             []
