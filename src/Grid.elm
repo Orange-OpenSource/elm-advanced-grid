@@ -17,7 +17,7 @@ module Grid exposing
     , Model, Msg(..), init, update, view
     , filteredItems
     , visibleColumns, isSelectionColumn, isSelectionColumnProperties
-    , subscriptions, withConfig
+    , withConfig
     )
 
 {-| This module allows to create dynamically configurable data grid.
@@ -63,9 +63,8 @@ A grid is defined using a `Config`
 
 import Browser.Dom
 import Css exposing (..)
-import Css.Global exposing (descendants, typeSelector, withAttribute)
+import Css.Global exposing (descendants, typeSelector)
 import Dict exposing (Dict)
-import DnDList
 import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, white, white2)
 import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Html
@@ -74,7 +73,6 @@ import Html.Styled exposing (Attribute, Html, div, input, label, span, text, toU
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
-import Internal.Common.Utils
 import Json.Decode
 import List.Extra exposing (findIndex)
 import String
@@ -171,7 +169,6 @@ You probably should not use the other constructors.
 -}
 type Msg a
     = ColumnsModificationRequested (List (ColumnConfig a))
-    | DndMsg DnDList.Msg
     | InfListMsg IL.Model
     | FilterLostFocus
     | FilterModified (ColumnConfig a) String
@@ -184,11 +181,14 @@ type Msg a
     | UserClickedHeader (ColumnConfig a)
     | UserClickedFilter
     | UserClickedLine (Item a)
-    | UserClickedMoveHandle
+    | UserClickedDragHandle (ColumnConfig a) Position
+    | UserHoveredDragHandle
     | UserClickedPreferenceCloseButton
-    | UserClickedResizeHandle (ColumnConfig a) ( Float, Float ) -- second param is clienttPos
+    | UserClickedResizeHandle (ColumnConfig a) Position
+    | UserDraggedColumn Position
     | UserEndedMouseInteraction
-    | UserMovedResizeHandle ( Float, Float ) -- param is clienttPos
+    | UserMovedResizeHandle Position
+    | UserSwappedColumns (ColumnConfig a) (ColumnConfig a)
     | UserToggledAllItemSelection
     | UserToggledColumnVisibility (ColumnConfig a)
     | UserToggledSelection (Item a)
@@ -277,6 +277,20 @@ type alias ColumnProperties =
     }
 
 
+type alias DraggedColumn a =
+    { x : Float
+    , column : ColumnConfig a
+    , dragStartX : Float
+    , lastSwappedColumnId : String
+    }
+
+
+type alias Position =
+    { x : Float
+    , y : Float
+    }
+
+
 {-| The grid model. You'll use it but should not have to access its fields,
 and definitely should not modify them directly
 -}
@@ -285,15 +299,15 @@ type alias Model a =
     , config : Config a
     , columnsX : List Int
     , content : List (Item a)
+    , draggedColumn : Maybe (DraggedColumn a)
     , dragStartX : Float
-    , dnd : DnDList.Model
     , filterHasFocus : Bool -- Prevents clicking in an input field to trigger a sort
     , hoveredColumn : Maybe (ColumnConfig a)
     , infList : IL.Model
     , isAllSelected : Bool
-    , headerContainerPosition : Internal.Common.Utils.Position
+    , headerContainerPosition : Position
     , order : Sorting
-    , resizingColumn : Maybe (ColumnConfig a)
+    , resizedColumn : Maybe (ColumnConfig a)
     , showPreferences : Bool
     , sortedBy : Maybe (ColumnConfig a)
     }
@@ -304,13 +318,25 @@ withConfig config model =
     { model | config = config }
 
 
+withColumnsX : Model a -> Model a
+withColumnsX model =
+    { model | columnsX = columnsX model }
+
+
 withColumns : List (ColumnConfig a) -> Model a -> Model a
 withColumns columns model =
     let
         config =
             model.config
     in
-    model |> withConfig { config | columns = columns }
+    model
+        |> withConfig { config | columns = columns }
+        |> withColumnsX
+
+
+withDraggedColumn : Maybe (DraggedColumn a) -> Model a -> Model a
+withDraggedColumn draggedColumn model =
+    { model | draggedColumn = draggedColumn }
 
 
 {-| Definition for the row selection column,
@@ -326,24 +352,6 @@ selectionColumn =
         , width = 30
         , localize = \_ -> ""
         }
-
-
-
--- DRAG AND DROP SYSTEM
-
-
-dndConfig : DnDList.Config (ColumnConfig a)
-dndConfig =
-    { beforeUpdate = \_ _ list -> list
-    , movement = DnDList.Horizontal
-    , listen = DnDList.OnDrag
-    , operation = DnDList.Rotate
-    }
-
-
-dndSystem : DnDList.System (ColumnConfig a) (Msg a)
-dndSystem =
-    DnDList.create dndConfig DndMsg
 
 
 {-| Initializes the grid model, according to the given grid configuration
@@ -389,24 +397,19 @@ init config items =
             , columnsX = []
             , content = indexedItems
             , dragStartX = 0
-            , dnd = dndSystem.model
             , filterHasFocus = False
             , hoveredColumn = Nothing
             , infList = IL.init
             , isAllSelected = False
+            , draggedColumn = Nothing
             , order = Unsorted
             , headerContainerPosition = { x = 0, y = 0 }
-            , resizingColumn = Nothing
+            , resizedColumn = Nothing
             , showPreferences = False
             , sortedBy = Nothing
             }
     in
     { initialModel | columnsX = columnsX initialModel }
-
-
-subscriptions : Model a -> Sub (Msg a)
-subscriptions model =
-    dndSystem.subscriptions model.dnd
 
 
 {-| the list of X coordinates of columns; coordinates are expressed in pixel. The first one is at 0.
@@ -422,26 +425,11 @@ columnsX model =
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
     case msg of
-        UserClickedMoveHandle ->
+        UserHoveredDragHandle ->
             ( model
               -- get the position of the header container, in order to fix the ghost header position
             , Browser.Dom.getElement headerContainerId
                 |> Task.attempt GotHeaderContainerInfo
-            )
-
-        DndMsg dndMsg ->
-            let
-                ( newDnd, newColumns ) =
-                    dndSystem.update dndMsg model.dnd model.config.columns
-
-                currentConfig =
-                    model.config
-
-                newConfig =
-                    { currentConfig | columns = newColumns }
-            in
-            ( { model | dnd = newDnd, config = newConfig }
-            , dndSystem.commands model.dnd
             )
 
         ScrollTo isTargetItem ->
@@ -466,19 +454,16 @@ update msg model =
             ( modelUpdate msg model, Cmd.none )
 
 
-
-{- update for messages for which no command is generated -}
-
-
+{-| update for messages for which no command is generated
+-}
 modelUpdate : Msg a -> Model a -> Model a
 modelUpdate msg model =
     case msg of
         ColumnsModificationRequested columns ->
             model |> withColumns columns
 
-        -- Case handled by update
-        DndMsg _ ->
-            model
+        FilterLostFocus ->
+            { model | filterHasFocus = False }
 
         FilterModified columnConfig string ->
             let
@@ -498,9 +483,6 @@ modelUpdate msg model =
 
         InfListMsg infList ->
             { model | infList = infList }
-
-        FilterLostFocus ->
-            { model | filterHasFocus = False }
 
         InitializeFilters filterValues ->
             let
@@ -524,6 +506,25 @@ modelUpdate msg model =
         NoOp ->
             model
 
+        ScrollTo _ ->
+            -- This message is handled in the `update` function
+            model
+
+        ShowPreferences ->
+            { model | showPreferences = True }
+
+        UserClickedDragHandle columnConfig mousePosition ->
+            let
+                draggedColumn =
+                    { x = mousePosition.x
+                    , column = columnConfig
+                    , dragStartX = mousePosition.x
+                    , lastSwappedColumnId = ""
+                    }
+            in
+            model
+                |> withDraggedColumn (Just draggedColumn)
+
         UserClickedFilter ->
             { model | filterHasFocus = True }
 
@@ -537,23 +538,58 @@ modelUpdate msg model =
         UserClickedLine item ->
             { model | clickedItem = Just item }
 
-        -- The UserClickMoveHandle message is handled in the `update` function
-        UserClickedMoveHandle ->
-            model
+        UserClickedPreferenceCloseButton ->
+            { model | showPreferences = False }
 
-        UserClickedResizeHandle columnConfig ( x, _ ) ->
+        UserClickedResizeHandle columnConfig position ->
             { model
-                | resizingColumn = Just columnConfig
-                , dragStartX = x
+                | resizedColumn = Just columnConfig
+                , dragStartX = position.x
             }
+
+        UserDraggedColumn mousePosition ->
+            let
+                newDraggedColumn =
+                    case model.draggedColumn of
+                        Just draggedColumn ->
+                            Just
+                                { draggedColumn | x = mousePosition.x }
+
+                        Nothing ->
+                            Nothing
+            in
+            { model | draggedColumn = newDraggedColumn }
 
         UserEndedMouseInteraction ->
             { model
-                | resizingColumn = Nothing
+                | resizedColumn = Nothing
+                , draggedColumn = Nothing
             }
 
-        UserMovedResizeHandle ( x, _ ) ->
-            resizeColumn model x
+        UserHoveredDragHandle ->
+            -- This message is handled in the `update` function
+            model
+
+        UserMovedResizeHandle position ->
+            resizeColumn model position.x
+
+        UserSwappedColumns columnConfig draggedColumnConfig ->
+            case model.draggedColumn of
+                Just draggedColumn ->
+                    if columnConfig.properties.id == draggedColumn.lastSwappedColumnId then
+                        model
+
+                    else
+                        let
+                            newColumns =
+                                swapColumns columnConfig draggedColumnConfig model.config.columns
+                        in
+                        model
+                            |> withColumns newColumns
+                            |> withDraggedColumn (Just { draggedColumn | lastSwappedColumnId = columnConfig.properties.id })
+
+                Nothing ->
+                    model
 
         UserToggledAllItemSelection ->
             let
@@ -588,16 +624,6 @@ modelUpdate msg model =
                     List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
             in
             { model | content = newContent }
-
-        UserClickedPreferenceCloseButton ->
-            { model | showPreferences = False }
-
-        -- The ScrollTo message is handled in the `update` function
-        ScrollTo int ->
-            model
-
-        ShowPreferences ->
-            { model | showPreferences = True }
 
 
 initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
@@ -665,7 +691,7 @@ minColumnWidth =
 
 resizeColumn : Model a -> Float -> Model a
 resizeColumn model x =
-    case model.resizingColumn of
+    case model.resizedColumn of
         Just columnConfig ->
             let
                 deltaX =
@@ -724,6 +750,20 @@ toggleSelection item =
     { item | selected = not item.selected }
 
 
+swapColumns : ColumnConfig a -> ColumnConfig a -> List (ColumnConfig a) -> List (ColumnConfig a)
+swapColumns column1 column2 list =
+    let
+        column1Index =
+            List.Extra.findIndex (isColumn column1) list
+                |> Maybe.withDefault -1
+
+        column2Index =
+            List.Extra.findIndex (isColumn column2) list
+                |> Maybe.withDefault -1
+    in
+    List.Extra.swapAt column1Index column2Index list
+
+
 gridConfig : Model a -> IL.Config (Item a) (Msg a)
 gridConfig model =
     IL.config
@@ -766,8 +806,10 @@ viewGrid model =
             ]
 
         conditionalAttributes =
-            if model.resizingColumn /= Nothing then
-                [ onMouseUp UserEndedMouseInteraction ]
+            if model.resizedColumn /= Nothing || model.draggedColumn /= Nothing then
+                [ onMouseUp UserEndedMouseInteraction
+                , fromUnstyled <| Mouse.onLeave (\_ -> UserEndedMouseInteraction)
+                ]
 
             else
                 []
@@ -785,12 +827,14 @@ viewGrid model =
                 ]
                 [ viewHeaderContainer model
                 ]
+            , viewGhostHeader model
             , viewRows model
             ]
 
         else
             [ viewHeaderContainer model
             , viewRows model
+            , viewGhostHeader model
             ]
 
 
@@ -1230,15 +1274,15 @@ viewHeaderContainer model =
             ]
 
         conditionalAttributes =
-            if model.resizingColumn /= Nothing then
-                [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle event.clientPos) ]
+            if model.resizedColumn /= Nothing then
+                [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle (event |> toPosition)) ]
 
             else
                 []
     in
     div
         (attributes ++ conditionalAttributes)
-        (viewHeaders model ++ [ viewGhostHeader model ])
+        (viewHeaders model)
 
 
 viewHeaders : Model a -> List (Html (Msg a))
@@ -1260,12 +1304,12 @@ viewHeader model columnConfig index =
         attributes =
             [ attribute "data-testid" headerId
             , id headerId
-            , headerStyles model columnConfig
+            , headerStyles model
             , title columnConfig.properties.tooltip
             ]
 
         conditionalAttributes =
-            if model.resizingColumn == Nothing then
+            if model.resizedColumn == Nothing then
                 [ onClick (UserClickedHeader columnConfig) ]
 
             else
@@ -1277,12 +1321,12 @@ viewHeader model columnConfig index =
             viewSelectionHeader model columnConfig
 
           else
-            viewDataHeader model columnConfig index headerId
+            viewDataHeader model columnConfig (draggingAttributes model columnConfig)
         ]
 
 
-headerStyles : Model a -> ColumnConfig a -> Attribute (Msg a)
-headerStyles model columnConfig =
+headerStyles : Model a -> Attribute (Msg a)
+headerStyles model =
     css
         [ backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
         , display inlineFlex
@@ -1304,10 +1348,10 @@ headerStyles model columnConfig =
 {-| specific header content for the selection column
 -}
 viewSelectionHeader : Model a -> ColumnConfig a -> Html (Msg a)
-viewSelectionHeader _ columnConfig =
+viewSelectionHeader _ _ =
     div
         [ css
-            [ width (px <| (toFloat <| selectionColumn.properties.width - cumulatedBorderWidth))
+            [ width <| px <| toFloat <| selectionColumn.properties.width - cumulatedBorderWidth
             ]
         ]
         [ input
@@ -1321,8 +1365,8 @@ viewSelectionHeader _ columnConfig =
 
 {-| header content for data columns
 -}
-viewDataHeader : Model a -> ColumnConfig a -> Int -> String -> Html (Msg a)
-viewDataHeader model columnConfig index columnId =
+viewDataHeader : Model a -> ColumnConfig a -> List (Attribute (Msg a)) -> Html (Msg a)
+viewDataHeader model columnConfig conditionalAttributes =
     let
         attributes =
             [ css
@@ -1330,32 +1374,20 @@ viewDataHeader model columnConfig index columnId =
                 , flexDirection row
                 ]
             ]
-
-        conditionalAttributes =
-            -- TODO extract in subfunction for readability
-            case dndSystem.info model.dnd of
-                Just { dragIndex } ->
-                    if dragIndex == index then
-                        -- make the drop zone look empty
-                        [ css [ opacity (num 0) ] ]
-
-                    else
-                        List.map fromUnstyled (dndSystem.dropEvents index columnId)
-
-                Nothing ->
-                    []
     in
     div
-        (attributes ++ conditionalAttributes)
+        attributes
         [ div
-            [ css
+            ([ css
                 [ displayFlex
                 , flexDirection column
                 , alignItems flexStart
                 , overflow hidden
-                , width (px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth) - resizeHandleWidth)
+                , width <| px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth) - resizeHandleWidth
                 ]
-            ]
+             ]
+                ++ conditionalAttributes
+            )
             [ div
                 [ css
                     [ displayFlex
@@ -1364,7 +1396,7 @@ viewDataHeader model columnConfig index columnId =
                     , justifyContent flexStart
                     ]
                 ]
-                [ viewMoveHandle model index columnId
+                [ viewDragHandle columnConfig
                 , viewTitle model columnConfig
                 , viewSortingSymbol model columnConfig
                 ]
@@ -1374,33 +1406,41 @@ viewDataHeader model columnConfig index columnId =
         ]
 
 
+draggingAttributes : Model a -> ColumnConfig a -> List (Attribute (Msg a))
+draggingAttributes model currentColumn =
+    case model.draggedColumn of
+        Just draggedColumn ->
+            [ fromUnstyled <| Mouse.onMove (\event -> UserDraggedColumn (event |> toPosition)) ]
+                ++ (if isColumn currentColumn draggedColumn.column then
+                        [ css [ opacity (num 0) ] ]
+
+                    else
+                        [ fromUnstyled <|
+                            Mouse.onEnter (\_ -> UserSwappedColumns currentColumn draggedColumn.column)
+                        ]
+                   )
+
+        Nothing ->
+            []
+
+
 {-| Renders the dragged header
 -}
 viewGhostHeader : Model a -> Html (Msg a)
 viewGhostHeader model =
-    let
-        maybeDragColumn : Maybe (ColumnConfig a)
-        maybeDragColumn =
-            dndSystem.info model.dnd
-                |> Maybe.andThen
-                    (\{ dragIndex } ->
-                        model.config.columns
-                            |> List.drop dragIndex
-                            |> List.head
-                    )
-
-        offset =
-            { x = -model.headerContainerPosition.x
-            , y = -model.headerContainerPosition.y
-            }
-    in
-    case maybeDragColumn of
-        Just columnConfig ->
+    case model.draggedColumn of
+        Just draggedColumn ->
             div
-                (headerStyles model columnConfig
-                    :: (List.map fromUnstyled <| DnDList.customGhostStyles offset model.dnd)
+                (headerStyles model
+                    :: [ css
+                            [ position absolute
+                            , left (px <| draggedColumn.x - model.headerContainerPosition.x)
+                            , top (px 2)
+                            , pointerEvents none
+                            ]
+                       ]
                 )
-                [ viewDataHeader model columnConfig -1 "" ]
+                [ viewDataHeader model draggedColumn.column [] ]
 
         Nothing ->
             noContent
@@ -1464,24 +1504,10 @@ viewSortingSymbol model columnConfig =
             noContent
 
 
-viewMoveHandle : Model a -> Int -> String -> Html (Msg a)
-viewMoveHandle model index columnId =
-    let
-        conditionnalAttributes =
-            if index >= 0 then
-                -- TODO extract in subfunction for readability?
-                case dndSystem.info model.dnd of
-                    Just { dragIndex } ->
-                        []
-
-                    Nothing ->
-                        List.map fromUnstyled (dndSystem.dragEvents index columnId)
-
-            else
-                []
-    in
+viewDragHandle : ColumnConfig a -> Html (Msg a)
+viewDragHandle columnConfig =
     div
-        ([ css
+        [ css
             [ displayFlex
             , flexDirection row
             , cursor move
@@ -1491,10 +1517,10 @@ viewMoveHandle model index columnId =
             , width (px 10)
             , zIndex (int 5)
             ]
-         , Html.Styled.Events.onMouseEnter UserClickedMoveHandle
-         ]
-            ++ conditionnalAttributes
-        )
+        , fromUnstyled <| Mouse.onOver (\_ -> UserHoveredDragHandle)
+        , fromUnstyled <| Mouse.onDown (\event -> UserClickedDragHandle columnConfig (event |> toPosition))
+        , fromUnstyled <| Mouse.onUp (\_ -> UserEndedMouseInteraction)
+        ]
         (List.repeat 2 <|
             div [] <|
                 List.repeat 4 <|
@@ -1512,6 +1538,11 @@ viewMoveHandle model index columnId =
         )
 
 
+toPosition : { a | clientPos : ( Float, Float ) } -> Position
+toPosition event =
+    { x = Tuple.first event.clientPos, y = Tuple.second event.clientPos }
+
+
 viewResizeHandle : ColumnConfig a -> Html (Msg a)
 viewResizeHandle columnConfig =
     div
@@ -1519,12 +1550,11 @@ viewResizeHandle columnConfig =
             [ cursor colResize
             , displayFlex
             , justifyContent spaceAround
-            , fontSize (px 0.1)
             , height (pct 100)
             , visibility hidden
             , width (px resizeHandleWidth)
             ]
-        , fromUnstyled <| Mouse.onDown (\event -> UserClickedResizeHandle columnConfig event.clientPos)
+        , fromUnstyled <| Mouse.onDown (\event -> UserClickedResizeHandle columnConfig (event |> toPosition))
         , onBlur UserEndedMouseInteraction
         ]
         [ viewVerticalBar, viewVerticalBar ]
@@ -1586,6 +1616,7 @@ viewFilter model columnConfig =
             , height (px <| toFloat <| model.config.lineHeight)
             , paddingLeft (px 2)
             , paddingRight (px 2)
+            , marginLeft (px resizeHandleWidth) -- for visual centering in the header
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth * 2))
             ]
         , onClick UserClickedFilter
