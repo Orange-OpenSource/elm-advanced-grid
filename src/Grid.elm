@@ -17,7 +17,7 @@ module Grid exposing
     , Model, Msg(..), init, update, view
     , filteredItems
     , visibleColumns, isSelectionColumn, isSelectionColumnProperties
-    , subscriptions, withConfig
+    , withConfig
     )
 
 {-| This module allows to create dynamically configurable data grid.
@@ -412,11 +412,6 @@ init config items =
     { initialModel | columnsX = columnsX initialModel }
 
 
-subscriptions : Model a -> Sub (Msg a)
-subscriptions model =
-    Sub.none
-
-
 {-| the list of X coordinates of columns; coordinates are expressed in pixel. The first one is at 0.
 -}
 columnsX : Model a -> List Int
@@ -527,9 +522,8 @@ modelUpdate msg model =
                     , lastSwappedColumnId = ""
                     }
             in
-            { model
-                | draggedColumn = Just draggedColumn
-            }
+            model
+                |> withDraggedColumn (Just draggedColumn)
 
         UserClickedFilter ->
             { model | filterHasFocus = True }
@@ -1357,7 +1351,7 @@ viewSelectionHeader : Model a -> ColumnConfig a -> Html (Msg a)
 viewSelectionHeader _ _ =
     div
         [ css
-            [ width (px <| (toFloat <| selectionColumn.properties.width - cumulatedBorderWidth))
+            [ width <| px <| toFloat <| selectionColumn.properties.width - cumulatedBorderWidth
             ]
         ]
         [ input
@@ -1389,7 +1383,7 @@ viewDataHeader model columnConfig conditionalAttributes =
                 , flexDirection column
                 , alignItems flexStart
                 , overflow hidden
-                , width (px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth) - resizeHandleWidth)
+                , width <| px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth) - resizeHandleWidth
                 ]
              ]
                 ++ conditionalAttributes

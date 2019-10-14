@@ -53,7 +53,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \model -> Sub.map GridMsg (Grid.subscriptions model.gridModel)
+        , subscriptions = \_ -> Sub.none
         }
 
 
