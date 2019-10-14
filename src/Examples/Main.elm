@@ -59,6 +59,45 @@ main =
 
 view : Model -> Html Msg
 view model =
+    div
+        [ style "display" "flex"
+        , style "flex-direction" "row"
+        , style "align-items" "flex-start"
+        ]
+        [ viewMenu model
+        , viewGrid model
+        ]
+
+
+viewGrid : Model -> Html Msg
+viewGrid model =
+    div
+        [ style "background-color" "white"
+        , style "margin-left" "auto"
+        , style "margin-right" "auto"
+        ]
+        [ Html.map GridMsg <| Grid.view model.gridModel ]
+
+
+viewMenu : Model -> Html Msg
+viewMenu model =
+    div
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        ]
+        [ viewButton "Show Preferences" DisplayPreferences
+        , viewButton "Set Filters" SetFilters
+        , viewButton "Reset Filters" ResetFilters
+        , viewButton "Sort cities ascending" SetAscendingOrder
+        , viewButton "Sort cities descending" SetDecendingOrder
+        , viewInput
+        , viewClickedItem model
+        , viewSelectedItems model
+        ]
+
+
+viewClickedItem : Model -> Html Msg
+viewClickedItem model =
     let
         selectedItem =
             case model.clickedItem of
@@ -68,49 +107,58 @@ view model =
                 Nothing ->
                     text "None."
     in
-    div []
-        [ Html.map GridMsg <| Grid.view model.gridModel
-        , div (centeredWithId "clickedItem") [ text "Clicked Item = ", selectedItem ]
-        , div (centeredWithId "label")
-            [ text <|
-                if not <| List.isEmpty model.selectedItems then
-                    "SelectedItems:"
+    div (menuItemAttributes "clickedItem") [ text "Clicked Item = ", selectedItem ]
 
-                else
-                    "Use checkboxes to select items."
-            ]
-        , ul (centeredWithId "selectedItems") <| List.map (\it -> li [] [ viewItem it ]) model.selectedItems
-        , div (centeredWithId "Preferences")
-            [ button
-                [ onClick DisplayPreferences
-                , style "margin" "10px"
-                ]
-                [ text "Show Preferences" ]
-            ]
-        , div (centeredWithId "buttonBar")
-            [ button [ onClick SetFilters, style "margin" "10px" ] [ text "Set Filters" ]
-            , button [ onClick ResetFilters, style "margin" "10px" ] [ text "Reset Filters" ]
-            , button [ onClick SetAscendingOrder, style "margin" "10px" ] [ text "Sort cities ascending" ]
-            , button [ onClick SetDecendingOrder, style "margin" "10px" ] [ text "Sort cities descending" ]
-            ]
-        , div (centeredWithId "InputBar") [ viewInput ]
+
+viewSelectedItems : Model -> Html Msg
+viewSelectedItems model =
+    div (menuItemAttributes "label")
+        [ text <|
+            if not <| List.isEmpty model.selectedItems then
+                "SelectedItems:"
+
+            else
+                "Use checkboxes to select items."
+        , ul (menuItemAttributes "selectedItems") <| List.map (\it -> li [] [ viewItem it ]) model.selectedItems
         ]
+
+
+viewButton : String -> Msg -> Html Msg
+viewButton label msg =
+    button
+        [ onClick msg
+        , style "margin" "10px"
+        , style "background-color" "darkturquoise"
+        , style "padding" "0.5rem"
+        , style "border-radius" "8px"
+        , style "border-color" "aqua"
+        , style "font-size" "medium"
+        ]
+        [ text label ]
 
 
 viewInput : Html Msg
 viewInput =
-    label []
+    label (menuItemAttributes "input-label")
         [ text "Scroll to first city starting with:"
-        , input [ onInput UserRequiredScrollingToCity, style "margin-left" "10px" ] []
+        , input
+            (menuItemAttributes "input"
+                ++ [ onInput UserRequiredScrollingToCity
+                   , style "color" "black"
+                   , style "vertical-align" "baseline"
+                   , style "font-size" "medium"
+                   ]
+            )
+            []
         ]
 
 
-centeredWithId : String -> List (Html.Attribute msg)
-centeredWithId id =
+menuItemAttributes : String -> List (Html.Attribute msg)
+menuItemAttributes id =
     [ attribute "data-testid" id
-    , style "margin" "auto"
-    , style "width" "700px"
     , style "padding-top" "10px"
+    , style "color" "#EEEEEE"
+    , style "margin" "10px"
     ]
 
 
