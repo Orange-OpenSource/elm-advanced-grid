@@ -10,17 +10,31 @@
         .selected-row {
             background-color: rgb(137, 166, 220)
         }
+
         .even-row {
             background-color: rgb(225, 224, 224)
+        }
+
+        button:focus {
+            outline: 0;
+        }
+
+        input:focus {
+            outline: #00FFFF solid 2px;
+        }
+
+        body {
+            background-color: #333333;
+            font-family: Arial, Helvetica, sans-serif;
         }
     </style>
 </head>
 <body>
-    <div id="grid"></div>
-    <script>
-        Elm.Examples.Main.init({
-            node: document.getElementById("grid")
-        })
-    </script>
+<div id="grid"></div>
+<script>
+    Elm.Examples.Main.init({
+        node: document.getElementById("grid")
+    })
+</script>
 </body>
 </html>
