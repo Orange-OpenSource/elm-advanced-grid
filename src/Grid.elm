@@ -281,6 +281,7 @@ type alias DraggedColumn a =
     { x : Float
     , column : ColumnConfig a
     , dragStartX : Float
+    , lastSwappedColumnId : String
     }
 
 
@@ -331,6 +332,11 @@ withColumns columns model =
     model
         |> withConfig { config | columns = columns }
         |> withColumnsX
+
+
+withDraggedColumn : Maybe (DraggedColumn a) -> Model a -> Model a
+withDraggedColumn draggedColumn model =
+    { model | draggedColumn = draggedColumn }
 
 
 {-| Definition for the row selection column,
@@ -518,6 +524,7 @@ modelUpdate msg model =
                     { x = mousePosition.x
                     , column = columnConfig
                     , dragStartX = mousePosition.x
+                    , lastSwappedColumnId = ""
                     }
             in
             { model
@@ -573,11 +580,22 @@ modelUpdate msg model =
             resizeColumn model position.x
 
         UserSwappedColumns columnConfig draggedColumnConfig ->
-            let
-                newColumns =
-                    swapColumns columnConfig draggedColumnConfig model.config.columns
-            in
-            model |> withColumns newColumns
+            case model.draggedColumn of
+                Just draggedColumn ->
+                    if columnConfig.properties.id == draggedColumn.lastSwappedColumnId then
+                        model
+
+                    else
+                        let
+                            newColumns =
+                                swapColumns columnConfig draggedColumnConfig model.config.columns
+                        in
+                        model
+                            |> withColumns newColumns
+                            |> withDraggedColumn (Just { draggedColumn | lastSwappedColumnId = columnConfig.properties.id })
+
+                Nothing ->
+                    model
 
         UserToggledAllItemSelection ->
             let
