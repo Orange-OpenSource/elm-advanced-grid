@@ -10,4 +10,10 @@ Columns can be resized using the mouse. They can also be reordered by drag and d
  
 The data can count more than 20,000 lines, with no performance impact, thanks to the use of [FabienHenon/elm-infinite-list-view](https://package.elm-lang.org/packages/FabienHenon/elm-infinite-list-view/latest/) under the hood.
 
-See the src/Examples directory content for a full example. 
+[Demos](https://orange-opensource.github.io/elm-advanced-grid/) are available.
+ 
+See the src/Examples directory content for the source code of the examples.
+
+
+
+ 
