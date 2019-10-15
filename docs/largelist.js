@@ -5270,11 +5270,6 @@ var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
-var elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var elm$core$Basics$compare = _Utils_compare;
 var elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -5443,11 +5438,21 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$translations = elm$core$
 		[
 			_Utils_Tuple2('Nom', 'Name'),
 			_Utils_Tuple2('Progrès', 'Progress'),
-			_Utils_Tuple2('Valeur', 'Value'),
+			_Utils_Tuple2('Valeur 1', 'Value 1'),
+			_Utils_Tuple2('Valeur 2', 'Value 2'),
+			_Utils_Tuple2('Valeur 3', 'Value 3'),
+			_Utils_Tuple2('Valeur 4', 'Value 4'),
+			_Utils_Tuple2('Valeur 5', 'Value 5'),
+			_Utils_Tuple2('Valeur 6', 'Value 6'),
 			_Utils_Tuple2('Ville', 'City'),
 			_Utils_Tuple2('Une indication pour la colonne Id', 'A hint for Id column'),
 			_Utils_Tuple2('Une indication pour la colonne Nom', 'A hint for Name column'),
-			_Utils_Tuple2('Une indication pour la colonne Valeur', 'A hint for Value column'),
+			_Utils_Tuple2('Une indication pour la colonne Valeur 1', 'A hint for Value column 1'),
+			_Utils_Tuple2('Une indication pour la colonne Valeur 2', 'A hint for Value column 2'),
+			_Utils_Tuple2('Une indication pour la colonne Valeur 3', 'A hint for Value column 3'),
+			_Utils_Tuple2('Une indication pour la colonne Valeur 4', 'A hint for Value column 4'),
+			_Utils_Tuple2('Une indication pour la colonne Valeur 5', 'A hint for Value column 5'),
+			_Utils_Tuple2('Une indication pour la colonne Valeur 6', 'A hint for Value column 6'),
 			_Utils_Tuple2('Une indication pour la colonne Progrès', 'A hint for Progress column'),
 			_Utils_Tuple2('Une indication pour la colonne Ville', 'A hint for City column')
 		]));
@@ -5456,30 +5461,6 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$localize = function (key
 		elm$core$Maybe$withDefault,
 		key,
 		A2(elm$core$Dict$get, key, pascallemerrer$elm_advanced_grid$Examples$LargeList$translations));
-};
-var elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return elm$core$Maybe$Just(x);
-	} else {
-		return elm$core$Maybe$Nothing;
-	}
-};
-var elm$core$String$fromFloat = _String_fromNumber;
-var elm$core$String$toFloat = _String_toFloat;
-var pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals = function (value) {
-	var valueAsString = elm$core$String$fromFloat(value);
-	var pointIndex = A2(
-		elm$core$Maybe$withDefault,
-		elm$core$String$length(valueAsString),
-		elm$core$List$head(
-			A2(elm$core$String$indexes, '.', valueAsString)));
-	return A2(
-		elm$core$Maybe$withDefault,
-		0,
-		elm$core$String$toFloat(
-			A2(elm$core$String$left, pointIndex + 2, valueAsString)));
 };
 var pascallemerrer$elm_advanced_grid$Grid$Unsorted = {$: 'Unsorted'};
 var pascallemerrer$elm_advanced_grid$Grid$columnConfigProperties = function (_n0) {
@@ -5527,6 +5508,11 @@ var rtfeldman$elm_css$Css$erroneousHex = function (str) {
 		value: rtfeldman$elm_css$Css$withPrecedingHash(str)
 	};
 };
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var elm$core$String$fromList = _String_fromList;
 var elm$core$String$toLower = _String_toLower;
 var elm$core$Basics$negate = function (n) {
@@ -5898,6 +5884,15 @@ var rtfeldman$elm_css$Css$hex = function (str) {
 	return rtfeldman$elm_css$Css$erroneousHex(str);
 };
 var pascallemerrer$elm_advanced_grid$Grid$Colors$lightGrey = rtfeldman$elm_css$Css$hex('CCC');
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
 var rtfeldman$elm_css$Css$Preprocess$AppendProperty = function (a) {
 	return {$: 'AppendProperty', a: a};
 };
@@ -5965,6 +5960,7 @@ var rtfeldman$elm_css$Css$Internal$getOverloadedProperty = F3(
 		}
 	});
 var rtfeldman$elm_css$Css$Internal$IncompatibleUnits = {$: 'IncompatibleUnits'};
+var elm$core$String$fromFloat = _String_fromNumber;
 var rtfeldman$elm_css$Css$Internal$lengthConverter = F3(
 	function (units, unitLabel, numericValue) {
 		return {
@@ -7833,7 +7829,7 @@ var rtfeldman$elm_css$VirtualDom$Styled$text = function (str) {
 		elm$virtual_dom$VirtualDom$text(str));
 };
 var rtfeldman$elm_css$Html$Styled$text = rtfeldman$elm_css$VirtualDom$Styled$text;
-var pascallemerrer$elm_advanced_grid$Grid$viewFloat = F3(
+var pascallemerrer$elm_advanced_grid$Grid$viewString = F3(
 	function (field, properties, item) {
 		return A2(
 			rtfeldman$elm_css$Html$Styled$div,
@@ -7841,19 +7837,12 @@ var pascallemerrer$elm_advanced_grid$Grid$viewFloat = F3(
 			_List_fromArray(
 				[
 					rtfeldman$elm_css$Html$Styled$text(
-					elm$core$String$fromFloat(
-						field(item)))
+					field(item))
 				]));
 	});
-var pascallemerrer$elm_advanced_grid$Grid$Filters$FloatFilter = function (a) {
-	return {$: 'FloatFilter', a: a};
+var pascallemerrer$elm_advanced_grid$Grid$Filters$StringFilter = function (a) {
+	return {$: 'StringFilter', a: a};
 };
-var elm$parser$Parser$ExpectingFloat = {$: 'ExpectingFloat'};
-var elm$parser$Parser$Advanced$Parser = function (a) {
-	return {$: 'Parser', a: a};
-};
-var elm$parser$Parser$Advanced$consumeBase = _Parser_consumeBase;
-var elm$parser$Parser$Advanced$consumeBase16 = _Parser_consumeBase16;
 var elm$parser$Parser$Advanced$Bad = F2(
 	function (a, b) {
 		return {$: 'Bad', a: a, b: b};
@@ -7862,6 +7851,380 @@ var elm$parser$Parser$Advanced$Good = F3(
 	function (a, b, c) {
 		return {$: 'Good', a: a, b: b, c: c};
 	});
+var elm$parser$Parser$Advanced$Parser = function (a) {
+	return {$: 'Parser', a: a};
+};
+var elm$parser$Parser$Advanced$map2 = F3(
+	function (func, _n0, _n1) {
+		var parseA = _n0.a;
+		var parseB = _n1.a;
+		return elm$parser$Parser$Advanced$Parser(
+			function (s0) {
+				var _n2 = parseA(s0);
+				if (_n2.$ === 'Bad') {
+					var p = _n2.a;
+					var x = _n2.b;
+					return A2(elm$parser$Parser$Advanced$Bad, p, x);
+				} else {
+					var p1 = _n2.a;
+					var a = _n2.b;
+					var s1 = _n2.c;
+					var _n3 = parseB(s1);
+					if (_n3.$ === 'Bad') {
+						var p2 = _n3.a;
+						var x = _n3.b;
+						return A2(elm$parser$Parser$Advanced$Bad, p1 || p2, x);
+					} else {
+						var p2 = _n3.a;
+						var b = _n3.b;
+						var s2 = _n3.c;
+						return A3(
+							elm$parser$Parser$Advanced$Good,
+							p1 || p2,
+							A2(func, a, b),
+							s2);
+					}
+				}
+			});
+	});
+var elm$parser$Parser$Advanced$keeper = F2(
+	function (parseFunc, parseArg) {
+		return A3(elm$parser$Parser$Advanced$map2, elm$core$Basics$apL, parseFunc, parseArg);
+	});
+var elm$parser$Parser$keeper = elm$parser$Parser$Advanced$keeper;
+var elm$parser$Parser$Advanced$succeed = function (a) {
+	return elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			return A3(elm$parser$Parser$Advanced$Good, false, a, s);
+		});
+};
+var elm$parser$Parser$succeed = elm$parser$Parser$Advanced$succeed;
+var pascallemerrer$elm_advanced_grid$Grid$Parsers$containsParser = elm$parser$Parser$succeed(elm$core$Basics$identity);
+var elm$core$Basics$always = F2(
+	function (a, _n0) {
+		return a;
+	});
+var elm$parser$Parser$Advanced$ignorer = F2(
+	function (keepParser, ignoreParser) {
+		return A3(elm$parser$Parser$Advanced$map2, elm$core$Basics$always, keepParser, ignoreParser);
+	});
+var elm$parser$Parser$ignorer = elm$parser$Parser$Advanced$ignorer;
+var elm$parser$Parser$Advanced$isSubChar = _Parser_isSubChar;
+var elm$parser$Parser$Advanced$chompWhileHelp = F5(
+	function (isGood, offset, row, col, s0) {
+		chompWhileHelp:
+		while (true) {
+			var newOffset = A3(elm$parser$Parser$Advanced$isSubChar, isGood, offset, s0.src);
+			if (_Utils_eq(newOffset, -1)) {
+				return A3(
+					elm$parser$Parser$Advanced$Good,
+					_Utils_cmp(s0.offset, offset) < 0,
+					_Utils_Tuple0,
+					{col: col, context: s0.context, indent: s0.indent, offset: offset, row: row, src: s0.src});
+			} else {
+				if (_Utils_eq(newOffset, -2)) {
+					var $temp$isGood = isGood,
+						$temp$offset = offset + 1,
+						$temp$row = row + 1,
+						$temp$col = 1,
+						$temp$s0 = s0;
+					isGood = $temp$isGood;
+					offset = $temp$offset;
+					row = $temp$row;
+					col = $temp$col;
+					s0 = $temp$s0;
+					continue chompWhileHelp;
+				} else {
+					var $temp$isGood = isGood,
+						$temp$offset = newOffset,
+						$temp$row = row,
+						$temp$col = col + 1,
+						$temp$s0 = s0;
+					isGood = $temp$isGood;
+					offset = $temp$offset;
+					row = $temp$row;
+					col = $temp$col;
+					s0 = $temp$s0;
+					continue chompWhileHelp;
+				}
+			}
+		}
+	});
+var elm$parser$Parser$Advanced$chompWhile = function (isGood) {
+	return elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			return A5(elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.offset, s.row, s.col, s);
+		});
+};
+var elm$parser$Parser$Advanced$spaces = elm$parser$Parser$Advanced$chompWhile(
+	function (c) {
+		return _Utils_eq(
+			c,
+			_Utils_chr(' ')) || (_Utils_eq(
+			c,
+			_Utils_chr('\n')) || _Utils_eq(
+			c,
+			_Utils_chr('\r')));
+	});
+var elm$parser$Parser$spaces = elm$parser$Parser$Advanced$spaces;
+var elm$parser$Parser$ExpectingSymbol = function (a) {
+	return {$: 'ExpectingSymbol', a: a};
+};
+var elm$parser$Parser$Advanced$Token = F2(
+	function (a, b) {
+		return {$: 'Token', a: a, b: b};
+	});
+var elm$parser$Parser$Advanced$AddRight = F2(
+	function (a, b) {
+		return {$: 'AddRight', a: a, b: b};
+	});
+var elm$parser$Parser$Advanced$DeadEnd = F4(
+	function (row, col, problem, contextStack) {
+		return {col: col, contextStack: contextStack, problem: problem, row: row};
+	});
+var elm$parser$Parser$Advanced$Empty = {$: 'Empty'};
+var elm$parser$Parser$Advanced$fromState = F2(
+	function (s, x) {
+		return A2(
+			elm$parser$Parser$Advanced$AddRight,
+			elm$parser$Parser$Advanced$Empty,
+			A4(elm$parser$Parser$Advanced$DeadEnd, s.row, s.col, x, s.context));
+	});
+var elm$parser$Parser$Advanced$isSubString = _Parser_isSubString;
+var elm$parser$Parser$Advanced$token = function (_n0) {
+	var str = _n0.a;
+	var expecting = _n0.b;
+	var progress = !elm$core$String$isEmpty(str);
+	return elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			var _n1 = A5(elm$parser$Parser$Advanced$isSubString, str, s.offset, s.row, s.col, s.src);
+			var newOffset = _n1.a;
+			var newRow = _n1.b;
+			var newCol = _n1.c;
+			return _Utils_eq(newOffset, -1) ? A2(
+				elm$parser$Parser$Advanced$Bad,
+				false,
+				A2(elm$parser$Parser$Advanced$fromState, s, expecting)) : A3(
+				elm$parser$Parser$Advanced$Good,
+				progress,
+				_Utils_Tuple0,
+				{col: newCol, context: s.context, indent: s.indent, offset: newOffset, row: newRow, src: s.src});
+		});
+};
+var elm$parser$Parser$Advanced$symbol = elm$parser$Parser$Advanced$token;
+var elm$parser$Parser$symbol = function (str) {
+	return elm$parser$Parser$Advanced$symbol(
+		A2(
+			elm$parser$Parser$Advanced$Token,
+			str,
+			elm$parser$Parser$ExpectingSymbol(str)));
+};
+var pascallemerrer$elm_advanced_grid$Grid$Parsers$equalityParser = A2(
+	elm$parser$Parser$ignorer,
+	A2(
+		elm$parser$Parser$ignorer,
+		A2(
+			elm$parser$Parser$ignorer,
+			elm$parser$Parser$succeed(elm$core$Basics$identity),
+			elm$parser$Parser$spaces),
+		elm$parser$Parser$symbol('=')),
+	elm$parser$Parser$spaces);
+var pascallemerrer$elm_advanced_grid$Grid$Parsers$greaterThanParser = A2(
+	elm$parser$Parser$ignorer,
+	A2(
+		elm$parser$Parser$ignorer,
+		A2(
+			elm$parser$Parser$ignorer,
+			elm$parser$Parser$succeed(elm$core$Basics$identity),
+			elm$parser$Parser$spaces),
+		elm$parser$Parser$symbol('>')),
+	elm$parser$Parser$spaces);
+var pascallemerrer$elm_advanced_grid$Grid$Parsers$lessThanParser = A2(
+	elm$parser$Parser$ignorer,
+	A2(
+		elm$parser$Parser$ignorer,
+		A2(
+			elm$parser$Parser$ignorer,
+			elm$parser$Parser$succeed(elm$core$Basics$identity),
+			elm$parser$Parser$spaces),
+		elm$parser$Parser$symbol('<')),
+	elm$parser$Parser$spaces);
+var pascallemerrer$elm_advanced_grid$Grid$Filters$makeFilter = function (_n0) {
+	var getter = _n0.getter;
+	var equal = _n0.equal;
+	var lessThan = _n0.lessThan;
+	var greaterThan = _n0.greaterThan;
+	var contains = _n0.contains;
+	var typedParser = _n0.typedParser;
+	return {
+		contains: {
+			filter: F2(
+				function (value, item) {
+					return A2(
+						contains,
+						getter(item),
+						value);
+				}),
+			parser: A2(elm$parser$Parser$keeper, pascallemerrer$elm_advanced_grid$Grid$Parsers$containsParser, typedParser)
+		},
+		equal: {
+			filter: F2(
+				function (value, item) {
+					return A2(
+						equal,
+						getter(item),
+						value);
+				}),
+			parser: A2(elm$parser$Parser$keeper, pascallemerrer$elm_advanced_grid$Grid$Parsers$equalityParser, typedParser)
+		},
+		greaterThan: {
+			filter: F2(
+				function (value, item) {
+					return A2(
+						greaterThan,
+						getter(item),
+						value);
+				}),
+			parser: A2(elm$parser$Parser$keeper, pascallemerrer$elm_advanced_grid$Grid$Parsers$greaterThanParser, typedParser)
+		},
+		lessThan: {
+			filter: F2(
+				function (value, item) {
+					return A2(
+						lessThan,
+						getter(item),
+						value);
+				}),
+			parser: A2(elm$parser$Parser$keeper, pascallemerrer$elm_advanced_grid$Grid$Parsers$lessThanParser, typedParser)
+		}
+	};
+};
+var elm$parser$Parser$Advanced$chompUntilEndOr = function (str) {
+	return elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			var _n0 = A5(_Parser_findSubString, str, s.offset, s.row, s.col, s.src);
+			var newOffset = _n0.a;
+			var newRow = _n0.b;
+			var newCol = _n0.c;
+			var adjustedOffset = (newOffset < 0) ? elm$core$String$length(s.src) : newOffset;
+			return A3(
+				elm$parser$Parser$Advanced$Good,
+				_Utils_cmp(s.offset, adjustedOffset) < 0,
+				_Utils_Tuple0,
+				{col: newCol, context: s.context, indent: s.indent, offset: adjustedOffset, row: newRow, src: s.src});
+		});
+};
+var elm$parser$Parser$chompUntilEndOr = elm$parser$Parser$Advanced$chompUntilEndOr;
+var elm$parser$Parser$Advanced$mapChompedString = F2(
+	function (func, _n0) {
+		var parse = _n0.a;
+		return elm$parser$Parser$Advanced$Parser(
+			function (s0) {
+				var _n1 = parse(s0);
+				if (_n1.$ === 'Bad') {
+					var p = _n1.a;
+					var x = _n1.b;
+					return A2(elm$parser$Parser$Advanced$Bad, p, x);
+				} else {
+					var p = _n1.a;
+					var a = _n1.b;
+					var s1 = _n1.c;
+					return A3(
+						elm$parser$Parser$Advanced$Good,
+						p,
+						A2(
+							func,
+							A3(elm$core$String$slice, s0.offset, s1.offset, s0.src),
+							a),
+						s1);
+				}
+			});
+	});
+var elm$parser$Parser$Advanced$getChompedString = function (parser) {
+	return A2(elm$parser$Parser$Advanced$mapChompedString, elm$core$Basics$always, parser);
+};
+var elm$parser$Parser$getChompedString = elm$parser$Parser$Advanced$getChompedString;
+var pascallemerrer$elm_advanced_grid$Grid$Parsers$stringParser = elm$parser$Parser$getChompedString(
+	elm$parser$Parser$chompUntilEndOr('\u0000'));
+var pascallemerrer$elm_advanced_grid$Grid$Filters$stringFilter = function (getter) {
+	return pascallemerrer$elm_advanced_grid$Grid$Filters$makeFilter(
+		{
+			contains: F2(
+				function (a, b) {
+					return A2(
+						elm$core$String$contains,
+						elm$core$String$toLower(b),
+						elm$core$String$toLower(a));
+				}),
+			equal: F2(
+				function (a, b) {
+					return _Utils_eq(
+						elm$core$String$toLower(a),
+						elm$core$String$toLower(b));
+				}),
+			getter: getter,
+			greaterThan: F2(
+				function (a, b) {
+					return _Utils_cmp(
+						elm$core$String$toLower(a),
+						elm$core$String$toLower(b)) > 0;
+				}),
+			lessThan: F2(
+				function (a, b) {
+					return _Utils_cmp(
+						elm$core$String$toLower(a),
+						elm$core$String$toLower(b)) < 0;
+				}),
+			typedParser: pascallemerrer$elm_advanced_grid$Grid$Parsers$stringParser
+		});
+};
+var pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig = function (properties) {
+	var id = properties.id;
+	var title = properties.title;
+	var tooltip = properties.tooltip;
+	var width = properties.width;
+	var getter = properties.getter;
+	var localize = properties.localize;
+	return {
+		comparator: pascallemerrer$elm_advanced_grid$Grid$compareFields(getter),
+		filteringValue: elm$core$Maybe$Nothing,
+		filters: pascallemerrer$elm_advanced_grid$Grid$Filters$StringFilter(
+			pascallemerrer$elm_advanced_grid$Grid$Filters$stringFilter(getter)),
+		properties: pascallemerrer$elm_advanced_grid$Grid$columnConfigProperties(properties),
+		renderer: pascallemerrer$elm_advanced_grid$Grid$viewString(getter),
+		toString: getter
+	};
+};
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$cityColumn = pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig(
+	{
+		getter: function ($) {
+			return $.city;
+		},
+		id: 'City',
+		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+		title: 'Ville',
+		tooltip: 'Une indication pour la colonne Ville',
+		width: 300
+	});
+var pascallemerrer$elm_advanced_grid$Grid$viewInt = F3(
+	function (field, properties, item) {
+		return A2(
+			rtfeldman$elm_css$Html$Styled$div,
+			pascallemerrer$elm_advanced_grid$Grid$cellAttributes(properties),
+			_List_fromArray(
+				[
+					rtfeldman$elm_css$Html$Styled$text(
+					elm$core$String$fromInt(
+						field(item)))
+				]));
+	});
+var pascallemerrer$elm_advanced_grid$Grid$Filters$IntFilter = function (a) {
+	return {$: 'IntFilter', a: a};
+};
+var elm$parser$Parser$ExpectingInt = {$: 'ExpectingInt'};
+var elm$parser$Parser$Advanced$consumeBase = _Parser_consumeBase;
+var elm$parser$Parser$Advanced$consumeBase16 = _Parser_consumeBase16;
+var elm$core$String$toFloat = _String_toFloat;
 var elm$parser$Parser$Advanced$bumpOffset = F2(
 	function (newOffset, s) {
 		return {col: s.col + (newOffset - s.offset), context: s.context, indent: s.indent, offset: newOffset, row: s.row, src: s.src};
@@ -7885,22 +8248,6 @@ var elm$parser$Parser$Advanced$consumeDotAndExp = F2(
 			elm$parser$Parser$Advanced$consumeExp,
 			A2(elm$parser$Parser$Advanced$chompBase10, offset + 1, src),
 			src) : A2(elm$parser$Parser$Advanced$consumeExp, offset, src);
-	});
-var elm$parser$Parser$Advanced$AddRight = F2(
-	function (a, b) {
-		return {$: 'AddRight', a: a, b: b};
-	});
-var elm$parser$Parser$Advanced$DeadEnd = F4(
-	function (row, col, problem, contextStack) {
-		return {col: col, contextStack: contextStack, problem: problem, row: row};
-	});
-var elm$parser$Parser$Advanced$Empty = {$: 'Empty'};
-var elm$parser$Parser$Advanced$fromState = F2(
-	function (s, x) {
-		return A2(
-			elm$parser$Parser$Advanced$AddRight,
-			elm$parser$Parser$Advanced$Empty,
-			A4(elm$parser$Parser$Advanced$DeadEnd, s.row, s.col, x, s.context));
 	});
 var elm$parser$Parser$Advanced$finalizeInt = F5(
 	function (invalid, handler, startOffset, _n0, s) {
@@ -8022,305 +8369,6 @@ var elm$parser$Parser$Advanced$number = function (c) {
 			}
 		});
 };
-var elm$parser$Parser$Advanced$float = F2(
-	function (expecting, invalid) {
-		return elm$parser$Parser$Advanced$number(
-			{
-				binary: elm$core$Result$Err(invalid),
-				expecting: expecting,
-				_float: elm$core$Result$Ok(elm$core$Basics$identity),
-				hex: elm$core$Result$Err(invalid),
-				_int: elm$core$Result$Ok(elm$core$Basics$toFloat),
-				invalid: invalid,
-				octal: elm$core$Result$Err(invalid)
-			});
-	});
-var elm$parser$Parser$float = A2(elm$parser$Parser$Advanced$float, elm$parser$Parser$ExpectingFloat, elm$parser$Parser$ExpectingFloat);
-var elm$parser$Parser$Advanced$map2 = F3(
-	function (func, _n0, _n1) {
-		var parseA = _n0.a;
-		var parseB = _n1.a;
-		return elm$parser$Parser$Advanced$Parser(
-			function (s0) {
-				var _n2 = parseA(s0);
-				if (_n2.$ === 'Bad') {
-					var p = _n2.a;
-					var x = _n2.b;
-					return A2(elm$parser$Parser$Advanced$Bad, p, x);
-				} else {
-					var p1 = _n2.a;
-					var a = _n2.b;
-					var s1 = _n2.c;
-					var _n3 = parseB(s1);
-					if (_n3.$ === 'Bad') {
-						var p2 = _n3.a;
-						var x = _n3.b;
-						return A2(elm$parser$Parser$Advanced$Bad, p1 || p2, x);
-					} else {
-						var p2 = _n3.a;
-						var b = _n3.b;
-						var s2 = _n3.c;
-						return A3(
-							elm$parser$Parser$Advanced$Good,
-							p1 || p2,
-							A2(func, a, b),
-							s2);
-					}
-				}
-			});
-	});
-var elm$parser$Parser$Advanced$keeper = F2(
-	function (parseFunc, parseArg) {
-		return A3(elm$parser$Parser$Advanced$map2, elm$core$Basics$apL, parseFunc, parseArg);
-	});
-var elm$parser$Parser$keeper = elm$parser$Parser$Advanced$keeper;
-var elm$parser$Parser$Advanced$succeed = function (a) {
-	return elm$parser$Parser$Advanced$Parser(
-		function (s) {
-			return A3(elm$parser$Parser$Advanced$Good, false, a, s);
-		});
-};
-var elm$parser$Parser$succeed = elm$parser$Parser$Advanced$succeed;
-var pascallemerrer$elm_advanced_grid$Grid$Parsers$containsParser = elm$parser$Parser$succeed(elm$core$Basics$identity);
-var elm$core$Basics$always = F2(
-	function (a, _n0) {
-		return a;
-	});
-var elm$parser$Parser$Advanced$ignorer = F2(
-	function (keepParser, ignoreParser) {
-		return A3(elm$parser$Parser$Advanced$map2, elm$core$Basics$always, keepParser, ignoreParser);
-	});
-var elm$parser$Parser$ignorer = elm$parser$Parser$Advanced$ignorer;
-var elm$parser$Parser$Advanced$isSubChar = _Parser_isSubChar;
-var elm$parser$Parser$Advanced$chompWhileHelp = F5(
-	function (isGood, offset, row, col, s0) {
-		chompWhileHelp:
-		while (true) {
-			var newOffset = A3(elm$parser$Parser$Advanced$isSubChar, isGood, offset, s0.src);
-			if (_Utils_eq(newOffset, -1)) {
-				return A3(
-					elm$parser$Parser$Advanced$Good,
-					_Utils_cmp(s0.offset, offset) < 0,
-					_Utils_Tuple0,
-					{col: col, context: s0.context, indent: s0.indent, offset: offset, row: row, src: s0.src});
-			} else {
-				if (_Utils_eq(newOffset, -2)) {
-					var $temp$isGood = isGood,
-						$temp$offset = offset + 1,
-						$temp$row = row + 1,
-						$temp$col = 1,
-						$temp$s0 = s0;
-					isGood = $temp$isGood;
-					offset = $temp$offset;
-					row = $temp$row;
-					col = $temp$col;
-					s0 = $temp$s0;
-					continue chompWhileHelp;
-				} else {
-					var $temp$isGood = isGood,
-						$temp$offset = newOffset,
-						$temp$row = row,
-						$temp$col = col + 1,
-						$temp$s0 = s0;
-					isGood = $temp$isGood;
-					offset = $temp$offset;
-					row = $temp$row;
-					col = $temp$col;
-					s0 = $temp$s0;
-					continue chompWhileHelp;
-				}
-			}
-		}
-	});
-var elm$parser$Parser$Advanced$chompWhile = function (isGood) {
-	return elm$parser$Parser$Advanced$Parser(
-		function (s) {
-			return A5(elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.offset, s.row, s.col, s);
-		});
-};
-var elm$parser$Parser$Advanced$spaces = elm$parser$Parser$Advanced$chompWhile(
-	function (c) {
-		return _Utils_eq(
-			c,
-			_Utils_chr(' ')) || (_Utils_eq(
-			c,
-			_Utils_chr('\n')) || _Utils_eq(
-			c,
-			_Utils_chr('\r')));
-	});
-var elm$parser$Parser$spaces = elm$parser$Parser$Advanced$spaces;
-var elm$parser$Parser$ExpectingSymbol = function (a) {
-	return {$: 'ExpectingSymbol', a: a};
-};
-var elm$parser$Parser$Advanced$Token = F2(
-	function (a, b) {
-		return {$: 'Token', a: a, b: b};
-	});
-var elm$parser$Parser$Advanced$isSubString = _Parser_isSubString;
-var elm$parser$Parser$Advanced$token = function (_n0) {
-	var str = _n0.a;
-	var expecting = _n0.b;
-	var progress = !elm$core$String$isEmpty(str);
-	return elm$parser$Parser$Advanced$Parser(
-		function (s) {
-			var _n1 = A5(elm$parser$Parser$Advanced$isSubString, str, s.offset, s.row, s.col, s.src);
-			var newOffset = _n1.a;
-			var newRow = _n1.b;
-			var newCol = _n1.c;
-			return _Utils_eq(newOffset, -1) ? A2(
-				elm$parser$Parser$Advanced$Bad,
-				false,
-				A2(elm$parser$Parser$Advanced$fromState, s, expecting)) : A3(
-				elm$parser$Parser$Advanced$Good,
-				progress,
-				_Utils_Tuple0,
-				{col: newCol, context: s.context, indent: s.indent, offset: newOffset, row: newRow, src: s.src});
-		});
-};
-var elm$parser$Parser$Advanced$symbol = elm$parser$Parser$Advanced$token;
-var elm$parser$Parser$symbol = function (str) {
-	return elm$parser$Parser$Advanced$symbol(
-		A2(
-			elm$parser$Parser$Advanced$Token,
-			str,
-			elm$parser$Parser$ExpectingSymbol(str)));
-};
-var pascallemerrer$elm_advanced_grid$Grid$Parsers$equalityParser = A2(
-	elm$parser$Parser$ignorer,
-	A2(
-		elm$parser$Parser$ignorer,
-		A2(
-			elm$parser$Parser$ignorer,
-			elm$parser$Parser$succeed(elm$core$Basics$identity),
-			elm$parser$Parser$spaces),
-		elm$parser$Parser$symbol('=')),
-	elm$parser$Parser$spaces);
-var pascallemerrer$elm_advanced_grid$Grid$Parsers$greaterThanParser = A2(
-	elm$parser$Parser$ignorer,
-	A2(
-		elm$parser$Parser$ignorer,
-		A2(
-			elm$parser$Parser$ignorer,
-			elm$parser$Parser$succeed(elm$core$Basics$identity),
-			elm$parser$Parser$spaces),
-		elm$parser$Parser$symbol('>')),
-	elm$parser$Parser$spaces);
-var pascallemerrer$elm_advanced_grid$Grid$Parsers$lessThanParser = A2(
-	elm$parser$Parser$ignorer,
-	A2(
-		elm$parser$Parser$ignorer,
-		A2(
-			elm$parser$Parser$ignorer,
-			elm$parser$Parser$succeed(elm$core$Basics$identity),
-			elm$parser$Parser$spaces),
-		elm$parser$Parser$symbol('<')),
-	elm$parser$Parser$spaces);
-var pascallemerrer$elm_advanced_grid$Grid$Filters$makeFilter = function (_n0) {
-	var getter = _n0.getter;
-	var equal = _n0.equal;
-	var lessThan = _n0.lessThan;
-	var greaterThan = _n0.greaterThan;
-	var contains = _n0.contains;
-	var typedParser = _n0.typedParser;
-	return {
-		contains: {
-			filter: F2(
-				function (value, item) {
-					return A2(
-						contains,
-						getter(item),
-						value);
-				}),
-			parser: A2(elm$parser$Parser$keeper, pascallemerrer$elm_advanced_grid$Grid$Parsers$containsParser, typedParser)
-		},
-		equal: {
-			filter: F2(
-				function (value, item) {
-					return A2(
-						equal,
-						getter(item),
-						value);
-				}),
-			parser: A2(elm$parser$Parser$keeper, pascallemerrer$elm_advanced_grid$Grid$Parsers$equalityParser, typedParser)
-		},
-		greaterThan: {
-			filter: F2(
-				function (value, item) {
-					return A2(
-						greaterThan,
-						getter(item),
-						value);
-				}),
-			parser: A2(elm$parser$Parser$keeper, pascallemerrer$elm_advanced_grid$Grid$Parsers$greaterThanParser, typedParser)
-		},
-		lessThan: {
-			filter: F2(
-				function (value, item) {
-					return A2(
-						lessThan,
-						getter(item),
-						value);
-				}),
-			parser: A2(elm$parser$Parser$keeper, pascallemerrer$elm_advanced_grid$Grid$Parsers$lessThanParser, typedParser)
-		}
-	};
-};
-var pascallemerrer$elm_advanced_grid$Grid$Filters$floatFilter = function (getter) {
-	return pascallemerrer$elm_advanced_grid$Grid$Filters$makeFilter(
-		{
-			contains: F2(
-				function (a, b) {
-					return A2(
-						elm$core$String$contains,
-						elm$core$String$fromFloat(b),
-						elm$core$String$fromFloat(a));
-				}),
-			equal: elm$core$Basics$eq,
-			getter: getter,
-			greaterThan: F2(
-				function (a, b) {
-					return _Utils_cmp(a, b) > 0;
-				}),
-			lessThan: F2(
-				function (a, b) {
-					return _Utils_cmp(a, b) < 0;
-				}),
-			typedParser: elm$parser$Parser$float
-		});
-};
-var pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig = function (properties) {
-	var id = properties.id;
-	var title = properties.title;
-	var tooltip = properties.tooltip;
-	var width = properties.width;
-	var getter = properties.getter;
-	var localize = properties.localize;
-	return {
-		comparator: pascallemerrer$elm_advanced_grid$Grid$compareFields(getter),
-		filteringValue: elm$core$Maybe$Nothing,
-		filters: pascallemerrer$elm_advanced_grid$Grid$Filters$FloatFilter(
-			pascallemerrer$elm_advanced_grid$Grid$Filters$floatFilter(getter)),
-		properties: pascallemerrer$elm_advanced_grid$Grid$columnConfigProperties(properties),
-		renderer: pascallemerrer$elm_advanced_grid$Grid$viewFloat(getter),
-		toString: A2(elm$core$Basics$composeR, getter, elm$core$String$fromFloat)
-	};
-};
-var pascallemerrer$elm_advanced_grid$Grid$viewInt = F3(
-	function (field, properties, item) {
-		return A2(
-			rtfeldman$elm_css$Html$Styled$div,
-			pascallemerrer$elm_advanced_grid$Grid$cellAttributes(properties),
-			_List_fromArray(
-				[
-					rtfeldman$elm_css$Html$Styled$text(
-					elm$core$String$fromInt(
-						field(item)))
-				]));
-	});
-var pascallemerrer$elm_advanced_grid$Grid$Filters$IntFilter = function (a) {
-	return {$: 'IntFilter', a: a};
-};
-var elm$parser$Parser$ExpectingInt = {$: 'ExpectingInt'};
 var elm$parser$Parser$Advanced$int = F2(
 	function (expecting, invalid) {
 		return elm$parser$Parser$Advanced$number(
@@ -8375,7 +8423,29 @@ var pascallemerrer$elm_advanced_grid$Grid$intColumnConfig = function (properties
 		toString: A2(elm$core$Basics$composeR, getter, elm$core$String$fromInt)
 	};
 };
-var pascallemerrer$elm_advanced_grid$Grid$viewString = F3(
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$idColumn = pascallemerrer$elm_advanced_grid$Grid$intColumnConfig(
+	{
+		getter: function ($) {
+			return $.id;
+		},
+		id: 'Id',
+		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+		title: 'Id',
+		tooltip: 'Une indication pour la colonne Id',
+		width: 50
+	});
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$nameColumn = pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig(
+	{
+		getter: function ($) {
+			return $.name;
+		},
+		id: 'Name',
+		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+		title: 'Nom',
+		tooltip: 'Une indication pour la colonne Nom',
+		width: 100
+	});
+var pascallemerrer$elm_advanced_grid$Grid$viewFloat = F3(
 	function (field, properties, item) {
 		return A2(
 			rtfeldman$elm_css$Html$Styled$div,
@@ -8383,92 +8453,52 @@ var pascallemerrer$elm_advanced_grid$Grid$viewString = F3(
 			_List_fromArray(
 				[
 					rtfeldman$elm_css$Html$Styled$text(
-					field(item))
+					elm$core$String$fromFloat(
+						field(item)))
 				]));
 	});
-var pascallemerrer$elm_advanced_grid$Grid$Filters$StringFilter = function (a) {
-	return {$: 'StringFilter', a: a};
+var pascallemerrer$elm_advanced_grid$Grid$Filters$FloatFilter = function (a) {
+	return {$: 'FloatFilter', a: a};
 };
-var elm$parser$Parser$Advanced$chompUntilEndOr = function (str) {
-	return elm$parser$Parser$Advanced$Parser(
-		function (s) {
-			var _n0 = A5(_Parser_findSubString, str, s.offset, s.row, s.col, s.src);
-			var newOffset = _n0.a;
-			var newRow = _n0.b;
-			var newCol = _n0.c;
-			var adjustedOffset = (newOffset < 0) ? elm$core$String$length(s.src) : newOffset;
-			return A3(
-				elm$parser$Parser$Advanced$Good,
-				_Utils_cmp(s.offset, adjustedOffset) < 0,
-				_Utils_Tuple0,
-				{col: newCol, context: s.context, indent: s.indent, offset: adjustedOffset, row: newRow, src: s.src});
-		});
-};
-var elm$parser$Parser$chompUntilEndOr = elm$parser$Parser$Advanced$chompUntilEndOr;
-var elm$parser$Parser$Advanced$mapChompedString = F2(
-	function (func, _n0) {
-		var parse = _n0.a;
-		return elm$parser$Parser$Advanced$Parser(
-			function (s0) {
-				var _n1 = parse(s0);
-				if (_n1.$ === 'Bad') {
-					var p = _n1.a;
-					var x = _n1.b;
-					return A2(elm$parser$Parser$Advanced$Bad, p, x);
-				} else {
-					var p = _n1.a;
-					var a = _n1.b;
-					var s1 = _n1.c;
-					return A3(
-						elm$parser$Parser$Advanced$Good,
-						p,
-						A2(
-							func,
-							A3(elm$core$String$slice, s0.offset, s1.offset, s0.src),
-							a),
-						s1);
-				}
+var elm$parser$Parser$ExpectingFloat = {$: 'ExpectingFloat'};
+var elm$parser$Parser$Advanced$float = F2(
+	function (expecting, invalid) {
+		return elm$parser$Parser$Advanced$number(
+			{
+				binary: elm$core$Result$Err(invalid),
+				expecting: expecting,
+				_float: elm$core$Result$Ok(elm$core$Basics$identity),
+				hex: elm$core$Result$Err(invalid),
+				_int: elm$core$Result$Ok(elm$core$Basics$toFloat),
+				invalid: invalid,
+				octal: elm$core$Result$Err(invalid)
 			});
 	});
-var elm$parser$Parser$Advanced$getChompedString = function (parser) {
-	return A2(elm$parser$Parser$Advanced$mapChompedString, elm$core$Basics$always, parser);
-};
-var elm$parser$Parser$getChompedString = elm$parser$Parser$Advanced$getChompedString;
-var pascallemerrer$elm_advanced_grid$Grid$Parsers$stringParser = elm$parser$Parser$getChompedString(
-	elm$parser$Parser$chompUntilEndOr('\u0000'));
-var pascallemerrer$elm_advanced_grid$Grid$Filters$stringFilter = function (getter) {
+var elm$parser$Parser$float = A2(elm$parser$Parser$Advanced$float, elm$parser$Parser$ExpectingFloat, elm$parser$Parser$ExpectingFloat);
+var pascallemerrer$elm_advanced_grid$Grid$Filters$floatFilter = function (getter) {
 	return pascallemerrer$elm_advanced_grid$Grid$Filters$makeFilter(
 		{
 			contains: F2(
 				function (a, b) {
 					return A2(
 						elm$core$String$contains,
-						elm$core$String$toLower(b),
-						elm$core$String$toLower(a));
+						elm$core$String$fromFloat(b),
+						elm$core$String$fromFloat(a));
 				}),
-			equal: F2(
-				function (a, b) {
-					return _Utils_eq(
-						elm$core$String$toLower(a),
-						elm$core$String$toLower(b));
-				}),
+			equal: elm$core$Basics$eq,
 			getter: getter,
 			greaterThan: F2(
 				function (a, b) {
-					return _Utils_cmp(
-						elm$core$String$toLower(a),
-						elm$core$String$toLower(b)) > 0;
+					return _Utils_cmp(a, b) > 0;
 				}),
 			lessThan: F2(
 				function (a, b) {
-					return _Utils_cmp(
-						elm$core$String$toLower(a),
-						elm$core$String$toLower(b)) < 0;
+					return _Utils_cmp(a, b) < 0;
 				}),
-			typedParser: pascallemerrer$elm_advanced_grid$Grid$Parsers$stringParser
+			typedParser: elm$parser$Parser$float
 		});
 };
-var pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig = function (properties) {
+var pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig = function (properties) {
 	var id = properties.id;
 	var title = properties.title;
 	var tooltip = properties.tooltip;
@@ -8478,11 +8508,11 @@ var pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig = function (propert
 	return {
 		comparator: pascallemerrer$elm_advanced_grid$Grid$compareFields(getter),
 		filteringValue: elm$core$Maybe$Nothing,
-		filters: pascallemerrer$elm_advanced_grid$Grid$Filters$StringFilter(
-			pascallemerrer$elm_advanced_grid$Grid$Filters$stringFilter(getter)),
+		filters: pascallemerrer$elm_advanced_grid$Grid$Filters$FloatFilter(
+			pascallemerrer$elm_advanced_grid$Grid$Filters$floatFilter(getter)),
 		properties: pascallemerrer$elm_advanced_grid$Grid$columnConfigProperties(properties),
-		renderer: pascallemerrer$elm_advanced_grid$Grid$viewString(getter),
-		toString: getter
+		renderer: pascallemerrer$elm_advanced_grid$Grid$viewFloat(getter),
+		toString: A2(elm$core$Basics$composeR, getter, elm$core$String$fromFloat)
 	};
 };
 var pascallemerrer$elm_advanced_grid$Grid$Colors$lightGreen = rtfeldman$elm_css$Css$hex('4d4');
@@ -8566,84 +8596,289 @@ var pascallemerrer$elm_advanced_grid$Grid$viewProgressBar = F4(
 						]))
 				]));
 	});
-var pascallemerrer$elm_advanced_grid$Examples$LargeList$columns = _List_fromArray(
-	[
-		pascallemerrer$elm_advanced_grid$Grid$intColumnConfig(
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$progressColumn = function () {
+	var progressColumnConfig = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
 		{
 			getter: function ($) {
-				return $.id;
+				return $.value1;
 			},
-			id: 'Id',
+			id: 'Progress',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
-			title: 'Id',
-			tooltip: 'Une indication pour la colonne Id',
-			width: 50
-		}),
-		pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig(
-		{
-			getter: function ($) {
-				return $.name;
-			},
-			id: 'Name',
-			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
-			title: 'Nom',
-			tooltip: 'Une indication pour la colonne Nom',
+			title: 'Progrès',
+			tooltip: 'Une indication pour la colonne Progrès',
 			width: 100
-		}),
-		function () {
-		var progressColumnConfig = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
-			{
-				getter: function ($) {
-					return $.value;
-				},
-				id: 'Progress',
-				localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
-				title: 'Progrès',
-				tooltip: 'Une indication pour la colonne Progrès',
-				width: 100
-			});
-		return _Utils_update(
-			progressColumnConfig,
-			{
-				renderer: A2(
-					pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
-					8,
-					function (item) {
-						return item.value;
-					})
-			});
-	}(),
-		pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
+		});
+	return _Utils_update(
+		progressColumnConfig,
+		{
+			renderer: A2(
+				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
+				8,
+				function (item) {
+					return item.value1;
+				})
+		});
+}();
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals = function (value) {
+	var valueAsString = elm$core$String$fromFloat(value);
+	var pointIndex = A2(
+		elm$core$Maybe$withDefault,
+		elm$core$String$length(valueAsString),
+		elm$core$List$head(
+			A2(elm$core$String$indexes, '.', valueAsString)));
+	return A2(
+		elm$core$Maybe$withDefault,
+		0,
+		elm$core$String$toFloat(
+			A2(elm$core$String$left, pointIndex + 2, valueAsString)));
+};
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$value1Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
+	{
+		getter: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.value1;
+			},
+			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+		id: 'Value1',
+		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+		title: 'Valeur 1',
+		tooltip: 'Une indication pour la colonne Valeur 1',
+		width: 100
+	});
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$value1ProgressColumn = function () {
+	var columnConfig = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
 		{
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value;
+					return $.value1;
 				},
 				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
-			id: 'Value',
+			id: 'ProgressValue1',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
-			title: 'Valeur',
-			tooltip: 'Une indication pour la colonne Valeur',
+			title: 'Valeur 1',
+			tooltip: 'Une indication pour la colonne Valeur 1',
 			width: 100
-		}),
-		pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig(
+		});
+	return _Utils_update(
+		columnConfig,
 		{
-			getter: function ($) {
-				return $.city;
+			renderer: A2(
+				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
+				8,
+				function ($) {
+					return $.value1;
+				})
+		});
+}();
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$value2Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
+	{
+		getter: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.value2;
 			},
-			id: 'City',
+			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+		id: 'Value2',
+		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+		title: 'Valeur 2',
+		tooltip: 'Une indication pour la colonne Valeur 2',
+		width: 100
+	});
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$value2ProgressColumn = function () {
+	var columnConfig = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
+		{
+			getter: A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value2;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			id: 'ProgressValue2',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
-			title: 'Ville',
-			tooltip: 'Une indication pour la colonne Ville',
-			width: 300
-		})
-	]);
+			title: 'Valeur 2',
+			tooltip: 'Une indication pour la colonne Valeur 2',
+			width: 100
+		});
+	return _Utils_update(
+		columnConfig,
+		{
+			renderer: A2(
+				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
+				8,
+				function ($) {
+					return $.value2;
+				})
+		});
+}();
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$value3Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
+	{
+		getter: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.value3;
+			},
+			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+		id: 'Value3',
+		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+		title: 'Valeur 3',
+		tooltip: 'Une indication pour la colonne Valeur 3',
+		width: 100
+	});
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$value3ProgressColumn = function () {
+	var columnConfig = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
+		{
+			getter: A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value3;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			id: 'ProgressValue3',
+			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+			title: 'Valeur 3',
+			tooltip: 'Une indication pour la colonne Valeur 3',
+			width: 100
+		});
+	return _Utils_update(
+		columnConfig,
+		{
+			renderer: A2(
+				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
+				8,
+				function ($) {
+					return $.value3;
+				})
+		});
+}();
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$value4Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
+	{
+		getter: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.value4;
+			},
+			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+		id: 'Value4',
+		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+		title: 'Valeur 4',
+		tooltip: 'Une indication pour la colonne Valeur 4',
+		width: 100
+	});
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$value4ProgressColumn = function () {
+	var columnConfig = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
+		{
+			getter: A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value4;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			id: 'ProgressValue4',
+			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+			title: 'Valeur 4',
+			tooltip: 'Une indication pour la colonne Valeur 4',
+			width: 100
+		});
+	return _Utils_update(
+		columnConfig,
+		{
+			renderer: A2(
+				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
+				8,
+				function ($) {
+					return $.value4;
+				})
+		});
+}();
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$value5Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
+	{
+		getter: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.value5;
+			},
+			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+		id: 'Value5',
+		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+		title: 'Valeur 5',
+		tooltip: 'Une indication pour la colonne Valeur 5',
+		width: 100
+	});
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$value5ProgressColumn = function () {
+	var columnConfig = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
+		{
+			getter: A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value5;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			id: 'ProgressValue5',
+			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+			title: 'Valeur 5',
+			tooltip: 'Une indication pour la colonne Valeur 5',
+			width: 100
+		});
+	return _Utils_update(
+		columnConfig,
+		{
+			renderer: A2(
+				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
+				8,
+				function ($) {
+					return $.value5;
+				})
+		});
+}();
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$value6Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
+	{
+		getter: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.value6;
+			},
+			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+		id: 'Value6',
+		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+		title: 'Valeur 6',
+		tooltip: 'Une indication pour la colonne Valeur 6',
+		width: 100
+	});
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$value6ProgressColumn = function () {
+	var columnConfig = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
+		{
+			getter: A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value6;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			id: 'ProgressValue6',
+			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
+			title: 'Valeur 6',
+			tooltip: 'Une indication pour la colonne Valeur 6',
+			width: 100
+		});
+	return _Utils_update(
+		columnConfig,
+		{
+			renderer: A2(
+				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
+				8,
+				function ($) {
+					return $.value6;
+				})
+		});
+}();
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$columns = _List_fromArray(
+	[pascallemerrer$elm_advanced_grid$Examples$LargeList$idColumn, pascallemerrer$elm_advanced_grid$Examples$LargeList$nameColumn, pascallemerrer$elm_advanced_grid$Examples$LargeList$progressColumn, pascallemerrer$elm_advanced_grid$Examples$LargeList$cityColumn, pascallemerrer$elm_advanced_grid$Examples$LargeList$value1Column, pascallemerrer$elm_advanced_grid$Examples$LargeList$value1ProgressColumn, pascallemerrer$elm_advanced_grid$Examples$LargeList$value2Column, pascallemerrer$elm_advanced_grid$Examples$LargeList$value2ProgressColumn, pascallemerrer$elm_advanced_grid$Examples$LargeList$value3Column, pascallemerrer$elm_advanced_grid$Examples$LargeList$value3ProgressColumn, pascallemerrer$elm_advanced_grid$Examples$LargeList$value4Column, pascallemerrer$elm_advanced_grid$Examples$LargeList$value4ProgressColumn, pascallemerrer$elm_advanced_grid$Examples$LargeList$value5Column, pascallemerrer$elm_advanced_grid$Examples$LargeList$value5ProgressColumn, pascallemerrer$elm_advanced_grid$Examples$LargeList$value6ProgressColumn, pascallemerrer$elm_advanced_grid$Examples$LargeList$value6Column]);
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$rowClass = function (item) {
 	var even = _Utils_eq(item.index / 2, (item.index / 2) | 0);
 	return item.selected ? 'selected-row' : (even ? 'even-row' : '');
 };
-var pascallemerrer$elm_advanced_grid$Examples$LargeList$gridConfig = {canSelectRows: true, columns: pascallemerrer$elm_advanced_grid$Examples$LargeList$columns, containerHeight: 500, containerWidth: 700, hasFilters: true, headerHeight: 60, lineHeight: 25, rowClass: pascallemerrer$elm_advanced_grid$Examples$LargeList$rowClass};
+var pascallemerrer$elm_advanced_grid$Examples$LargeList$gridConfig = {canSelectRows: true, columns: pascallemerrer$elm_advanced_grid$Examples$LargeList$columns, containerHeight: 500, containerWidth: 950, hasFilters: true, headerHeight: 60, lineHeight: 25, rowClass: pascallemerrer$elm_advanced_grid$Examples$LargeList$rowClass};
 var elm$core$List$drop = F2(
 	function (n, list) {
 		drop:
@@ -8691,7 +8926,12 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$items = A2(
 			index: i,
 			name: 'name' + elm$core$String$fromInt(i),
 			selected: false,
-			value: (i / pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount) * 100
+			value1: ((pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount - i) / pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount) * 100,
+			value2: (i / pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount) * 50,
+			value3: ((pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount - i) / pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount) * 25,
+			value4: (i / pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount) * 15,
+			value5: ((pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount - i) / pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount) * 10,
+			value6: (i / pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount) * 5
 		};
 	},
 	A2(elm$core$List$range, 0, pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount - 1));

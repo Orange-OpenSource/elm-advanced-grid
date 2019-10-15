@@ -26,8 +26,13 @@ type alias Item =
     , index : Int
     , city : String
     , name : String
-    , value : Float
     , selected : Bool
+    , value1 : Float
+    , value2 : Float
+    , value3 : Float
+    , value4 : Float
+    , value5 : Float
+    , value6 : Float
     }
 
 
@@ -301,6 +306,10 @@ update msg model =
             )
 
 
+
+{- Data generation -}
+
+
 itemCount : Int
 itemCount =
     20000
@@ -320,10 +329,19 @@ items =
                 , index = i
                 , city = Maybe.withDefault "None" (List.Extra.getAt (modBy (List.length cities) i) cities)
                 , name = "name" ++ String.fromInt i
-                , value = (toFloat i / toFloat itemCount) * 100
                 , selected = False
+                , value1 = (toFloat (itemCount - i) / toFloat itemCount) * 100
+                , value2 = (toFloat i / toFloat itemCount) * 50
+                , value3 = (toFloat (itemCount - i) / toFloat itemCount) * 25
+                , value4 = (toFloat i / toFloat itemCount) * 15
+                , value5 = (toFloat (itemCount - i) / toFloat itemCount) * 10
+                , value6 = (toFloat i / toFloat itemCount) * 5
                 }
             )
+
+
+
+{- Init -}
 
 
 init : () -> ( Model, Cmd Msg )
@@ -341,7 +359,7 @@ gridConfig =
     { canSelectRows = True
     , columns = columns
     , containerHeight = 500
-    , containerWidth = 700
+    , containerWidth = 950
     , hasFilters = True
     , headerHeight = 60
     , lineHeight = 25
@@ -371,7 +389,27 @@ rowClass item =
 
 columns : List (ColumnConfig Item)
 columns =
-    [ intColumnConfig
+    [ idColumn
+    , nameColumn
+    , progressColumn
+    , cityColumn
+    , value1Column
+    , value1ProgressColumn
+    , value2Column
+    , value2ProgressColumn
+    , value3Column
+    , value3ProgressColumn
+    , value4Column
+    , value4ProgressColumn
+    , value5Column
+    , value5ProgressColumn
+    , value6ProgressColumn
+    , value6Column
+    ]
+
+
+idColumn =
+    intColumnConfig
         { id = "Id"
         , getter = .id
         , localize = localize
@@ -379,7 +417,10 @@ columns =
         , tooltip = "Une indication pour la colonne Id"
         , width = 50
         }
-    , stringColumnConfig
+
+
+nameColumn =
+    stringColumnConfig
         { id = "Name"
         , getter = .name
         , localize = localize
@@ -387,27 +428,25 @@ columns =
         , tooltip = "Une indication pour la colonne Nom"
         , width = 100
         }
-    , let
+
+
+progressColumn =
+    let
         progressColumnConfig =
             floatColumnConfig
                 { id = "Progress"
-                , getter = .value
+                , getter = .value1
                 , localize = localize
                 , title = "Progrès"
                 , tooltip = "Une indication pour la colonne Progrès"
                 , width = 100
                 }
-      in
-      { progressColumnConfig | renderer = viewProgressBar 8 (\item -> item.value) }
-    , floatColumnConfig
-        { id = "Value"
-        , getter = .value >> truncateDecimals
-        , localize = localize
-        , title = "Valeur"
-        , tooltip = "Une indication pour la colonne Valeur"
-        , width = 100
-        }
-    , stringColumnConfig
+    in
+    { progressColumnConfig | renderer = viewProgressBar 8 (\item -> item.value1) }
+
+
+cityColumn =
+    stringColumnConfig
         { id = "City"
         , getter = .city
         , localize = localize
@@ -415,7 +454,162 @@ columns =
         , tooltip = "Une indication pour la colonne Ville"
         , width = 300
         }
-    ]
+
+
+value1Column =
+    floatColumnConfig
+        { id = "Value1"
+        , getter = .value1 >> truncateDecimals
+        , localize = localize
+        , title = "Valeur 1"
+        , tooltip = "Une indication pour la colonne Valeur 1"
+        , width = 100
+        }
+
+
+value1ProgressColumn =
+    let
+        columnConfig =
+            floatColumnConfig
+                { id = "ProgressValue1"
+                , getter = .value1 >> truncateDecimals
+                , localize = localize
+                , title = "Valeur 1"
+                , tooltip = "Une indication pour la colonne Valeur 1"
+                , width = 100
+                }
+    in
+    { columnConfig | renderer = viewProgressBar 8 .value1 }
+
+
+value2Column =
+    floatColumnConfig
+        { id = "Value2"
+        , getter = .value2 >> truncateDecimals
+        , localize = localize
+        , title = "Valeur 2"
+        , tooltip = "Une indication pour la colonne Valeur 2"
+        , width = 100
+        }
+
+
+value2ProgressColumn =
+    let
+        columnConfig =
+            floatColumnConfig
+                { id = "ProgressValue2"
+                , getter = .value2 >> truncateDecimals
+                , localize = localize
+                , title = "Valeur 2"
+                , tooltip = "Une indication pour la colonne Valeur 2"
+                , width = 100
+                }
+    in
+    { columnConfig | renderer = viewProgressBar 8 .value2 }
+
+
+value3Column =
+    floatColumnConfig
+        { id = "Value3"
+        , getter = .value3 >> truncateDecimals
+        , localize = localize
+        , title = "Valeur 3"
+        , tooltip = "Une indication pour la colonne Valeur 3"
+        , width = 100
+        }
+
+
+value3ProgressColumn =
+    let
+        columnConfig =
+            floatColumnConfig
+                { id = "ProgressValue3"
+                , getter = .value3 >> truncateDecimals
+                , localize = localize
+                , title = "Valeur 3"
+                , tooltip = "Une indication pour la colonne Valeur 3"
+                , width = 100
+                }
+    in
+    { columnConfig | renderer = viewProgressBar 8 .value3 }
+
+
+value4Column =
+    floatColumnConfig
+        { id = "Value4"
+        , getter = .value4 >> truncateDecimals
+        , localize = localize
+        , title = "Valeur 4"
+        , tooltip = "Une indication pour la colonne Valeur 4"
+        , width = 100
+        }
+
+
+value4ProgressColumn =
+    let
+        columnConfig =
+            floatColumnConfig
+                { id = "ProgressValue4"
+                , getter = .value4 >> truncateDecimals
+                , localize = localize
+                , title = "Valeur 4"
+                , tooltip = "Une indication pour la colonne Valeur 4"
+                , width = 100
+                }
+    in
+    { columnConfig | renderer = viewProgressBar 8 .value4 }
+
+
+value5Column =
+    floatColumnConfig
+        { id = "Value5"
+        , getter = .value5 >> truncateDecimals
+        , localize = localize
+        , title = "Valeur 5"
+        , tooltip = "Une indication pour la colonne Valeur 5"
+        , width = 100
+        }
+
+
+value5ProgressColumn =
+    let
+        columnConfig =
+            floatColumnConfig
+                { id = "ProgressValue5"
+                , getter = .value5 >> truncateDecimals
+                , localize = localize
+                , title = "Valeur 5"
+                , tooltip = "Une indication pour la colonne Valeur 5"
+                , width = 100
+                }
+    in
+    { columnConfig | renderer = viewProgressBar 8 .value5 }
+
+
+value6Column =
+    floatColumnConfig
+        { id = "Value6"
+        , getter = .value6 >> truncateDecimals
+        , localize = localize
+        , title = "Valeur 6"
+        , tooltip = "Une indication pour la colonne Valeur 6"
+        , width = 100
+        }
+
+
+value6ProgressColumn =
+    let
+        columnConfig =
+            floatColumnConfig
+                { id = "ProgressValue6"
+                , getter = .value6 >> truncateDecimals
+                , localize = localize
+                , title = "Valeur 6"
+                , tooltip = "Une indication pour la colonne Valeur 6"
+                , width = 100
+                }
+    in
+    { columnConfig | renderer = viewProgressBar 8 .value6 }
 
 
 
@@ -431,11 +625,21 @@ translations =
     Dict.fromList
         [ ( "Nom", "Name" )
         , ( "Progrès", "Progress" )
-        , ( "Valeur", "Value" )
+        , ( "Valeur 1", "Value 1" )
+        , ( "Valeur 2", "Value 2" )
+        , ( "Valeur 3", "Value 3" )
+        , ( "Valeur 4", "Value 4" )
+        , ( "Valeur 5", "Value 5" )
+        , ( "Valeur 6", "Value 6" )
         , ( "Ville", "City" )
         , ( "Une indication pour la colonne Id", "A hint for Id column" )
         , ( "Une indication pour la colonne Nom", "A hint for Name column" )
-        , ( "Une indication pour la colonne Valeur", "A hint for Value column" )
+        , ( "Une indication pour la colonne Valeur 1", "A hint for Value column 1" )
+        , ( "Une indication pour la colonne Valeur 2", "A hint for Value column 2" )
+        , ( "Une indication pour la colonne Valeur 3", "A hint for Value column 3" )
+        , ( "Une indication pour la colonne Valeur 4", "A hint for Value column 4" )
+        , ( "Une indication pour la colonne Valeur 5", "A hint for Value column 5" )
+        , ( "Une indication pour la colonne Valeur 6", "A hint for Value column 6" )
         , ( "Une indication pour la colonne Progrès", "A hint for Progress column" )
         , ( "Une indication pour la colonne Ville", "A hint for City column" )
         ]
