@@ -19,7 +19,7 @@ test_gui: build
 	./node_modules/.bin/cypress open
 
 build:
-	elm make src/Examples/Main.elm --output=example.js
+	elm make src/Examples/Basic.elm --output=example.js
 
 doc:
 	elm make src/Examples/Basic.elm --output=docs/basic.js
