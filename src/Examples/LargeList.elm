@@ -9,7 +9,7 @@
 -}
 
 
-module Examples.Main exposing (main)
+module Examples.LargeList exposing (main)
 
 import Browser
 import Dict exposing (Dict)
@@ -17,6 +17,7 @@ import Grid exposing (ColumnConfig, Msg(..), Sorting(..), floatColumnConfig, int
 import Html exposing (Html, button, div, input, label, li, text, ul)
 import Html.Attributes exposing (attribute, style)
 import Html.Events exposing (onClick, onInput)
+import InfiniteList exposing (withOffset)
 import List.Extra
 
 
@@ -302,7 +303,7 @@ update msg model =
 
 itemCount : Int
 itemCount =
-    List.length cities
+    20000
 
 
 cities : List String

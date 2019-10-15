@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Large list Example</title>
+    <script src="largelist.js"></script>
+    <link rel="stylesheet" href="doc.css" type="text/css">
+</head>
+<body>
+    <p>
+        <a href="index.html">Home</a> > Large list example
+    </p>
+
+    <div class="grid-container">
+        <div id="grid"></div>
+    </div>
+
+    <script>
+        Elm.Examples.LargeList.init({
+            node: document.getElementById("grid")
+        })
+    </script>
+</body>
+</html>

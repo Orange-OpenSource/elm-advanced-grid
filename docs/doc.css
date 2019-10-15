@@ -1,0 +1,25 @@
+button:focus {
+    outline: 0;
+}
+
+body {
+    background-color: #333333;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #EEEEEE;
+}
+
+div.container {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    width: 700px;
+}
+
+a, a:hover, a:visited {
+    color: aqua;
+}
+
+.grid-container
+{
+    color: #555555;
+}

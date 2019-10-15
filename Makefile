@@ -22,7 +22,8 @@ build:
 	elm make src/Examples/Main.elm --output=example.js
 
 doc:
-	elm make src/Examples/Main.elm --output=docs/example.js
+	elm make src/Examples/Basic.elm --output=docs/basic.js
+	elm make src/Examples/LargeList.elm --output=docs/largelist.js
 	#elm make --docs=docs.json
 
 .PHONY: cypress doc
