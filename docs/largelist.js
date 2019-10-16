@@ -5270,6 +5270,11 @@ var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var elm$core$Basics$compare = _Utils_compare;
 var elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -8203,9 +8208,14 @@ var pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig = function (propert
 };
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$cityColumn = pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig(
 	{
-		getter: function ($) {
-			return $.city;
-		},
+		getter: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.data;
+			},
+			function ($) {
+				return $.city;
+			}),
 		id: 'City',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Ville',
@@ -8437,9 +8447,14 @@ var pascallemerrer$elm_advanced_grid$Grid$intColumnConfig = function (properties
 };
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$idColumn = pascallemerrer$elm_advanced_grid$Grid$intColumnConfig(
 	{
-		getter: function ($) {
-			return $.id;
-		},
+		getter: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.data;
+			},
+			function ($) {
+				return $.id;
+			}),
 		id: 'Id',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Id',
@@ -8448,9 +8463,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$idColumn = pascallemerre
 	});
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$nameColumn = pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig(
 	{
-		getter: function ($) {
-			return $.name;
-		},
+		getter: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.data;
+			},
+			function ($) {
+				return $.name;
+			}),
 		id: 'Name',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Nom',
@@ -8623,9 +8643,14 @@ var pascallemerrer$elm_advanced_grid$Grid$viewProgressBar = F4(
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$progressColumn = function () {
 	var progressColumnConfig = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
 		{
-			getter: function ($) {
-				return $.value1;
-			},
+			getter: A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.data;
+				},
+				function ($) {
+					return $.value1;
+				}),
 			id: 'Progress',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Progrès',
@@ -8638,9 +8663,20 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$progressColumn = functio
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
+<<<<<<< HEAD
 				function ($) {
 					return $.value1;
 				})
+=======
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value1;
+					}))
+>>>>>>> Add a wrapper around grid data to relieve user of adding index dans selected fields
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals = function (value) {
@@ -8661,9 +8697,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value1Column = pascallem
 		getter: A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.value1;
+				return $.data;
 			},
-			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value1;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 		id: 'Value1',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Valeur 1',
@@ -8676,9 +8717,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value1ProgressColumn = f
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value1;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value1;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 			id: 'ProgressValue1',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Valeur 1',
@@ -8691,9 +8737,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value1ProgressColumn = f
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function ($) {
-					return $.value1;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value1;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$value2Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
@@ -8701,9 +8752,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value2Column = pascallem
 		getter: A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.value2;
+				return $.data;
 			},
-			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value2;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 		id: 'Value2',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Valeur 2',
@@ -8716,9 +8772,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value2ProgressColumn = f
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value2;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value2;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 			id: 'ProgressValue2',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Valeur 2',
@@ -8731,9 +8792,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value2ProgressColumn = f
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function ($) {
-					return $.value2;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value2;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$value3Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
@@ -8741,9 +8807,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value3Column = pascallem
 		getter: A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.value3;
+				return $.data;
 			},
-			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value3;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 		id: 'Value3',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Valeur 3',
@@ -8756,9 +8827,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value3ProgressColumn = f
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value3;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value3;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 			id: 'ProgressValue3',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Valeur 3',
@@ -8771,9 +8847,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value3ProgressColumn = f
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function ($) {
-					return $.value3;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value3;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$value4Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
@@ -8781,9 +8862,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value4Column = pascallem
 		getter: A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.value4;
+				return $.data;
 			},
-			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value4;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 		id: 'Value4',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Valeur 4',
@@ -8796,9 +8882,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value4ProgressColumn = f
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value4;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value4;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 			id: 'ProgressValue4',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Valeur 4',
@@ -8811,9 +8902,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value4ProgressColumn = f
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function ($) {
-					return $.value4;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value4;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$value5Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
@@ -8821,9 +8917,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value5Column = pascallem
 		getter: A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.value5;
+				return $.data;
 			},
-			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value5;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 		id: 'Value5',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Valeur 5',
@@ -8836,9 +8937,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value5ProgressColumn = f
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value5;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value5;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 			id: 'ProgressValue5',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Valeur 5',
@@ -8851,9 +8957,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value5ProgressColumn = f
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function ($) {
-					return $.value5;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value5;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$value6Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
@@ -8861,9 +8972,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value6Column = pascallem
 		getter: A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.value6;
+				return $.data;
 			},
-			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value6;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 		id: 'Value6',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Valeur 6',
@@ -8876,9 +8992,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value6ProgressColumn = f
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value6;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value6;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 			id: 'ProgressValue6',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Valeur 6',
@@ -8891,9 +9012,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value6ProgressColumn = f
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function ($) {
-					return $.value6;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value6;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$columns = _List_fromArray(

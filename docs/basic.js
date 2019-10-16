@@ -8594,9 +8594,14 @@ var pascallemerrer$elm_advanced_grid$Examples$Basic$columns = _List_fromArray(
 	[
 		pascallemerrer$elm_advanced_grid$Grid$intColumnConfig(
 		{
-			getter: function ($) {
-				return $.id;
-			},
+			getter: A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.data;
+				},
+				function ($) {
+					return $.id;
+				}),
 			id: 'Id',
 			localize: pascallemerrer$elm_advanced_grid$Examples$Basic$localize,
 			title: 'Id',
@@ -8605,9 +8610,14 @@ var pascallemerrer$elm_advanced_grid$Examples$Basic$columns = _List_fromArray(
 		}),
 		pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig(
 		{
-			getter: function ($) {
-				return $.name;
-			},
+			getter: A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.data;
+				},
+				function ($) {
+					return $.name;
+				}),
 			id: 'Name',
 			localize: pascallemerrer$elm_advanced_grid$Examples$Basic$localize,
 			title: 'Nom',
@@ -8617,9 +8627,14 @@ var pascallemerrer$elm_advanced_grid$Examples$Basic$columns = _List_fromArray(
 		function () {
 		var progressColumnConfig = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
 			{
-				getter: function ($) {
-					return $.value;
-				},
+				getter: A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value;
+					}),
 				id: 'Progress',
 				localize: pascallemerrer$elm_advanced_grid$Examples$Basic$localize,
 				title: 'Progrès',
@@ -8632,9 +8647,20 @@ var pascallemerrer$elm_advanced_grid$Examples$Basic$columns = _List_fromArray(
 				renderer: A2(
 					pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 					8,
+<<<<<<< HEAD
 					function ($) {
 						return $.value;
 					})
+=======
+					A2(
+						elm$core$Basics$composeR,
+						function ($) {
+							return $.data;
+						},
+						function ($) {
+							return $.value;
+						}))
+>>>>>>> Add a wrapper around grid data to relieve user of adding index dans selected fields
 			});
 	}(),
 		pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
@@ -8642,9 +8668,14 @@ var pascallemerrer$elm_advanced_grid$Examples$Basic$columns = _List_fromArray(
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$Basic$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$Basic$truncateDecimals)),
 			id: 'Value',
 			localize: pascallemerrer$elm_advanced_grid$Examples$Basic$localize,
 			title: 'Valeur',
@@ -8653,9 +8684,14 @@ var pascallemerrer$elm_advanced_grid$Examples$Basic$columns = _List_fromArray(
 		}),
 		pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig(
 		{
-			getter: function ($) {
-				return $.city;
-			},
+			getter: A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.data;
+				},
+				function ($) {
+					return $.city;
+				}),
 			id: 'City',
 			localize: pascallemerrer$elm_advanced_grid$Examples$Basic$localize,
 			title: 'Ville',
