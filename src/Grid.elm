@@ -1288,15 +1288,8 @@ returns the field to be displayed in this column.
 
 -}
 compareFields : (Item a -> comparable) -> Item a -> Item a -> Order
-compareFields field item1 item2 =
-    let
-        _ =
-            Debug.log "compareFields" (field item1)
-
-        _ =
-            Debug.log "with field" (field item2)
-    in
-    compare (field item1) (field item2)
+compareFields dataValue item1 item2 =
+    compare (dataValue item1) (dataValue item2)
 
 
 {-| Compares two booleans. Use this function in a ColumnConfig
@@ -1309,8 +1302,8 @@ returns the field to be displayed in this column.
 
 -}
 compareBoolField : (Item a -> Bool) -> Item a -> Item a -> Order
-compareBoolField field item1 item2 =
-    case ( field item1, field item2 ) of
+compareBoolField dataValue item1 item2 =
+    case ( dataValue item1, dataValue item2 ) of
         ( True, True ) ->
             EQ
 
