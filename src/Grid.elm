@@ -61,6 +61,7 @@ A grid is defined using a `Config`
 
 -}
 
+import Array
 import Browser.Dom
 import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector)
@@ -70,7 +71,7 @@ import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilt
 import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, input, label, span, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, checked, class, css, for, fromUnstyled, id, title, type_, value)
+import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
@@ -582,7 +583,7 @@ modelUpdate msg model =
                     else
                         let
                             newColumns =
-                                swapColumns columnConfig draggedColumnConfig model.config.columns
+                                moveColumn columnConfig draggedColumnConfig model.config.columns
                         in
                         model
                             |> withColumns newColumns
@@ -750,18 +751,72 @@ toggleSelection item =
     { item | selected = not item.selected }
 
 
-swapColumns : ColumnConfig a -> ColumnConfig a -> List (ColumnConfig a) -> List (ColumnConfig a)
-swapColumns column1 column2 list =
+moveColumn : ColumnConfig a -> ColumnConfig a -> List (ColumnConfig a) -> List (ColumnConfig a)
+moveColumn destinationColumn originColumn list =
     let
-        column1Index =
-            List.Extra.findIndex (isColumn column1) list
+        originColumnIndex =
+            List.Extra.findIndex (isColumn originColumn) list
                 |> Maybe.withDefault -1
 
-        column2Index =
-            List.Extra.findIndex (isColumn column2) list
+        destinationColumnIndex =
+            List.Extra.findIndex (isColumn destinationColumn) list
                 |> Maybe.withDefault -1
     in
-    List.Extra.swapAt column1Index column2Index list
+    if originColumnIndex < destinationColumnIndex then
+        -- move originColumn after destinationColumn
+        moveItemRight list originColumnIndex (destinationColumnIndex - originColumnIndex)
+
+    else
+        -- move originColumn before destinationColumn
+        moveItemLeft list originColumnIndex (originColumnIndex - destinationColumnIndex)
+
+
+moveItemLeft : List a -> Int -> Int -> List a
+moveItemLeft list originIndex indexDelta =
+    let
+        array =
+            Array.fromList list
+
+        beforeDestination =
+            Array.slice 0 (originIndex - indexDelta) array
+
+        betweenDestinationAndOrigin =
+            Array.slice (originIndex - indexDelta) originIndex array
+
+        origin =
+            Array.slice originIndex (originIndex + 1) array
+
+        afterOrigin =
+            Array.slice (originIndex + 1) (Array.length array) array
+    in
+    List.foldr Array.append
+        Array.empty
+        [ beforeDestination, origin, betweenDestinationAndOrigin, afterOrigin ]
+        |> Array.toList
+
+
+moveItemRight : List a -> Int -> Int -> List a
+moveItemRight list originIndex indexDelta =
+    let
+        array =
+            Array.fromList list
+
+        beforeOrigin =
+            Array.slice 0 originIndex array
+
+        origin =
+            Array.slice originIndex (originIndex + 1) array
+
+        betweenOriginAndDestination =
+            Array.slice (originIndex + 1) (originIndex + indexDelta + 1) array
+
+        afterDestination =
+            Array.slice (originIndex + indexDelta + 1) (Array.length array) array
+    in
+    List.foldr Array.append
+        Array.empty
+        [ beforeOrigin, betweenOriginAndDestination, origin, afterDestination ]
+        |> Array.toList
 
 
 gridConfig : Model a -> IL.Config (Item a) (Msg a)
