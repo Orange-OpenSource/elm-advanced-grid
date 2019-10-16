@@ -331,8 +331,17 @@ withColumns columns model =
             model.config
     in
     model
-        |> withConfig { config | columns = columns }
+        |> withConfig { config | columns = sanitizedColumns columns }
         |> withColumnsX
+
+
+
+-- clear the filter of hidden columns to avoid filtering with invisible criteria
+
+
+sanitizedColumns : List (ColumnConfig a) -> List (ColumnConfig a)
+sanitizedColumns columns =
+    List.Extra.updateIf (not << .visible << .properties) (\c -> { c | filteringValue = Nothing }) columns
 
 
 withDraggedColumn : Maybe (DraggedColumn a) -> Model a -> Model a
