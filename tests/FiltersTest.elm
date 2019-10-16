@@ -30,7 +30,7 @@ describeFilterParsing =
                     |> Expect.equal Nothing
         , test "should detect if an int is equal to another" <|
             \_ ->
-                testIntComparisonParsingSucceeds "=1" item2
+                testIntComparisonParsingSucceeds "=2" item2
         , test "should detect if an int is different of another" <|
             \_ ->
                 testIntComparisonParsingFails "=0" item2
@@ -42,7 +42,7 @@ describeFilterParsing =
                 testIntComparisonParsingFails "53" item5
         , test "should detect if an int is lesser than another" <|
             \_ ->
-                testIntComparisonParsingSucceeds "<1" item1
+                testIntComparisonParsingSucceeds "<2" item1
         , test "should detect if an int is not lesser than another" <|
             \_ ->
                 testIntComparisonParsingFails "<1" item2
@@ -193,7 +193,7 @@ removeComparisonOperator str =
 
 
 intFilters =
-    IntFilter <| intFilter .index
+    IntFilter <| intFilter (.data >> .count)
 
 
 floatFilters =

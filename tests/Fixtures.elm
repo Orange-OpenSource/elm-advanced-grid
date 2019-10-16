@@ -22,6 +22,7 @@ type alias Data =
     }
 
 
+data1 : Data
 data1 =
     { count = 1
     , isValid = True
@@ -35,6 +36,7 @@ item1 =
     Item.create data1 1
 
 
+data2 : Data
 data2 =
     { count = 2
     , isValid = False
@@ -48,6 +50,7 @@ item2 =
     Item.create data2 2
 
 
+data3 : Data
 data3 =
     { count = 3
     , isValid = True
@@ -61,6 +64,7 @@ item3 =
     Item.create data3 3
 
 
+data4 : Data
 data4 =
     { count = 4
     , isValid = True
@@ -74,8 +78,9 @@ item4 =
     Item.create data4 4
 
 
+data5 : Data
 data5 =
-    { count = 5
+    { count = 520
     , isValid = True
     , score = 3.1415926
     , title = "ITEM 5"
@@ -89,7 +94,7 @@ item5 =
 
 data : List Data
 data =
-    [ data1, data3, data3, data4 ]
+    [ data1, data2, data3, data4 ]
 
 
 scoreColumn =
