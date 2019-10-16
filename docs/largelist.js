@@ -5270,6 +5270,11 @@ var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var elm$core$Basics$compare = _Utils_compare;
 var elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -5508,11 +5513,6 @@ var rtfeldman$elm_css$Css$erroneousHex = function (str) {
 		value: rtfeldman$elm_css$Css$withPrecedingHash(str)
 	};
 };
-var elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var elm$core$String$fromList = _String_fromList;
 var elm$core$String$toLower = _String_toLower;
 var elm$core$Basics$negate = function (n) {
@@ -8197,9 +8197,14 @@ var pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig = function (propert
 };
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$cityColumn = pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig(
 	{
-		getter: function ($) {
-			return $.city;
-		},
+		getter: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.data;
+			},
+			function ($) {
+				return $.city;
+			}),
 		id: 'City',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Ville',
@@ -8425,9 +8430,14 @@ var pascallemerrer$elm_advanced_grid$Grid$intColumnConfig = function (properties
 };
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$idColumn = pascallemerrer$elm_advanced_grid$Grid$intColumnConfig(
 	{
-		getter: function ($) {
-			return $.id;
-		},
+		getter: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.data;
+			},
+			function ($) {
+				return $.id;
+			}),
 		id: 'Id',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Id',
@@ -8436,9 +8446,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$idColumn = pascallemerre
 	});
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$nameColumn = pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig(
 	{
-		getter: function ($) {
-			return $.name;
-		},
+		getter: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.data;
+			},
+			function ($) {
+				return $.name;
+			}),
 		id: 'Name',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Nom',
@@ -8599,9 +8614,14 @@ var pascallemerrer$elm_advanced_grid$Grid$viewProgressBar = F4(
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$progressColumn = function () {
 	var progressColumnConfig = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
 		{
-			getter: function ($) {
-				return $.value1;
-			},
+			getter: A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.data;
+				},
+				function ($) {
+					return $.value1;
+				}),
 			id: 'Progress',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Progrès',
@@ -8614,9 +8634,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$progressColumn = functio
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function (item) {
-					return item.value1;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value1;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals = function (value) {
@@ -8637,9 +8662,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value1Column = pascallem
 		getter: A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.value1;
+				return $.data;
 			},
-			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value1;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 		id: 'Value1',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Valeur 1',
@@ -8652,9 +8682,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value1ProgressColumn = f
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value1;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value1;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 			id: 'ProgressValue1',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Valeur 1',
@@ -8667,9 +8702,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value1ProgressColumn = f
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function ($) {
-					return $.value1;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value1;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$value2Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
@@ -8677,9 +8717,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value2Column = pascallem
 		getter: A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.value2;
+				return $.data;
 			},
-			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value2;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 		id: 'Value2',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Valeur 2',
@@ -8692,9 +8737,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value2ProgressColumn = f
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value2;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value2;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 			id: 'ProgressValue2',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Valeur 2',
@@ -8707,9 +8757,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value2ProgressColumn = f
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function ($) {
-					return $.value2;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value2;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$value3Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
@@ -8717,9 +8772,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value3Column = pascallem
 		getter: A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.value3;
+				return $.data;
 			},
-			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value3;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 		id: 'Value3',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Valeur 3',
@@ -8732,9 +8792,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value3ProgressColumn = f
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value3;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value3;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 			id: 'ProgressValue3',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Valeur 3',
@@ -8747,9 +8812,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value3ProgressColumn = f
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function ($) {
-					return $.value3;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value3;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$value4Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
@@ -8757,9 +8827,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value4Column = pascallem
 		getter: A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.value4;
+				return $.data;
 			},
-			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value4;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 		id: 'Value4',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Valeur 4',
@@ -8772,9 +8847,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value4ProgressColumn = f
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value4;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value4;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 			id: 'ProgressValue4',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Valeur 4',
@@ -8787,9 +8867,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value4ProgressColumn = f
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function ($) {
-					return $.value4;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value4;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$value5Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
@@ -8797,9 +8882,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value5Column = pascallem
 		getter: A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.value5;
+				return $.data;
 			},
-			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value5;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 		id: 'Value5',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Valeur 5',
@@ -8812,9 +8902,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value5ProgressColumn = f
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value5;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value5;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 			id: 'ProgressValue5',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Valeur 5',
@@ -8827,9 +8922,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value5ProgressColumn = f
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function ($) {
-					return $.value5;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value5;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$value6Column = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
@@ -8837,9 +8937,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value6Column = pascallem
 		getter: A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.value6;
+				return $.data;
 			},
-			pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+			A2(
+				elm$core$Basics$composeR,
+				function ($) {
+					return $.value6;
+				},
+				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 		id: 'Value6',
 		localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 		title: 'Valeur 6',
@@ -8852,9 +8957,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value6ProgressColumn = f
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.value6;
+					return $.data;
 				},
-				pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals),
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.value6;
+					},
+					pascallemerrer$elm_advanced_grid$Examples$LargeList$truncateDecimals)),
 			id: 'ProgressValue6',
 			localize: pascallemerrer$elm_advanced_grid$Examples$LargeList$localize,
 			title: 'Valeur 6',
@@ -8867,9 +8977,14 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$value6ProgressColumn = f
 			renderer: A2(
 				pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 				8,
-				function ($) {
-					return $.value6;
-				})
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.data;
+					},
+					function ($) {
+						return $.value6;
+					}))
 		});
 }();
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$columns = _List_fromArray(
@@ -8923,9 +9038,7 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$items = A2(
 						i),
 					pascallemerrer$elm_advanced_grid$Examples$LargeList$cities)),
 			id: i,
-			index: i,
 			name: 'name' + elm$core$String$fromInt(i),
-			selected: false,
 			value1: ((pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount - i) / pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount) * 100,
 			value2: (i / pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount) * 50,
 			value3: ((pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount - i) / pascallemerrer$elm_advanced_grid$Examples$LargeList$itemCount) * 25,
@@ -9225,17 +9338,19 @@ var pascallemerrer$elm_advanced_grid$Grid$isSelectionColumnProperties = function
 var pascallemerrer$elm_advanced_grid$Grid$isSelectionColumn = function (columnConfig) {
 	return pascallemerrer$elm_advanced_grid$Grid$isSelectionColumnProperties(columnConfig.properties);
 };
+var pascallemerrer$elm_advanced_grid$Grid$Item$create = F2(
+	function (data, index) {
+		return {data: data, index: index, selected: false};
+	});
 var pascallemerrer$elm_advanced_grid$Grid$init = F2(
-	function (config, items) {
+	function (config, data) {
 		var indexedItems = A2(
 			elm$core$List$indexedMap,
 			F2(
-				function (index, item) {
-					return _Utils_update(
-						item,
-						{index: index});
+				function (index, value) {
+					return A2(pascallemerrer$elm_advanced_grid$Grid$Item$create, value, index);
 				}),
-			items);
+			data);
 		var hasSelectionColumn = function (columns) {
 			var _n0 = elm$core$List$head(columns);
 			if (_n0.$ === 'Just') {
@@ -10284,6 +10399,461 @@ var pascallemerrer$elm_advanced_grid$Grid$isColumn = F2(
 	function (firstColumnConfig, secondColumnConfig) {
 		return _Utils_eq(firstColumnConfig.properties.id, secondColumnConfig.properties.id);
 	});
+var elm$core$Elm$JsArray$appendN = _JsArray_appendN;
+var elm$core$Elm$JsArray$slice = _JsArray_slice;
+var elm$core$Array$appendHelpBuilder = F2(
+	function (tail, builder) {
+		var tailLen = elm$core$Elm$JsArray$length(tail);
+		var notAppended = (elm$core$Array$branchFactor - elm$core$Elm$JsArray$length(builder.tail)) - tailLen;
+		var appended = A3(elm$core$Elm$JsArray$appendN, elm$core$Array$branchFactor, builder.tail, tail);
+		return (notAppended < 0) ? {
+			nodeList: A2(
+				elm$core$List$cons,
+				elm$core$Array$Leaf(appended),
+				builder.nodeList),
+			nodeListSize: builder.nodeListSize + 1,
+			tail: A3(elm$core$Elm$JsArray$slice, notAppended, tailLen, tail)
+		} : ((!notAppended) ? {
+			nodeList: A2(
+				elm$core$List$cons,
+				elm$core$Array$Leaf(appended),
+				builder.nodeList),
+			nodeListSize: builder.nodeListSize + 1,
+			tail: elm$core$Elm$JsArray$empty
+		} : {nodeList: builder.nodeList, nodeListSize: builder.nodeListSize, tail: appended});
+	});
+var elm$core$Array$bitMask = 4294967295 >>> (32 - elm$core$Array$shiftStep);
+var elm$core$Basics$ge = _Utils_ge;
+var elm$core$Elm$JsArray$push = _JsArray_push;
+var elm$core$Elm$JsArray$singleton = _JsArray_singleton;
+var elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
+var elm$core$Array$insertTailInTree = F4(
+	function (shift, index, tail, tree) {
+		var pos = elm$core$Array$bitMask & (index >>> shift);
+		if (_Utils_cmp(
+			pos,
+			elm$core$Elm$JsArray$length(tree)) > -1) {
+			if (shift === 5) {
+				return A2(
+					elm$core$Elm$JsArray$push,
+					elm$core$Array$Leaf(tail),
+					tree);
+			} else {
+				var newSub = elm$core$Array$SubTree(
+					A4(elm$core$Array$insertTailInTree, shift - elm$core$Array$shiftStep, index, tail, elm$core$Elm$JsArray$empty));
+				return A2(elm$core$Elm$JsArray$push, newSub, tree);
+			}
+		} else {
+			var value = A2(elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (value.$ === 'SubTree') {
+				var subTree = value.a;
+				var newSub = elm$core$Array$SubTree(
+					A4(elm$core$Array$insertTailInTree, shift - elm$core$Array$shiftStep, index, tail, subTree));
+				return A3(elm$core$Elm$JsArray$unsafeSet, pos, newSub, tree);
+			} else {
+				var newSub = elm$core$Array$SubTree(
+					A4(
+						elm$core$Array$insertTailInTree,
+						shift - elm$core$Array$shiftStep,
+						index,
+						tail,
+						elm$core$Elm$JsArray$singleton(value)));
+				return A3(elm$core$Elm$JsArray$unsafeSet, pos, newSub, tree);
+			}
+		}
+	});
+var elm$core$Array$unsafeReplaceTail = F2(
+	function (newTail, _n0) {
+		var len = _n0.a;
+		var startShift = _n0.b;
+		var tree = _n0.c;
+		var tail = _n0.d;
+		var originalTailLen = elm$core$Elm$JsArray$length(tail);
+		var newTailLen = elm$core$Elm$JsArray$length(newTail);
+		var newArrayLen = len + (newTailLen - originalTailLen);
+		if (_Utils_eq(newTailLen, elm$core$Array$branchFactor)) {
+			var overflow = _Utils_cmp(newArrayLen >>> elm$core$Array$shiftStep, 1 << startShift) > 0;
+			if (overflow) {
+				var newShift = startShift + elm$core$Array$shiftStep;
+				var newTree = A4(
+					elm$core$Array$insertTailInTree,
+					newShift,
+					len,
+					newTail,
+					elm$core$Elm$JsArray$singleton(
+						elm$core$Array$SubTree(tree)));
+				return A4(elm$core$Array$Array_elm_builtin, newArrayLen, newShift, newTree, elm$core$Elm$JsArray$empty);
+			} else {
+				return A4(
+					elm$core$Array$Array_elm_builtin,
+					newArrayLen,
+					startShift,
+					A4(elm$core$Array$insertTailInTree, startShift, len, newTail, tree),
+					elm$core$Elm$JsArray$empty);
+			}
+		} else {
+			return A4(elm$core$Array$Array_elm_builtin, newArrayLen, startShift, tree, newTail);
+		}
+	});
+var elm$core$Array$appendHelpTree = F2(
+	function (toAppend, array) {
+		var len = array.a;
+		var tree = array.c;
+		var tail = array.d;
+		var itemsToAppend = elm$core$Elm$JsArray$length(toAppend);
+		var notAppended = (elm$core$Array$branchFactor - elm$core$Elm$JsArray$length(tail)) - itemsToAppend;
+		var appended = A3(elm$core$Elm$JsArray$appendN, elm$core$Array$branchFactor, tail, toAppend);
+		var newArray = A2(elm$core$Array$unsafeReplaceTail, appended, array);
+		if (notAppended < 0) {
+			var nextTail = A3(elm$core$Elm$JsArray$slice, notAppended, itemsToAppend, toAppend);
+			return A2(elm$core$Array$unsafeReplaceTail, nextTail, newArray);
+		} else {
+			return newArray;
+		}
+	});
+var elm$core$Elm$JsArray$foldl = _JsArray_foldl;
+var elm$core$Array$builderFromArray = function (_n0) {
+	var len = _n0.a;
+	var tree = _n0.c;
+	var tail = _n0.d;
+	var helper = F2(
+		function (node, acc) {
+			if (node.$ === 'SubTree') {
+				var subTree = node.a;
+				return A3(elm$core$Elm$JsArray$foldl, helper, acc, subTree);
+			} else {
+				return A2(elm$core$List$cons, node, acc);
+			}
+		});
+	return {
+		nodeList: A3(elm$core$Elm$JsArray$foldl, helper, _List_Nil, tree),
+		nodeListSize: (len / elm$core$Array$branchFactor) | 0,
+		tail: tail
+	};
+};
+var elm$core$Array$append = F2(
+	function (a, _n0) {
+		var aTail = a.d;
+		var bLen = _n0.a;
+		var bTree = _n0.c;
+		var bTail = _n0.d;
+		if (_Utils_cmp(bLen, elm$core$Array$branchFactor * 4) < 1) {
+			var foldHelper = F2(
+				function (node, array) {
+					if (node.$ === 'SubTree') {
+						var tree = node.a;
+						return A3(elm$core$Elm$JsArray$foldl, foldHelper, array, tree);
+					} else {
+						var leaf = node.a;
+						return A2(elm$core$Array$appendHelpTree, leaf, array);
+					}
+				});
+			return A2(
+				elm$core$Array$appendHelpTree,
+				bTail,
+				A3(elm$core$Elm$JsArray$foldl, foldHelper, a, bTree));
+		} else {
+			var foldHelper = F2(
+				function (node, builder) {
+					if (node.$ === 'SubTree') {
+						var tree = node.a;
+						return A3(elm$core$Elm$JsArray$foldl, foldHelper, builder, tree);
+					} else {
+						var leaf = node.a;
+						return A2(elm$core$Array$appendHelpBuilder, leaf, builder);
+					}
+				});
+			return A2(
+				elm$core$Array$builderToArray,
+				true,
+				A2(
+					elm$core$Array$appendHelpBuilder,
+					bTail,
+					A3(
+						elm$core$Elm$JsArray$foldl,
+						foldHelper,
+						elm$core$Array$builderFromArray(a),
+						bTree)));
+		}
+	});
+var elm$core$Array$fromListHelp = F3(
+	function (list, nodeList, nodeListSize) {
+		fromListHelp:
+		while (true) {
+			var _n0 = A2(elm$core$Elm$JsArray$initializeFromList, elm$core$Array$branchFactor, list);
+			var jsArray = _n0.a;
+			var remainingItems = _n0.b;
+			if (_Utils_cmp(
+				elm$core$Elm$JsArray$length(jsArray),
+				elm$core$Array$branchFactor) < 0) {
+				return A2(
+					elm$core$Array$builderToArray,
+					true,
+					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
+			} else {
+				var $temp$list = remainingItems,
+					$temp$nodeList = A2(
+					elm$core$List$cons,
+					elm$core$Array$Leaf(jsArray),
+					nodeList),
+					$temp$nodeListSize = nodeListSize + 1;
+				list = $temp$list;
+				nodeList = $temp$nodeList;
+				nodeListSize = $temp$nodeListSize;
+				continue fromListHelp;
+			}
+		}
+	});
+var elm$core$Array$fromList = function (list) {
+	if (!list.b) {
+		return elm$core$Array$empty;
+	} else {
+		return A3(elm$core$Array$fromListHelp, list, _List_Nil, 0);
+	}
+};
+var elm$core$Array$length = function (_n0) {
+	var len = _n0.a;
+	return len;
+};
+var elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var elm$core$Array$sliceLeft = F2(
+	function (from, array) {
+		var len = array.a;
+		var tree = array.c;
+		var tail = array.d;
+		if (!from) {
+			return array;
+		} else {
+			if (_Utils_cmp(
+				from,
+				elm$core$Array$tailIndex(len)) > -1) {
+				return A4(
+					elm$core$Array$Array_elm_builtin,
+					len - from,
+					elm$core$Array$shiftStep,
+					elm$core$Elm$JsArray$empty,
+					A3(
+						elm$core$Elm$JsArray$slice,
+						from - elm$core$Array$tailIndex(len),
+						elm$core$Elm$JsArray$length(tail),
+						tail));
+			} else {
+				var skipNodes = (from / elm$core$Array$branchFactor) | 0;
+				var helper = F2(
+					function (node, acc) {
+						if (node.$ === 'SubTree') {
+							var subTree = node.a;
+							return A3(elm$core$Elm$JsArray$foldr, helper, acc, subTree);
+						} else {
+							var leaf = node.a;
+							return A2(elm$core$List$cons, leaf, acc);
+						}
+					});
+				var leafNodes = A3(
+					elm$core$Elm$JsArray$foldr,
+					helper,
+					_List_fromArray(
+						[tail]),
+					tree);
+				var nodesToInsert = A2(elm$core$List$drop, skipNodes, leafNodes);
+				if (!nodesToInsert.b) {
+					return elm$core$Array$empty;
+				} else {
+					var head = nodesToInsert.a;
+					var rest = nodesToInsert.b;
+					var firstSlice = from - (skipNodes * elm$core$Array$branchFactor);
+					var initialBuilder = {
+						nodeList: _List_Nil,
+						nodeListSize: 0,
+						tail: A3(
+							elm$core$Elm$JsArray$slice,
+							firstSlice,
+							elm$core$Elm$JsArray$length(head),
+							head)
+					};
+					return A2(
+						elm$core$Array$builderToArray,
+						true,
+						A3(elm$core$List$foldl, elm$core$Array$appendHelpBuilder, initialBuilder, rest));
+				}
+			}
+		}
+	});
+var elm$core$Array$fetchNewTail = F4(
+	function (shift, end, treeEnd, tree) {
+		fetchNewTail:
+		while (true) {
+			var pos = elm$core$Array$bitMask & (treeEnd >>> shift);
+			var _n0 = A2(elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_n0.$ === 'SubTree') {
+				var sub = _n0.a;
+				var $temp$shift = shift - elm$core$Array$shiftStep,
+					$temp$end = end,
+					$temp$treeEnd = treeEnd,
+					$temp$tree = sub;
+				shift = $temp$shift;
+				end = $temp$end;
+				treeEnd = $temp$treeEnd;
+				tree = $temp$tree;
+				continue fetchNewTail;
+			} else {
+				var values = _n0.a;
+				return A3(elm$core$Elm$JsArray$slice, 0, elm$core$Array$bitMask & end, values);
+			}
+		}
+	});
+var elm$core$Array$hoistTree = F3(
+	function (oldShift, newShift, tree) {
+		hoistTree:
+		while (true) {
+			if ((_Utils_cmp(oldShift, newShift) < 1) || (!elm$core$Elm$JsArray$length(tree))) {
+				return tree;
+			} else {
+				var _n0 = A2(elm$core$Elm$JsArray$unsafeGet, 0, tree);
+				if (_n0.$ === 'SubTree') {
+					var sub = _n0.a;
+					var $temp$oldShift = oldShift - elm$core$Array$shiftStep,
+						$temp$newShift = newShift,
+						$temp$tree = sub;
+					oldShift = $temp$oldShift;
+					newShift = $temp$newShift;
+					tree = $temp$tree;
+					continue hoistTree;
+				} else {
+					return tree;
+				}
+			}
+		}
+	});
+var elm$core$Array$sliceTree = F3(
+	function (shift, endIdx, tree) {
+		var lastPos = elm$core$Array$bitMask & (endIdx >>> shift);
+		var _n0 = A2(elm$core$Elm$JsArray$unsafeGet, lastPos, tree);
+		if (_n0.$ === 'SubTree') {
+			var sub = _n0.a;
+			var newSub = A3(elm$core$Array$sliceTree, shift - elm$core$Array$shiftStep, endIdx, sub);
+			return (!elm$core$Elm$JsArray$length(newSub)) ? A3(elm$core$Elm$JsArray$slice, 0, lastPos, tree) : A3(
+				elm$core$Elm$JsArray$unsafeSet,
+				lastPos,
+				elm$core$Array$SubTree(newSub),
+				A3(elm$core$Elm$JsArray$slice, 0, lastPos + 1, tree));
+		} else {
+			return A3(elm$core$Elm$JsArray$slice, 0, lastPos, tree);
+		}
+	});
+var elm$core$Array$sliceRight = F2(
+	function (end, array) {
+		var len = array.a;
+		var startShift = array.b;
+		var tree = array.c;
+		var tail = array.d;
+		if (_Utils_eq(end, len)) {
+			return array;
+		} else {
+			if (_Utils_cmp(
+				end,
+				elm$core$Array$tailIndex(len)) > -1) {
+				return A4(
+					elm$core$Array$Array_elm_builtin,
+					end,
+					startShift,
+					tree,
+					A3(elm$core$Elm$JsArray$slice, 0, elm$core$Array$bitMask & end, tail));
+			} else {
+				var endIdx = elm$core$Array$tailIndex(end);
+				var depth = elm$core$Basics$floor(
+					A2(
+						elm$core$Basics$logBase,
+						elm$core$Array$branchFactor,
+						A2(elm$core$Basics$max, 1, endIdx - 1)));
+				var newShift = A2(elm$core$Basics$max, 5, depth * elm$core$Array$shiftStep);
+				return A4(
+					elm$core$Array$Array_elm_builtin,
+					end,
+					newShift,
+					A3(
+						elm$core$Array$hoistTree,
+						startShift,
+						newShift,
+						A3(elm$core$Array$sliceTree, startShift, endIdx, tree)),
+					A4(elm$core$Array$fetchNewTail, startShift, end, endIdx, tree));
+			}
+		}
+	});
+var elm$core$Array$translateIndex = F2(
+	function (index, _n0) {
+		var len = _n0.a;
+		var posIndex = (index < 0) ? (len + index) : index;
+		return (posIndex < 0) ? 0 : ((_Utils_cmp(posIndex, len) > 0) ? len : posIndex);
+	});
+var elm$core$Array$slice = F3(
+	function (from, to, array) {
+		var correctTo = A2(elm$core$Array$translateIndex, to, array);
+		var correctFrom = A2(elm$core$Array$translateIndex, from, array);
+		return (_Utils_cmp(correctFrom, correctTo) > 0) ? elm$core$Array$empty : A2(
+			elm$core$Array$sliceLeft,
+			correctFrom,
+			A2(elm$core$Array$sliceRight, correctTo, array));
+	});
+var pascallemerrer$elm_advanced_grid$Grid$moveItemLeft = F3(
+	function (list, originIndex, indexDelta) {
+		var array = elm$core$Array$fromList(list);
+		var beforeDestination = A3(elm$core$Array$slice, 0, originIndex - indexDelta, array);
+		var betweenDestinationAndOrigin = A3(elm$core$Array$slice, originIndex - indexDelta, originIndex, array);
+		var origin = A3(elm$core$Array$slice, originIndex, originIndex + 1, array);
+		var afterOrigin = A3(
+			elm$core$Array$slice,
+			originIndex + 1,
+			elm$core$Array$length(array),
+			array);
+		return elm$core$Array$toList(
+			A3(
+				elm$core$List$foldr,
+				elm$core$Array$append,
+				elm$core$Array$empty,
+				_List_fromArray(
+					[beforeDestination, origin, betweenDestinationAndOrigin, afterOrigin])));
+	});
+var pascallemerrer$elm_advanced_grid$Grid$moveItemRight = F3(
+	function (list, originIndex, indexDelta) {
+		var array = elm$core$Array$fromList(list);
+		var beforeOrigin = A3(elm$core$Array$slice, 0, originIndex, array);
+		var betweenOriginAndDestination = A3(elm$core$Array$slice, originIndex + 1, (originIndex + indexDelta) + 1, array);
+		var origin = A3(elm$core$Array$slice, originIndex, originIndex + 1, array);
+		var afterDestination = A3(
+			elm$core$Array$slice,
+			(originIndex + indexDelta) + 1,
+			elm$core$Array$length(array),
+			array);
+		return elm$core$Array$toList(
+			A3(
+				elm$core$List$foldr,
+				elm$core$Array$append,
+				elm$core$Array$empty,
+				_List_fromArray(
+					[beforeOrigin, betweenOriginAndDestination, origin, afterDestination])));
+	});
+var pascallemerrer$elm_advanced_grid$Grid$moveColumn = F3(
+	function (destinationColumn, originColumn, list) {
+		var originColumnIndex = A2(
+			elm$core$Maybe$withDefault,
+			-1,
+			A2(
+				elm_community$list_extra$List$Extra$findIndex,
+				pascallemerrer$elm_advanced_grid$Grid$isColumn(originColumn),
+				list));
+		var destinationColumnIndex = A2(
+			elm$core$Maybe$withDefault,
+			-1,
+			A2(
+				elm_community$list_extra$List$Extra$findIndex,
+				pascallemerrer$elm_advanced_grid$Grid$isColumn(destinationColumn),
+				list));
+		return (_Utils_cmp(originColumnIndex, destinationColumnIndex) < 0) ? A3(pascallemerrer$elm_advanced_grid$Grid$moveItemRight, list, originColumnIndex, destinationColumnIndex - originColumnIndex) : A3(pascallemerrer$elm_advanced_grid$Grid$moveItemLeft, list, originColumnIndex, originColumnIndex - destinationColumnIndex);
+	});
 var elm$core$List$sortWith = _List_sortWith;
 var pascallemerrer$elm_advanced_grid$Grid$orderBy = F3(
 	function (model, columnConfig, order) {
@@ -10328,6 +10898,27 @@ var pascallemerrer$elm_advanced_grid$Grid$updateColumnWidthProperty = F3(
 		};
 		return A3(pascallemerrer$elm_advanced_grid$Grid$updateColumnProperties, setWidth, model, columnConfig.properties.id);
 	});
+var pascallemerrer$elm_advanced_grid$Grid$sanitizedColumns = function (columns) {
+	return A3(
+		elm_community$list_extra$List$Extra$updateIf,
+		A2(
+			elm$core$Basics$composeL,
+			A2(
+				elm$core$Basics$composeL,
+				elm$core$Basics$not,
+				function ($) {
+					return $.visible;
+				}),
+			function ($) {
+				return $.properties;
+			}),
+		function (c) {
+			return _Utils_update(
+				c,
+				{filteringValue: elm$core$Maybe$Nothing});
+		},
+		columns);
+};
 var pascallemerrer$elm_advanced_grid$Grid$withColumnsX = function (model) {
 	return _Utils_update(
 		model,
@@ -10349,7 +10940,9 @@ var pascallemerrer$elm_advanced_grid$Grid$withColumns = F2(
 				pascallemerrer$elm_advanced_grid$Grid$withConfig,
 				_Utils_update(
 					config,
-					{columns: columns}),
+					{
+						columns: pascallemerrer$elm_advanced_grid$Grid$sanitizedColumns(columns)
+					}),
 				model));
 	});
 var pascallemerrer$elm_advanced_grid$Grid$resizeColumn = F2(
@@ -10394,86 +10987,6 @@ var pascallemerrer$elm_advanced_grid$Grid$sort = F4(
 				order: newOrder,
 				sortedBy: elm$core$Maybe$Just(columnConfig)
 			});
-	});
-var elm_community$list_extra$List$Extra$splitAt = F2(
-	function (n, xs) {
-		return _Utils_Tuple2(
-			A2(elm$core$List$take, n, xs),
-			A2(elm$core$List$drop, n, xs));
-	});
-var elm_community$list_extra$List$Extra$uncons = function (list) {
-	if (!list.b) {
-		return elm$core$Maybe$Nothing;
-	} else {
-		var first = list.a;
-		var rest = list.b;
-		return elm$core$Maybe$Just(
-			_Utils_Tuple2(first, rest));
-	}
-};
-var elm_community$list_extra$List$Extra$swapAt = F3(
-	function (index1, index2, l) {
-		swapAt:
-		while (true) {
-			if (_Utils_eq(index1, index2) || (index1 < 0)) {
-				return l;
-			} else {
-				if (_Utils_cmp(index1, index2) > 0) {
-					var $temp$index1 = index2,
-						$temp$index2 = index1,
-						$temp$l = l;
-					index1 = $temp$index1;
-					index2 = $temp$index2;
-					l = $temp$l;
-					continue swapAt;
-				} else {
-					var _n0 = A2(elm_community$list_extra$List$Extra$splitAt, index1, l);
-					var part1 = _n0.a;
-					var tail1 = _n0.b;
-					var _n1 = A2(elm_community$list_extra$List$Extra$splitAt, index2 - index1, tail1);
-					var head2 = _n1.a;
-					var tail2 = _n1.b;
-					var _n2 = _Utils_Tuple2(
-						elm_community$list_extra$List$Extra$uncons(head2),
-						elm_community$list_extra$List$Extra$uncons(tail2));
-					if ((_n2.a.$ === 'Just') && (_n2.b.$ === 'Just')) {
-						var _n3 = _n2.a.a;
-						var value1 = _n3.a;
-						var part2 = _n3.b;
-						var _n4 = _n2.b.a;
-						var value2 = _n4.a;
-						var part3 = _n4.b;
-						return elm$core$List$concat(
-							_List_fromArray(
-								[
-									part1,
-									A2(elm$core$List$cons, value2, part2),
-									A2(elm$core$List$cons, value1, part3)
-								]));
-					} else {
-						return l;
-					}
-				}
-			}
-		}
-	});
-var pascallemerrer$elm_advanced_grid$Grid$swapColumns = F3(
-	function (column1, column2, list) {
-		var column2Index = A2(
-			elm$core$Maybe$withDefault,
-			-1,
-			A2(
-				elm_community$list_extra$List$Extra$findIndex,
-				pascallemerrer$elm_advanced_grid$Grid$isColumn(column2),
-				list));
-		var column1Index = A2(
-			elm$core$Maybe$withDefault,
-			-1,
-			A2(
-				elm_community$list_extra$List$Extra$findIndex,
-				pascallemerrer$elm_advanced_grid$Grid$isColumn(column1),
-				list));
-		return A3(elm_community$list_extra$List$Extra$swapAt, column1Index, column2Index, list);
 	});
 var pascallemerrer$elm_advanced_grid$Grid$toggleOrder = F3(
 	function (model, columnConfig, order) {
@@ -10637,7 +11150,7 @@ var pascallemerrer$elm_advanced_grid$Grid$modelUpdate = F2(
 					if (_Utils_eq(columnConfig.properties.id, draggedColumn.lastSwappedColumnId)) {
 						return model;
 					} else {
-						var newColumns = A3(pascallemerrer$elm_advanced_grid$Grid$swapColumns, columnConfig, draggedColumnConfig, model.config.columns);
+						var newColumns = A3(pascallemerrer$elm_advanced_grid$Grid$moveColumn, columnConfig, draggedColumnConfig, model.config.columns);
 						return A2(
 							pascallemerrer$elm_advanced_grid$Grid$withDraggedColumn,
 							elm$core$Maybe$Just(
@@ -10854,7 +11367,7 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$update = F2(
 						return A2(
 							elm$core$String$startsWith,
 							elm$core$String$toLower(city),
-							elm$core$String$toLower(item.city));
+							elm$core$String$toLower(item.data.city));
 					});
 				var _n11 = A2(pascallemerrer$elm_advanced_grid$Grid$update, message, model.gridModel);
 				var newGridModel = _n11.a;
@@ -12210,7 +12723,7 @@ var pascallemerrer$elm_advanced_grid$Examples$LargeList$menuItemAttributes = fun
 };
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$viewItem = function (item) {
 	return elm$html$Html$text(
-		'id:' + (elm$core$String$fromInt(item.id) + (' - name: ' + (item.name + ''))));
+		'id:' + (elm$core$String$fromInt(item.data.id) + (' - name: ' + (item.data.name + ''))));
 };
 var pascallemerrer$elm_advanced_grid$Examples$LargeList$viewClickedItem = function (model) {
 	var selectedItem = function () {

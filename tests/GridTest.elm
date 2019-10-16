@@ -32,49 +32,49 @@ describeComparators =
     [ describe "compareBoolField"
         [ test "should return equal when both fields are true" <|
             \_ ->
-                Expect.equal EQ (compareBoolField (\item -> item.isValid) item1 item1)
+                Expect.equal EQ (compareBoolField (.data >> .isValid) item1 item1)
         , test "should return equal when both fields are false" <|
             \_ ->
-                Expect.equal EQ (compareBoolField (\item -> item.selected) item1 item2)
+                Expect.equal EQ (compareBoolField .selected item1 item2)
         , test "should return LT when first field is false and second field is true" <|
             \_ ->
-                Expect.equal LT (compareBoolField (\item -> item.isValid) item2 item1)
+                Expect.equal LT (compareBoolField (.data >> .isValid) item2 item1)
         , test "should return GT when first field is true and second field is false" <|
             \_ ->
-                Expect.equal GT (compareBoolField (\item -> item.isValid) item1 item2)
+                Expect.equal GT (compareBoolField (.data >> .isValid) item1 item2)
         ]
     , describe "compareField for Int"
         [ test "should return equal when both fields have the same value" <|
             \_ ->
-                Expect.equal EQ (compareFields (\item -> item.index) item1 item1)
+                Expect.equal EQ (compareFields (.data >> .index) item1 item1)
         , test "should return LT when first field value is smaller than second field's one" <|
             \_ ->
-                Expect.equal LT (compareFields (\item -> item.index) item1 item2)
+                Expect.equal LT (compareFields (.data >> .index) item1 item2)
         , test "should return GT when first field value is greater than second field's one" <|
             \_ ->
-                Expect.equal GT (compareFields (\item -> item.index) item2 item1)
+                Expect.equal GT (compareFields (.data >> .index) item2 item1)
         ]
     , describe "compareField for Float"
         [ test "should return equal when both fields have the same value" <|
             \_ ->
-                Expect.equal EQ (compareFields (\item -> item.score) item1 item1)
+                Expect.equal EQ (compareFields (.data >> .score) item1 item1)
         , test "should return LT when first field value is smaller than second field's one" <|
             \_ ->
-                Expect.equal LT (compareFields (\item -> item.score) item1 item2)
+                Expect.equal LT (compareFields (.data >> .score) item1 item2)
         , test "should return GT when first field value is greater than second field's one" <|
             \_ ->
-                Expect.equal GT (compareFields (\item -> item.score) item2 item1)
+                Expect.equal GT (compareFields (.data >> .score) item2 item1)
         ]
     , describe "compareField for String"
         [ test "should return equal when both fields have the same value" <|
             \_ ->
-                Expect.equal EQ (compareFields (\item -> item.title) item1 item1)
+                Expect.equal EQ (compareFields (.data >> .title) item1 item1)
         , test "should return LT when first field value is before second field's one in lexicographic order" <|
             \_ ->
-                Expect.equal LT (compareFields (\item -> item.title) item1 item2)
+                Expect.equal LT (compareFields (.data >> .title) item1 item2)
         , test "should return GT when first field value is after second field's one in lexicographic order" <|
             \_ ->
-                Expect.equal GT (compareFields (\item -> item.title) item2 item1)
+                Expect.equal GT (compareFields (.data >> .title) item2 item1)
         ]
     ]
 

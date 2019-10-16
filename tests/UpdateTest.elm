@@ -126,10 +126,10 @@ simulateHeaderClick model =
 modelSortedByAscendingScore =
     { model
         | content =
-            [ { index = 0, isValid = True, score = 1, selected = False, title = "ITEM 1" }
-            , { index = 1, isValid = False, score = 2, selected = False, title = "ITEM 2" }
-            , { index = 2, isValid = True, score = 3, selected = False, title = "ITEM 4" }
-            , { index = 3, isValid = True, score = 4, selected = False, title = "ITEM 3" }
+            [ { index = 0, selected = False, data = { count = 1, isValid = True, score = 1, title = "ITEM 1" } }
+            , { index = 1, selected = False, data = { count = 2, isValid = False, score = 2, title = "ITEM 2" } }
+            , { index = 2, selected = False, data = { count = 3, isValid = True, score = 3, title = "ITEM 4" } }
+            , { index = 3, selected = False, data = { count = 4, isValid = True, score = 4, title = "ITEM 3" } }
             ]
         , order = Ascending
         , sortedBy = Just scoreColumn
@@ -139,16 +139,16 @@ modelSortedByAscendingScore =
 modelSortedByDescendingScore =
     { model
         | content =
-            [ { index = 0, isValid = True, score = 4, selected = False, title = "ITEM 3" }
-            , { index = 1, isValid = True, score = 3, selected = False, title = "ITEM 4" }
-            , { index = 2, isValid = False, score = 2, selected = False, title = "ITEM 2" }
-            , { index = 3, isValid = True, score = 1, selected = False, title = "ITEM 1" }
+            [ { index = 0, selected = False, data = { count = 1, isValid = True, score = 4, title = "ITEM 3" } }
+            , { index = 1, selected = False, data = { count = 2, isValid = True, score = 3, title = "ITEM 4" } }
+            , { index = 2, selected = False, data = { count = 3, isValid = False, score = 2, title = "ITEM 2" } }
+            , { index = 3, selected = False, data = { count = 4, isValid = True, score = 1, title = "ITEM 1" } }
             ]
         , order = Descending
         , sortedBy = Just scoreColumn
     }
 
 
-isScoreColumn : ColumnConfig Item -> Bool
+isScoreColumn : ColumnConfig Data -> Bool
 isScoreColumn columnConfig =
     columnConfig.properties.id == scoreColumn.properties.id

@@ -23,3 +23,11 @@ a, a:hover, a:visited {
 {
     color: #555555;
 }
+
+.selected-row {
+    background-color: rgb(137, 166, 220)
+}
+
+.even-row {
+    background-color: rgb(225, 224, 224)
+}

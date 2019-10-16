@@ -67,7 +67,8 @@ import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, white, white2)
-import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
+import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
+import Grid.Item as Item exposing (Item)
 import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, input, label, span, text, toUnstyled)
@@ -375,8 +376,8 @@ and content.
          )
 
 -}
-init : Config a -> List (Item a) -> Model a
-init config items =
+init : Config a -> List a -> Model a
+init config data =
     let
         hasSelectionColumn : List (ColumnConfig a) -> Bool
         hasSelectionColumn columns =
@@ -399,7 +400,7 @@ init config items =
 
         -- ensure indexes are set to prevent systematic selection of the first item when clicking a checkbox
         indexedItems =
-            List.indexedMap (\index item -> { item | index = index }) items
+            List.indexedMap (\index value -> Item.create value index) data
 
         initialModel =
             { clickedItem = Nothing
@@ -1288,6 +1289,13 @@ returns the field to be displayed in this column.
 -}
 compareFields : (Item a -> comparable) -> Item a -> Item a -> Order
 compareFields field item1 item2 =
+    let
+        _ =
+            Debug.log "compareFields" (field item1)
+
+        _ =
+            Debug.log "with field" (field item2)
+    in
     compare (field item1) (field item2)
 
 
