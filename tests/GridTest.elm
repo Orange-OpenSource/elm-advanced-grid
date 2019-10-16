@@ -46,13 +46,13 @@ describeComparators =
     , describe "compareField for Int"
         [ test "should return equal when both fields have the same value" <|
             \_ ->
-                Expect.equal EQ (compareFields (.data >> .index) item1 item1)
+                Expect.equal EQ (compareFields (.data >> .count) item1 item1)
         , test "should return LT when first field value is smaller than second field's one" <|
             \_ ->
-                Expect.equal LT (compareFields (.data >> .index) item1 item2)
+                Expect.equal LT (compareFields (.data >> .count) item1 item2)
         , test "should return GT when first field value is greater than second field's one" <|
             \_ ->
-                Expect.equal GT (compareFields (.data >> .index) item2 item1)
+                Expect.equal GT (compareFields (.data >> .count) item2 item1)
         ]
     , describe "compareField for Float"
         [ test "should return equal when both fields have the same value" <|
