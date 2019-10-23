@@ -407,7 +407,7 @@ columns =
 idColumn =
     intColumnConfig
         { id = "Id"
-        , getter = .data >> .id
+        , getter = .id
         , localize = localize
         , title = "Id"
         , tooltip = "Une indication pour la colonne Id"
@@ -418,7 +418,7 @@ idColumn =
 nameColumn =
     stringColumnConfig
         { id = "Name"
-        , getter = .data >> .name
+        , getter = .name
         , localize = localize
         , title = "Nom"
         , tooltip = "Une indication pour la colonne Nom"
@@ -431,20 +431,20 @@ progressColumn =
         progressColumnConfig =
             floatColumnConfig
                 { id = "Progress"
-                , getter = .data >> .value1
+                , getter = .value1
                 , localize = localize
                 , title = "Progrès"
                 , tooltip = "Une indication pour la colonne Progrès"
                 , width = 100
                 }
     in
-    { progressColumnConfig | renderer = viewProgressBar 8 (.data >> .value1) }
+    { progressColumnConfig | renderer = viewProgressBar 8 .value1 }
 
 
 cityColumn =
     stringColumnConfig
         { id = "City"
-        , getter = .data >> .city
+        , getter = .city
         , localize = localize
         , title = "Ville"
         , tooltip = "Une indication pour la colonne Ville"
@@ -455,7 +455,7 @@ cityColumn =
 value1Column =
     floatColumnConfig
         { id = "Value1"
-        , getter = .data >> .value1 >> truncateDecimals
+        , getter = .value1 >> truncateDecimals
         , localize = localize
         , title = "Valeur 1"
         , tooltip = "Une indication pour la colonne Valeur 1"
@@ -468,20 +468,20 @@ value1ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue1"
-                , getter = .data >> .value1 >> truncateDecimals
+                , getter = .value1 >> truncateDecimals
                 , localize = localize
                 , title = "Valeur 1"
                 , tooltip = "Une indication pour la colonne Valeur 1"
                 , width = 100
                 }
     in
-    { columnConfig | renderer = viewProgressBar 8 (.data >> .value1) }
+    { columnConfig | renderer = viewProgressBar 8 .value1 }
 
 
 value2Column =
     floatColumnConfig
         { id = "Value2"
-        , getter = .data >> .value2 >> truncateDecimals
+        , getter = .value2 >> truncateDecimals
         , localize = localize
         , title = "Valeur 2"
         , tooltip = "Une indication pour la colonne Valeur 2"
@@ -494,20 +494,20 @@ value2ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue2"
-                , getter = .data >> .value2 >> truncateDecimals
+                , getter = .value2 >> truncateDecimals
                 , localize = localize
                 , title = "Valeur 2"
                 , tooltip = "Une indication pour la colonne Valeur 2"
                 , width = 100
                 }
     in
-    { columnConfig | renderer = viewProgressBar 8 (.data >> .value2) }
+    { columnConfig | renderer = viewProgressBar 8 .value2 }
 
 
 value3Column =
     floatColumnConfig
         { id = "Value3"
-        , getter = .data >> .value3 >> truncateDecimals
+        , getter = .value3 >> truncateDecimals
         , localize = localize
         , title = "Valeur 3"
         , tooltip = "Une indication pour la colonne Valeur 3"
@@ -520,20 +520,20 @@ value3ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue3"
-                , getter = .data >> .value3 >> truncateDecimals
+                , getter = .value3 >> truncateDecimals
                 , localize = localize
                 , title = "Valeur 3"
                 , tooltip = "Une indication pour la colonne Valeur 3"
                 , width = 100
                 }
     in
-    { columnConfig | renderer = viewProgressBar 8 (.data >> .value3) }
+    { columnConfig | renderer = viewProgressBar 8 .value3 }
 
 
 value4Column =
     floatColumnConfig
         { id = "Value4"
-        , getter = .data >> .value4 >> truncateDecimals
+        , getter = .value4 >> truncateDecimals
         , localize = localize
         , title = "Valeur 4"
         , tooltip = "Une indication pour la colonne Valeur 4"
@@ -546,20 +546,20 @@ value4ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue4"
-                , getter = .data >> .value4 >> truncateDecimals
+                , getter = .value4 >> truncateDecimals
                 , localize = localize
                 , title = "Valeur 4"
                 , tooltip = "Une indication pour la colonne Valeur 4"
                 , width = 100
                 }
     in
-    { columnConfig | renderer = viewProgressBar 8 (.data >> .value4) }
+    { columnConfig | renderer = viewProgressBar 8 .value4 }
 
 
 value5Column =
     floatColumnConfig
         { id = "Value5"
-        , getter = .data >> .value5 >> truncateDecimals
+        , getter = .value5 >> truncateDecimals
         , localize = localize
         , title = "Valeur 5"
         , tooltip = "Une indication pour la colonne Valeur 5"
@@ -572,20 +572,20 @@ value5ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue5"
-                , getter = .data >> .value5 >> truncateDecimals
+                , getter = .value5 >> truncateDecimals
                 , localize = localize
                 , title = "Valeur 5"
                 , tooltip = "Une indication pour la colonne Valeur 5"
                 , width = 100
                 }
     in
-    { columnConfig | renderer = viewProgressBar 8 (.data >> .value5) }
+    { columnConfig | renderer = viewProgressBar 8 .value5 }
 
 
 value6Column =
     floatColumnConfig
         { id = "Value6"
-        , getter = .data >> .value6 >> truncateDecimals
+        , getter = .value6 >> truncateDecimals
         , localize = localize
         , title = "Valeur 6"
         , tooltip = "Une indication pour la colonne Valeur 6"
@@ -598,14 +598,14 @@ value6ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue6"
-                , getter = .data >> .value6 >> truncateDecimals
+                , getter = .value6 >> truncateDecimals
                 , localize = localize
                 , title = "Valeur 6"
                 , tooltip = "Une indication pour la colonne Valeur 6"
                 , width = 100
                 }
     in
-    { columnConfig | renderer = viewProgressBar 8 (.data >> .value6) }
+    { columnConfig | renderer = viewProgressBar 8 .value6 }
 
 
 

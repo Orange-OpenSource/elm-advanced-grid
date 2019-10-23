@@ -369,7 +369,7 @@ columns : List (ColumnConfig Data)
 columns =
     [ intColumnConfig
         { id = "Id"
-        , getter = .data >> .id
+        , getter = .id
         , localize = localize
         , title = "Id"
         , tooltip = "Une indication pour la colonne Id"
@@ -377,7 +377,7 @@ columns =
         }
     , stringColumnConfig
         { id = "Name"
-        , getter = .data >> .name
+        , getter = .name
         , localize = localize
         , title = "Nom"
         , tooltip = "Une indication pour la colonne Nom"
@@ -387,17 +387,17 @@ columns =
         progressColumnConfig =
             floatColumnConfig
                 { id = "Progress"
-                , getter = .data >> .value
+                , getter = .value
                 , localize = localize
                 , title = "Progrès"
                 , tooltip = "Une indication pour la colonne Progrès"
                 , width = 100
                 }
       in
-      { progressColumnConfig | renderer = viewProgressBar 8 (.data >> .value) }
+      { progressColumnConfig | renderer = viewProgressBar 8 .value }
     , floatColumnConfig
         { id = "Value"
-        , getter = .data >> .value >> truncateDecimals
+        , getter = .value >> truncateDecimals
         , localize = localize
         , title = "Valeur"
         , tooltip = "Une indication pour la colonne Valeur"
@@ -405,7 +405,7 @@ columns =
         }
     , stringColumnConfig
         { id = "City"
-        , getter = .data >> .city
+        , getter = .city
         , localize = localize
         , title = "Ville"
         , tooltip = "Une indication pour la colonne Ville"

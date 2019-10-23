@@ -355,14 +355,24 @@ used when canSelectRows is True in grid config.
 -}
 selectionColumn : ColumnConfig a
 selectionColumn =
-    boolColumnConfig
-        { id = "_MultipleSelection_"
-        , getter = .selected
-        , title = ""
-        , tooltip = ""
-        , width = 30
-        , localize = \_ -> ""
-        }
+    let
+        properties =
+            { id = "_MultipleSelection_"
+            , getter = .selected
+            , title = ""
+            , tooltip = ""
+            , width = 30
+            , localize = \_ -> ""
+            }
+    in
+    { properties =
+        columnConfigProperties properties
+    , filters = BoolFilter <| boolFilter .selected
+    , filteringValue = Nothing
+    , toString = .selected >> boolToString
+    , renderer = viewBool .selected
+    , comparator = compareBoolField .selected
+    }
 
 
 {-| Initializes the grid model, according to the given grid configuration
@@ -1023,15 +1033,19 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-stringColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> String, localize : String -> String } -> ColumnConfig a
+stringColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> String, localize : String -> String } -> ColumnConfig a
 stringColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+    let
+        nestedDataGetter =
+            .data >> getter
+    in
     { properties =
         columnConfigProperties properties
-    , filters = StringFilter <| stringFilter getter
+    , filters = StringFilter <| stringFilter nestedDataGetter
     , filteringValue = Nothing
-    , toString = getter
-    , renderer = viewString getter
-    , comparator = compareFields getter
+    , toString = nestedDataGetter
+    , renderer = viewString nestedDataGetter
+    , comparator = compareFields nestedDataGetter
     }
 
 
@@ -1043,15 +1057,19 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-floatColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> Float, localize : String -> String } -> ColumnConfig a
+floatColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Float, localize : String -> String } -> ColumnConfig a
 floatColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+    let
+        nestedDataGetter =
+            .data >> getter
+    in
     { properties =
         columnConfigProperties properties
-    , filters = FloatFilter <| floatFilter getter
+    , filters = FloatFilter <| floatFilter nestedDataGetter
     , filteringValue = Nothing
-    , toString = getter >> String.fromFloat
-    , renderer = viewFloat getter
-    , comparator = compareFields getter
+    , toString = nestedDataGetter >> String.fromFloat
+    , renderer = viewFloat nestedDataGetter
+    , comparator = compareFields nestedDataGetter
     }
 
 
@@ -1063,15 +1081,19 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-intColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> Int, localize : String -> String } -> ColumnConfig a
+intColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Int, localize : String -> String } -> ColumnConfig a
 intColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+    let
+        nestedDataGetter =
+            .data >> getter
+    in
     { properties =
         columnConfigProperties properties
-    , filters = IntFilter <| intFilter getter
+    , filters = IntFilter <| intFilter nestedDataGetter
     , filteringValue = Nothing
-    , toString = getter >> String.fromInt
-    , renderer = viewInt getter
-    , comparator = compareFields getter
+    , toString = nestedDataGetter >> String.fromInt
+    , renderer = viewInt nestedDataGetter
+    , comparator = compareFields nestedDataGetter
     }
 
 
@@ -1081,15 +1103,19 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-boolColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> Bool, localize : String -> String } -> ColumnConfig a
+boolColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Bool, localize : String -> String } -> ColumnConfig a
 boolColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+    let
+        nestedDataGetter =
+            .data >> getter
+    in
     { properties =
         columnConfigProperties properties
-    , filters = BoolFilter <| boolFilter getter
+    , filters = BoolFilter <| boolFilter nestedDataGetter
     , filteringValue = Nothing
-    , toString = getter >> boolToString
-    , renderer = viewBool getter
-    , comparator = compareBoolField getter
+    , toString = nestedDataGetter >> boolToString
+    , renderer = viewBool nestedDataGetter
+    , comparator = compareBoolField nestedDataGetter
     }
 
 
@@ -1155,14 +1181,17 @@ returns the field to be displayed in this column.
         viewProgressBar 8 (\item -> item.value)
 
 -}
-viewProgressBar : Int -> (Item a -> Float) -> ColumnProperties -> Item a -> Html (Msg a)
-viewProgressBar barHeight field properties item =
+viewProgressBar : Int -> (a -> Float) -> ColumnProperties -> Item a -> Html (Msg a)
+viewProgressBar barHeight getter properties item =
     let
         maxWidth =
             properties.width - 8 - cumulatedBorderWidth
 
+        nestedDataGetter =
+            .data >> getter
+
         actualWidth =
-            (field item / toFloat 100) * toFloat maxWidth
+            (nestedDataGetter item / toFloat 100) * toFloat maxWidth
     in
     div
         [ css

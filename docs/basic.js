@@ -5498,11 +5498,11 @@ var pascallemerrer$elm_advanced_grid$Grid$columnConfigProperties = function (_n0
 	};
 };
 var pascallemerrer$elm_advanced_grid$Grid$compareFields = F3(
-	function (field, item1, item2) {
+	function (dataValue, item1, item2) {
 		return A2(
 			elm$core$Basics$compare,
-			field(item1),
-			field(item2));
+			dataValue(item1),
+			dataValue(item2));
 	});
 var pascallemerrer$elm_advanced_grid$Grid$cumulatedBorderWidth = 6;
 var elm$core$String$foldr = _String_foldr;
@@ -8295,14 +8295,20 @@ var pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig = function (properti
 	var width = properties.width;
 	var getter = properties.getter;
 	var localize = properties.localize;
+	var nestedDataGetter = A2(
+		elm$core$Basics$composeR,
+		function ($) {
+			return $.data;
+		},
+		getter);
 	return {
-		comparator: pascallemerrer$elm_advanced_grid$Grid$compareFields(getter),
+		comparator: pascallemerrer$elm_advanced_grid$Grid$compareFields(nestedDataGetter),
 		filteringValue: elm$core$Maybe$Nothing,
 		filters: pascallemerrer$elm_advanced_grid$Grid$Filters$FloatFilter(
-			pascallemerrer$elm_advanced_grid$Grid$Filters$floatFilter(getter)),
+			pascallemerrer$elm_advanced_grid$Grid$Filters$floatFilter(nestedDataGetter)),
 		properties: pascallemerrer$elm_advanced_grid$Grid$columnConfigProperties(properties),
-		renderer: pascallemerrer$elm_advanced_grid$Grid$viewFloat(getter),
-		toString: A2(elm$core$Basics$composeR, getter, elm$core$String$fromFloat)
+		renderer: pascallemerrer$elm_advanced_grid$Grid$viewFloat(nestedDataGetter),
+		toString: A2(elm$core$Basics$composeR, nestedDataGetter, elm$core$String$fromFloat)
 	};
 };
 var pascallemerrer$elm_advanced_grid$Grid$viewInt = F3(
@@ -8365,14 +8371,20 @@ var pascallemerrer$elm_advanced_grid$Grid$intColumnConfig = function (properties
 	var width = properties.width;
 	var getter = properties.getter;
 	var localize = properties.localize;
+	var nestedDataGetter = A2(
+		elm$core$Basics$composeR,
+		function ($) {
+			return $.data;
+		},
+		getter);
 	return {
-		comparator: pascallemerrer$elm_advanced_grid$Grid$compareFields(getter),
+		comparator: pascallemerrer$elm_advanced_grid$Grid$compareFields(nestedDataGetter),
 		filteringValue: elm$core$Maybe$Nothing,
 		filters: pascallemerrer$elm_advanced_grid$Grid$Filters$IntFilter(
-			pascallemerrer$elm_advanced_grid$Grid$Filters$intFilter(getter)),
+			pascallemerrer$elm_advanced_grid$Grid$Filters$intFilter(nestedDataGetter)),
 		properties: pascallemerrer$elm_advanced_grid$Grid$columnConfigProperties(properties),
-		renderer: pascallemerrer$elm_advanced_grid$Grid$viewInt(getter),
-		toString: A2(elm$core$Basics$composeR, getter, elm$core$String$fromInt)
+		renderer: pascallemerrer$elm_advanced_grid$Grid$viewInt(nestedDataGetter),
+		toString: A2(elm$core$Basics$composeR, nestedDataGetter, elm$core$String$fromInt)
 	};
 };
 var pascallemerrer$elm_advanced_grid$Grid$viewString = F3(
@@ -8475,14 +8487,20 @@ var pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig = function (propert
 	var width = properties.width;
 	var getter = properties.getter;
 	var localize = properties.localize;
+	var nestedDataGetter = A2(
+		elm$core$Basics$composeR,
+		function ($) {
+			return $.data;
+		},
+		getter);
 	return {
-		comparator: pascallemerrer$elm_advanced_grid$Grid$compareFields(getter),
+		comparator: pascallemerrer$elm_advanced_grid$Grid$compareFields(nestedDataGetter),
 		filteringValue: elm$core$Maybe$Nothing,
 		filters: pascallemerrer$elm_advanced_grid$Grid$Filters$StringFilter(
-			pascallemerrer$elm_advanced_grid$Grid$Filters$stringFilter(getter)),
+			pascallemerrer$elm_advanced_grid$Grid$Filters$stringFilter(nestedDataGetter)),
 		properties: pascallemerrer$elm_advanced_grid$Grid$columnConfigProperties(properties),
-		renderer: pascallemerrer$elm_advanced_grid$Grid$viewString(getter),
-		toString: getter
+		renderer: pascallemerrer$elm_advanced_grid$Grid$viewString(nestedDataGetter),
+		toString: nestedDataGetter
 	};
 };
 var pascallemerrer$elm_advanced_grid$Grid$Colors$lightGreen = rtfeldman$elm_css$Css$hex('4d4');
@@ -8495,9 +8513,15 @@ var rtfeldman$elm_css$Css$displayFlex = A2(rtfeldman$elm_css$Css$property, 'disp
 var rtfeldman$elm_css$Css$height = rtfeldman$elm_css$Css$prop1('height');
 var rtfeldman$elm_css$Css$visible = {overflow: rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: rtfeldman$elm_css$Css$Structure$Compatible, value: 'visible', visibility: rtfeldman$elm_css$Css$Structure$Compatible};
 var pascallemerrer$elm_advanced_grid$Grid$viewProgressBar = F4(
-	function (barHeight, field, properties, item) {
+	function (barHeight, getter, properties, item) {
+		var nestedDataGetter = A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.data;
+			},
+			getter);
 		var maxWidth = (properties.width - 8) - pascallemerrer$elm_advanced_grid$Grid$cumulatedBorderWidth;
-		var actualWidth = (field(item) / 100) * maxWidth;
+		var actualWidth = (nestedDataGetter(item) / 100) * maxWidth;
 		return A2(
 			rtfeldman$elm_css$Html$Styled$div,
 			_List_fromArray(
@@ -8570,14 +8594,9 @@ var pascallemerrer$elm_advanced_grid$Examples$Basic$columns = _List_fromArray(
 	[
 		pascallemerrer$elm_advanced_grid$Grid$intColumnConfig(
 		{
-			getter: A2(
-				elm$core$Basics$composeR,
-				function ($) {
-					return $.data;
-				},
-				function ($) {
-					return $.id;
-				}),
+			getter: function ($) {
+				return $.id;
+			},
 			id: 'Id',
 			localize: pascallemerrer$elm_advanced_grid$Examples$Basic$localize,
 			title: 'Id',
@@ -8586,14 +8605,9 @@ var pascallemerrer$elm_advanced_grid$Examples$Basic$columns = _List_fromArray(
 		}),
 		pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig(
 		{
-			getter: A2(
-				elm$core$Basics$composeR,
-				function ($) {
-					return $.data;
-				},
-				function ($) {
-					return $.name;
-				}),
+			getter: function ($) {
+				return $.name;
+			},
 			id: 'Name',
 			localize: pascallemerrer$elm_advanced_grid$Examples$Basic$localize,
 			title: 'Nom',
@@ -8603,14 +8617,9 @@ var pascallemerrer$elm_advanced_grid$Examples$Basic$columns = _List_fromArray(
 		function () {
 		var progressColumnConfig = pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
 			{
-				getter: A2(
-					elm$core$Basics$composeR,
-					function ($) {
-						return $.data;
-					},
-					function ($) {
-						return $.value;
-					}),
+				getter: function ($) {
+					return $.value;
+				},
 				id: 'Progress',
 				localize: pascallemerrer$elm_advanced_grid$Examples$Basic$localize,
 				title: 'Progrès',
@@ -8623,14 +8632,9 @@ var pascallemerrer$elm_advanced_grid$Examples$Basic$columns = _List_fromArray(
 				renderer: A2(
 					pascallemerrer$elm_advanced_grid$Grid$viewProgressBar,
 					8,
-					A2(
-						elm$core$Basics$composeR,
-						function ($) {
-							return $.data;
-						},
-						function ($) {
-							return $.value;
-						}))
+					function ($) {
+						return $.value;
+					})
 			});
 	}(),
 		pascallemerrer$elm_advanced_grid$Grid$floatColumnConfig(
@@ -8638,14 +8642,9 @@ var pascallemerrer$elm_advanced_grid$Examples$Basic$columns = _List_fromArray(
 			getter: A2(
 				elm$core$Basics$composeR,
 				function ($) {
-					return $.data;
+					return $.value;
 				},
-				A2(
-					elm$core$Basics$composeR,
-					function ($) {
-						return $.value;
-					},
-					pascallemerrer$elm_advanced_grid$Examples$Basic$truncateDecimals)),
+				pascallemerrer$elm_advanced_grid$Examples$Basic$truncateDecimals),
 			id: 'Value',
 			localize: pascallemerrer$elm_advanced_grid$Examples$Basic$localize,
 			title: 'Valeur',
@@ -8654,14 +8653,9 @@ var pascallemerrer$elm_advanced_grid$Examples$Basic$columns = _List_fromArray(
 		}),
 		pascallemerrer$elm_advanced_grid$Grid$stringColumnConfig(
 		{
-			getter: A2(
-				elm$core$Basics$composeR,
-				function ($) {
-					return $.data;
-				},
-				function ($) {
-					return $.city;
-				}),
+			getter: function ($) {
+				return $.city;
+			},
 			id: 'City',
 			localize: pascallemerrer$elm_advanced_grid$Examples$Basic$localize,
 			title: 'Ville',
@@ -8771,10 +8765,10 @@ var pascallemerrer$elm_advanced_grid$Grid$boolToString = function (value) {
 	return value ? 'true' : 'false';
 };
 var pascallemerrer$elm_advanced_grid$Grid$compareBoolField = F3(
-	function (field, item1, item2) {
+	function (dataValue, item1, item2) {
 		var _n0 = _Utils_Tuple2(
-			field(item1),
-			field(item2));
+			dataValue(item1),
+			dataValue(item2));
 		if (_n0.a) {
 			if (_n0.b) {
 				return elm$core$Basics$EQ;
@@ -8977,25 +8971,8 @@ var pascallemerrer$elm_advanced_grid$Grid$Filters$boolFilter = function (getter)
 	return pascallemerrer$elm_advanced_grid$Grid$Filters$makeFilter(
 		{contains: elm$core$Basics$eq, equal: elm$core$Basics$eq, getter: getter, greaterThan: pascallemerrer$elm_advanced_grid$Grid$Filters$boolGreaterThan, lessThan: pascallemerrer$elm_advanced_grid$Grid$Filters$boolLessThan, typedParser: pascallemerrer$elm_advanced_grid$Grid$Parsers$boolParser});
 };
-var pascallemerrer$elm_advanced_grid$Grid$boolColumnConfig = function (properties) {
-	var id = properties.id;
-	var title = properties.title;
-	var tooltip = properties.tooltip;
-	var width = properties.width;
-	var getter = properties.getter;
-	var localize = properties.localize;
-	return {
-		comparator: pascallemerrer$elm_advanced_grid$Grid$compareBoolField(getter),
-		filteringValue: elm$core$Maybe$Nothing,
-		filters: pascallemerrer$elm_advanced_grid$Grid$Filters$BoolFilter(
-			pascallemerrer$elm_advanced_grid$Grid$Filters$boolFilter(getter)),
-		properties: pascallemerrer$elm_advanced_grid$Grid$columnConfigProperties(properties),
-		renderer: pascallemerrer$elm_advanced_grid$Grid$viewBool(getter),
-		toString: A2(elm$core$Basics$composeR, getter, pascallemerrer$elm_advanced_grid$Grid$boolToString)
-	};
-};
-var pascallemerrer$elm_advanced_grid$Grid$selectionColumn = pascallemerrer$elm_advanced_grid$Grid$boolColumnConfig(
-	{
+var pascallemerrer$elm_advanced_grid$Grid$selectionColumn = function () {
+	var properties = {
 		getter: function ($) {
 			return $.selected;
 		},
@@ -9006,7 +8983,31 @@ var pascallemerrer$elm_advanced_grid$Grid$selectionColumn = pascallemerrer$elm_a
 		title: '',
 		tooltip: '',
 		width: 30
-	});
+	};
+	return {
+		comparator: pascallemerrer$elm_advanced_grid$Grid$compareBoolField(
+			function ($) {
+				return $.selected;
+			}),
+		filteringValue: elm$core$Maybe$Nothing,
+		filters: pascallemerrer$elm_advanced_grid$Grid$Filters$BoolFilter(
+			pascallemerrer$elm_advanced_grid$Grid$Filters$boolFilter(
+				function ($) {
+					return $.selected;
+				})),
+		properties: pascallemerrer$elm_advanced_grid$Grid$columnConfigProperties(properties),
+		renderer: pascallemerrer$elm_advanced_grid$Grid$viewBool(
+			function ($) {
+				return $.selected;
+			}),
+		toString: A2(
+			elm$core$Basics$composeR,
+			function ($) {
+				return $.selected;
+			},
+			pascallemerrer$elm_advanced_grid$Grid$boolToString)
+	};
+}();
 var pascallemerrer$elm_advanced_grid$Grid$isSelectionColumnProperties = function (columnProperties) {
 	return _Utils_eq(columnProperties.id, pascallemerrer$elm_advanced_grid$Grid$selectionColumn.properties.id);
 };

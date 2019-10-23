@@ -100,7 +100,7 @@ data =
 scoreColumn =
     floatColumnConfig
         { id = "score"
-        , getter = .data >> .score
+        , getter = .score
         , localize = identity
         , title = "Score"
         , tooltip = "Some text"
@@ -111,7 +111,7 @@ scoreColumn =
 titleColumn =
     stringColumnConfig
         { id = "title"
-        , getter = .data >> .title
+        , getter = .title
         , localize = identity
         , title = "Title"
         , tooltip = "Some text"
@@ -122,7 +122,7 @@ titleColumn =
 isValidColumn =
     boolColumnConfig
         { id = "isValid"
-        , getter = .data >> .isValid
+        , getter = .isValid
         , localize = identity
         , title = "is Valid?"
         , tooltip = "Some text"
