@@ -361,7 +361,7 @@ selectionColumn =
             , getter = .selected
             , title = ""
             , tooltip = ""
-            , width = 30
+            , width = 40
             , localize = \_ -> ""
             }
     in
@@ -923,6 +923,7 @@ viewRows model =
                 , overflowX hidden
                 , overflowY auto
                 , border3 (px 1) solid lightGrey
+                , property "direction" "rtl"
                 ]
             , fromUnstyled <| IL.onScroll InfListMsg
             , id gridHtmlId
@@ -958,6 +959,7 @@ viewRow model idx listIdx item =
                 [ displayFlex
                 , height (px <| toFloat model.config.lineHeight)
                 , width (px <| toFloat <| totalWidth model)
+                , property "direction" "ltr"
                 ]
             , onClick (UserClickedLine item)
             ]
@@ -1003,7 +1005,7 @@ returns the field to be displayed in this column.
 viewBool : (Item a -> Bool) -> ColumnProperties -> Item a -> Html (Msg a)
 viewBool field properties item =
     div
-        (cellAttributes properties)
+        (cellAttributes properties ++ [ css [ justifyContent right ] ])
         [ input
             [ type_ "checkbox"
             , Html.Styled.Attributes.checked (field item)
@@ -1450,6 +1452,9 @@ viewSelectionHeader model _ =
     div
         [ css
             [ width <| px <| toFloat <| selectionColumn.properties.width - cumulatedBorderWidth
+            , displayFlex
+            , justifyContent right
+            , alignItems center
             ]
         ]
         [ input
