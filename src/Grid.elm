@@ -923,6 +923,8 @@ viewRows model =
                 , overflowX hidden
                 , overflowY auto
                 , border3 (px 1) solid lightGrey
+
+                -- displays the vertical scrollbar to the left. https://stackoverflow.com/questions/7347532/how-to-position-a-div-scrollbar-on-the-left-hand-side
                 , property "direction" "rtl"
                 ]
             , fromUnstyled <| IL.onScroll InfListMsg
@@ -959,6 +961,8 @@ viewRow model idx listIdx item =
                 [ displayFlex
                 , height (px <| toFloat model.config.lineHeight)
                 , width (px <| toFloat <| totalWidth model)
+
+                -- restore reading order, while preserving the left position of the scrollbar
                 , property "direction" "ltr"
                 ]
             , onClick (UserClickedLine item)
