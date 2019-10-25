@@ -122,7 +122,7 @@ describe('elm grid example', function () {
 
     it('should select all rows when clicking the multiple selection button', function () {
          cy.visit(url)
-         cy.get('div[data-testid="header-_MultipleSelection_"] > input').click()
+         cy.get('input[data-testid="allItemSelection"]').click()
 
          cy.get('ul[data-testid="selectedItems"]').children().then (function($itemList){
             expect($itemList).to.have.length(83)
@@ -139,7 +139,7 @@ describe('elm grid example', function () {
         selectedItems.should('have.length', 1)
         selectedItems.first().contains("id:1 - name: name1")
 
-        cy.get('div[data-testid="header-_MultipleSelection_"] > input').click()
+        cy.get('input[data-testid="allItemSelection"]').click()
          cy.get('ul[data-testid="selectedItems"]').children().then (function($itemList){
             expect($itemList).to.have.length(83)
             for (let i=0; i<83; i++){
@@ -150,7 +150,7 @@ describe('elm grid example', function () {
 
     it('should deselect all rows when clicking 2 times the multiple selection button', function () {
         cy.visit(url)
-        cy.get('div[data-testid="header-_MultipleSelection_"] > input').click().click()
+        cy.get('input[data-testid="allItemSelection"]').click().click()
 
         let selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
         selectedItems.should('have.length', 0)
@@ -163,7 +163,7 @@ describe('elm grid example', function () {
         selectedItems.should('have.length', 1)
         selectedItems.first().contains("id:2 - name: name2")
 
-        cy.get('div[data-testid="header-_MultipleSelection_"] > input').click().click()
+        cy.get('input[data-testid="allItemSelection"]').click().click()
         selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
         selectedItems.should('have.length', 0)
     })
@@ -240,7 +240,7 @@ describe('elm grid example', function () {
 
     it('should set preferences when clicking the "Show preferences" button', function () {
         cy.visit(url)
-        cy.get('div[data-testid="Preferences"] > button').click()
+        cy.get('button[data-testid="showPreferencesButton"]').click()
           .get('input[id="Id"]').click()
           .get('input[id="Progress"]').click()
           .get('input[id="City"]').click()

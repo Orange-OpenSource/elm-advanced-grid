@@ -74,6 +74,7 @@ viewGrid model =
         [ style "background-color" "white"
         , style "margin-left" "auto"
         , style "margin-right" "auto"
+        , style "color" "#555555"
         ]
         [ Html.map GridMsg <| Grid.view model.gridModel ]
 
@@ -84,11 +85,11 @@ viewMenu model =
         [ style "display" "flex"
         , style "flex-direction" "column"
         ]
-        [ viewButton "Show Preferences" DisplayPreferences
-        , viewButton "Set Filters" SetFilters
-        , viewButton "Reset Filters" ResetFilters
-        , viewButton "Sort cities ascending" SetAscendingOrder
-        , viewButton "Sort cities descending" SetDecendingOrder
+        [ viewButton "Show Preferences" "showPreferencesButton" DisplayPreferences
+        , viewButton "Set Filters" "setFiltersButton" SetFilters
+        , viewButton "Reset Filters" "resetFiltersButton" ResetFilters
+        , viewButton "Sort cities ascending" "setAscendingOrderButton" SetAscendingOrder
+        , viewButton "Sort cities descending" "setDecendingOrderButton" SetDecendingOrder
         , viewInput
         , viewClickedItem model
         , viewSelectedItems model
@@ -122,10 +123,11 @@ viewSelectedItems model =
         ]
 
 
-viewButton : String -> Msg -> Html Msg
-viewButton label msg =
+viewButton : String -> String -> Msg -> Html Msg
+viewButton label testId msg =
     button
-        [ onClick msg
+        [ attribute "data-testid" testId
+        , onClick msg
         , style "margin" "10px"
         , style "background-color" "darkturquoise"
         , style "padding" "0.5rem"
@@ -142,7 +144,8 @@ viewInput =
         [ text "Scroll to first city starting with:"
         , input
             (menuItemAttributes "input"
-                ++ [ onInput UserRequiredScrollingToCity
+                ++ [ attribute "data-testid" "scrollToInput"
+                   , onInput UserRequiredScrollingToCity
                    , style "color" "black"
                    , style "vertical-align" "baseline"
                    , style "font-size" "medium"

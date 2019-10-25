@@ -19,11 +19,11 @@ test_gui: build
 	./node_modules/.bin/cypress open
 
 build:
-	elm make src/Examples/Basic.elm --output=example.js
+	elm make src/Examples/Basic.elm --output=example.js --optimize
 
 doc:
-	elm make src/Examples/Basic.elm --output=docs/basic.js
-	elm make src/Examples/LargeList.elm --output=docs/largelist.js
+	elm make src/Examples/Basic.elm --output=docs/basic.js --optimize
+	elm make src/Examples/LargeList.elm --output=docs/largelist.js --optimize
 	#elm make --docs=docs.json
 
 .PHONY: cypress doc

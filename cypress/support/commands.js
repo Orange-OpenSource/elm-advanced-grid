@@ -25,24 +25,24 @@
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 
 Cypress.Commands.add("setFilters", () => {
-    cy.get('div[data-testid="buttonBar"]').children().first().click()
+    cy.get('button[data-testid="setFiltersButton"]').click()
 })
 
 Cypress.Commands.add("resetFilters", () => {
-    cy.get('div[data-testid="buttonBar"]').children().first().next().click()
+    cy.get('button[data-testid="resetFiltersButton"]').click()
 })
 
 Cypress.Commands.add("sortCitiesAscending", () => {
-    cy.get('div[data-testid="buttonBar"]').children().first().next().next().click()
+    cy.get('button[data-testid="setAscendingOrderButton"]').click()
 })
 
 Cypress.Commands.add("sortCitiesDescending", () => {
-    cy.get('div[data-testid="buttonBar"]').children().first().next().next().next().click()
+    cy.get('button[data-testid="setDecendingOrderButton"]').click()
 })
 
 Cypress.Commands.add("scrollToCityStartingWith", (cityName) => {
         cy.scrollTo('bottom')
-        cy.get('div[data-testid="InputBar"] > label > input')
+        cy.get('input[data-testid="scrollToInput"]')
           .clear()
           .type(`${cityName}`)
 })

@@ -1462,7 +1462,8 @@ viewSelectionHeader model _ =
             ]
         ]
         [ input
-            [ type_ "checkbox"
+            [ attribute "data-testid" "allItemSelection"
+            , type_ "checkbox"
             , Html.Styled.Attributes.checked areAllItemsChecked
             , stopPropagationOnClick UserToggledAllItemSelection
             ]
