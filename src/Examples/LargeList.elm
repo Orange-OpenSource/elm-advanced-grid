@@ -14,19 +14,17 @@ module Examples.LargeList exposing (main)
 import Browser
 import Dict exposing (Dict)
 import Grid exposing (ColumnConfig, Msg(..), Sorting(..), floatColumnConfig, intColumnConfig, stringColumnConfig, viewProgressBar)
+import Grid.Item exposing (Item)
 import Html exposing (Html, button, div, input, label, li, text, ul)
 import Html.Attributes exposing (attribute, style)
 import Html.Events exposing (onClick, onInput)
-import InfiniteList exposing (withOffset)
 import List.Extra
 
 
-type alias Item =
+type alias Data =
     { id : Int
-    , index : Int
     , city : String
     , name : String
-    , selected : Bool
     , value1 : Float
     , value2 : Float
     , value3 : Float
@@ -37,15 +35,15 @@ type alias Item =
 
 
 type alias Model =
-    { gridModel : Grid.Model Item
-    , clickedItem : Maybe Item
-    , selectedItems : List Item
+    { gridModel : Grid.Model Data
+    , clickedItem : Maybe (Item Data)
+    , selectedItems : List (Item Data)
     }
 
 
 type Msg
     = DisplayPreferences
-    | GridMsg (Grid.Msg Item)
+    | GridMsg (Grid.Msg Data)
     | ResetFilters
     | SetFilters
     | SetAscendingOrder
@@ -168,9 +166,9 @@ menuItemAttributes id =
     ]
 
 
-viewItem : Item -> Html msg
+viewItem : Item Data -> Html msg
 viewItem item =
-    text ("id:" ++ String.fromInt item.id ++ " - name: " ++ item.name ++ "")
+    text ("id:" ++ String.fromInt item.data.id ++ " - name: " ++ item.data.name ++ "")
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -296,7 +294,7 @@ update msg model =
         UserRequiredScrollingToCity city ->
             let
                 message =
-                    Grid.ScrollTo (\item -> String.startsWith (String.toLower city) (String.toLower item.city))
+                    Grid.ScrollTo (\item -> String.startsWith (String.toLower city) (String.toLower item.data.city))
 
                 ( newGridModel, gridCmd ) =
                     Grid.update message model.gridModel
@@ -320,16 +318,14 @@ cities =
     [ "Paris", "London", "New York", "Moscow", "Roma", "Berlin", "Tokyo", "Delhi", "Shanghai", "Sao Paulo", "Mexico City", "Cairo", "Dhaka", "Mumbai", "Beijing", "Osaka", "Karachi", "Chongqing", "Buenos Aires", "Istanbul", "Kolkata", "Lagos", "Manila", "Tianjin", "Rio De Janeiro", "Guangzhou", "Moscow", "Lahore", "Shenzhen", "Bangalore", "Paris", "Bogota", "Chennai", "Jakarta", "Lima", "Bangkok", "Seoul", "Hyderabad", "London", "Tehran", "Chengdu", "New York", "Wuhan", "Ahmedabad", "Kuala Lumpur", "Riyadh", "Surat", "Santiago", "Madrid", "Pune", "Dar Es Salaam", "Toronto", "Johannesburg", "Barcelona", "St Petersburg", "Yangon", "Alexandria", "Guadalajara", "Ankara", "Melbourne", "Sydney", "Brasilia", "Nairobi", "Cape Town", "Rome", "Montreal", "Tel Aviv", "Los Angeles", "Medellin", "Jaipur", "Casablanca", "Lucknow", "Berlin", "Busan", "Athens", "Milan", "Kanpur", "Abuja", "Lisbon", "Surabaya", "Dubai", "Cali", "Manchester" ]
 
 
-items : List Item
+items : List Data
 items =
     List.range 0 (itemCount - 1)
         |> List.map
             (\i ->
                 { id = i
-                , index = i
                 , city = Maybe.withDefault "None" (List.Extra.getAt (modBy (List.length cities) i) cities)
                 , name = "name" ++ String.fromInt i
-                , selected = False
                 , value1 = (toFloat (itemCount - i) / toFloat itemCount) * 100
                 , value2 = (toFloat i / toFloat itemCount) * 50
                 , value3 = (toFloat (itemCount - i) / toFloat itemCount) * 25
@@ -354,7 +350,7 @@ init _ =
     )
 
 
-gridConfig : Grid.Config Item
+gridConfig : Grid.Config Data
 gridConfig =
     { canSelectRows = True
     , columns = columns
@@ -367,7 +363,7 @@ gridConfig =
     }
 
 
-rowClass : Item -> String
+rowClass : Item Data -> String
 rowClass item =
     let
         even =
@@ -387,7 +383,7 @@ rowClass item =
 {- the definition of the columns of the grid -}
 
 
-columns : List (ColumnConfig Item)
+columns : List (ColumnConfig Data)
 columns =
     [ idColumn
     , nameColumn
@@ -442,7 +438,7 @@ progressColumn =
                 , width = 100
                 }
     in
-    { progressColumnConfig | renderer = viewProgressBar 8 (\item -> item.value1) }
+    { progressColumnConfig | renderer = viewProgressBar 8 .value1 }
 
 
 cityColumn =

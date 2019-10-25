@@ -10,8 +10,7 @@
 
 
 module Grid.Filters exposing
-    ( Item
-    , boolFilter, floatFilter, intFilter, stringFilter
+    ( boolFilter, floatFilter, intFilter, stringFilter
     , Filter(..), parseFilteringString
     )
 
@@ -29,30 +28,9 @@ module Grid.Filters exposing
 
 -}
 
+import Grid.Item exposing (Item)
 import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, stringParser)
 import Parser exposing ((|=), DeadEnd, Parser)
-
-
-{-| The data to be displayed in the grid
-It must be records with at least two fields: selected and index
-
-    items =
-        [ { index = 0
-          , name = "item0"
-          , selected = False
-          }
-        , { index = 1
-          , name = "item1"
-          , selected = False
-          }
-        ]
-
--}
-type alias Item a =
-    { a
-        | selected : Bool
-        , index : Int
-    }
 
 
 {-| Filter for a given column

@@ -1,19 +1,18 @@
 module FiltersTest exposing (boolFilters, describeFilterParsing, floatFilters, intFilters, removeComparisonOperator, stringFilters, suite, testBoolComparisonParsingFails, testBoolComparisonParsingSucceeds, testFloatComparisonParsingFails, testFloatComparisonParsingSucceeds, testIntComparisonParsingFails, testIntComparisonParsingSucceeds, testStringComparisonParsingFails, testStringComparisonParsingSucceeds)
 
 {- Copyright (c) 2019 Orange
-This code is released under the MIT license.
+   This code is released under the MIT license.
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+      Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+      The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -}
 
 import Expect
-import Fixtures exposing (columns, item1, item2, item5)
-import Fuzz exposing (string)
-import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
+import Fixtures exposing (item1, item2, item5)
+import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Test exposing (..)
 
 
@@ -31,8 +30,8 @@ describeFilterParsing =
                     |> Expect.equal Nothing
         , test "should detect if an int is equal to another" <|
             \_ ->
-                testIntComparisonParsingSucceeds "=1" item2
-        , test "should detect if an int is different than another" <|
+                testIntComparisonParsingSucceeds "=2" item2
+        , test "should detect if an int is different of another" <|
             \_ ->
                 testIntComparisonParsingFails "=0" item2
         , test "should detect if an int contains another" <|
@@ -43,7 +42,7 @@ describeFilterParsing =
                 testIntComparisonParsingFails "53" item5
         , test "should detect if an int is lesser than another" <|
             \_ ->
-                testIntComparisonParsingSucceeds "<1" item1
+                testIntComparisonParsingSucceeds "<2" item1
         , test "should detect if an int is not lesser than another" <|
             \_ ->
                 testIntComparisonParsingFails "<1" item2
@@ -62,7 +61,7 @@ describeFilterParsing =
         , test "should detect if a float is equal to another" <|
             \_ ->
                 testFloatComparisonParsingSucceeds "=2.0" item2
-        , test "should detect if a float is different than another" <|
+        , test "should detect if a float is different of another" <|
             \_ ->
                 testFloatComparisonParsingFails "=3.0" item2
         , test "should detect if a float contains another" <|
@@ -97,7 +96,7 @@ describeFilterParsing =
         , test "should detect if a bool is equal to another" <|
             \_ ->
                 testBoolComparisonParsingSucceeds "=true" item1
-        , test "should detect if a bool is different than another" <|
+        , test "should detect if a bool is different of another" <|
             \_ ->
                 testBoolComparisonParsingFails "=false" item1
         , test "should detect if a bool contains another" <|
@@ -194,19 +193,19 @@ removeComparisonOperator str =
 
 
 intFilters =
-    IntFilter <| intFilter (\item -> item.index)
+    IntFilter <| intFilter (.data >> .count)
 
 
 floatFilters =
-    FloatFilter <| floatFilter (\item -> item.score)
+    FloatFilter <| floatFilter (.data >> .score)
 
 
 boolFilters =
-    BoolFilter <| boolFilter (\item -> item.isValid)
+    BoolFilter <| boolFilter (.data >> .isValid)
 
 
 stringFilters =
-    StringFilter <| stringFilter (\item -> item.title)
+    StringFilter <| stringFilter (.data >> .title)
 
 
 testIntComparisonParsingSucceeds filteringString item =

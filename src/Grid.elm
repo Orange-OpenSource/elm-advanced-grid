@@ -67,7 +67,8 @@ import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, white, white2)
-import Grid.Filters exposing (Filter(..), Item, boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
+import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
+import Grid.Item as Item exposing (Item)
 import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, input, label, span, text, toUnstyled)
@@ -354,14 +355,24 @@ used when canSelectRows is True in grid config.
 -}
 selectionColumn : ColumnConfig a
 selectionColumn =
-    boolColumnConfig
-        { id = "_MultipleSelection_"
-        , getter = .selected
-        , title = ""
-        , tooltip = ""
-        , width = 30
-        , localize = \_ -> ""
-        }
+    let
+        properties =
+            { id = "_MultipleSelection_"
+            , getter = .selected
+            , title = ""
+            , tooltip = ""
+            , width = 40
+            , localize = \_ -> ""
+            }
+    in
+    { properties =
+        columnConfigProperties properties
+    , filters = BoolFilter <| boolFilter .selected
+    , filteringValue = Nothing
+    , toString = .selected >> boolToString
+    , renderer = viewBool .selected
+    , comparator = compareBoolField .selected
+    }
 
 
 {-| Initializes the grid model, according to the given grid configuration
@@ -375,8 +386,8 @@ and content.
          )
 
 -}
-init : Config a -> List (Item a) -> Model a
-init config items =
+init : Config a -> List a -> Model a
+init config data =
     let
         hasSelectionColumn : List (ColumnConfig a) -> Bool
         hasSelectionColumn columns =
@@ -399,7 +410,7 @@ init config items =
 
         -- ensure indexes are set to prevent systematic selection of the first item when clicking a checkbox
         indexedItems =
-            List.indexedMap (\index item -> { item | index = index }) items
+            List.indexedMap (\index value -> Item.create value index) data
 
         initialModel =
             { clickedItem = Nothing
@@ -912,6 +923,9 @@ viewRows model =
                 , overflowX hidden
                 , overflowY auto
                 , border3 (px 1) solid lightGrey
+
+                -- displays the vertical scrollbar to the left. https://stackoverflow.com/questions/7347532/how-to-position-a-div-scrollbar-on-the-left-hand-side
+                , property "direction" "rtl"
                 ]
             , fromUnstyled <| IL.onScroll InfListMsg
             , id gridHtmlId
@@ -947,6 +961,9 @@ viewRow model idx listIdx item =
                 [ displayFlex
                 , height (px <| toFloat model.config.lineHeight)
                 , width (px <| toFloat <| totalWidth model)
+
+                -- restore reading order, while preserving the left position of the scrollbar
+                , property "direction" "ltr"
                 ]
             , onClick (UserClickedLine item)
             ]
@@ -992,7 +1009,7 @@ returns the field to be displayed in this column.
 viewBool : (Item a -> Bool) -> ColumnProperties -> Item a -> Html (Msg a)
 viewBool field properties item =
     div
-        (cellAttributes properties)
+        (cellAttributes properties ++ [ css [ justifyContent right ] ])
         [ input
             [ type_ "checkbox"
             , Html.Styled.Attributes.checked (field item)
@@ -1022,15 +1039,19 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-stringColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> String, localize : String -> String } -> ColumnConfig a
+stringColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> String, localize : String -> String } -> ColumnConfig a
 stringColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+    let
+        nestedDataGetter =
+            .data >> getter
+    in
     { properties =
         columnConfigProperties properties
-    , filters = StringFilter <| stringFilter getter
+    , filters = StringFilter <| stringFilter nestedDataGetter
     , filteringValue = Nothing
-    , toString = getter
-    , renderer = viewString getter
-    , comparator = compareFields getter
+    , toString = nestedDataGetter
+    , renderer = viewString nestedDataGetter
+    , comparator = compareFields nestedDataGetter
     }
 
 
@@ -1042,15 +1063,19 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-floatColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> Float, localize : String -> String } -> ColumnConfig a
+floatColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Float, localize : String -> String } -> ColumnConfig a
 floatColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+    let
+        nestedDataGetter =
+            .data >> getter
+    in
     { properties =
         columnConfigProperties properties
-    , filters = FloatFilter <| floatFilter getter
+    , filters = FloatFilter <| floatFilter nestedDataGetter
     , filteringValue = Nothing
-    , toString = getter >> String.fromFloat
-    , renderer = viewFloat getter
-    , comparator = compareFields getter
+    , toString = nestedDataGetter >> String.fromFloat
+    , renderer = viewFloat nestedDataGetter
+    , comparator = compareFields nestedDataGetter
     }
 
 
@@ -1062,15 +1087,19 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-intColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> Int, localize : String -> String } -> ColumnConfig a
+intColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Int, localize : String -> String } -> ColumnConfig a
 intColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+    let
+        nestedDataGetter =
+            .data >> getter
+    in
     { properties =
         columnConfigProperties properties
-    , filters = IntFilter <| intFilter getter
+    , filters = IntFilter <| intFilter nestedDataGetter
     , filteringValue = Nothing
-    , toString = getter >> String.fromInt
-    , renderer = viewInt getter
-    , comparator = compareFields getter
+    , toString = nestedDataGetter >> String.fromInt
+    , renderer = viewInt nestedDataGetter
+    , comparator = compareFields nestedDataGetter
     }
 
 
@@ -1080,15 +1109,19 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-boolColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : Item a -> Bool, localize : String -> String } -> ColumnConfig a
+boolColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Bool, localize : String -> String } -> ColumnConfig a
 boolColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+    let
+        nestedDataGetter =
+            .data >> getter
+    in
     { properties =
         columnConfigProperties properties
-    , filters = BoolFilter <| boolFilter getter
+    , filters = BoolFilter <| boolFilter nestedDataGetter
     , filteringValue = Nothing
-    , toString = getter >> boolToString
-    , renderer = viewBool getter
-    , comparator = compareBoolField getter
+    , toString = nestedDataGetter >> boolToString
+    , renderer = viewBool nestedDataGetter
+    , comparator = compareBoolField nestedDataGetter
     }
 
 
@@ -1154,14 +1187,17 @@ returns the field to be displayed in this column.
         viewProgressBar 8 (\item -> item.value)
 
 -}
-viewProgressBar : Int -> (Item a -> Float) -> ColumnProperties -> Item a -> Html (Msg a)
-viewProgressBar barHeight field properties item =
+viewProgressBar : Int -> (a -> Float) -> ColumnProperties -> Item a -> Html (Msg a)
+viewProgressBar barHeight getter properties item =
     let
         maxWidth =
             properties.width - 8 - cumulatedBorderWidth
 
+        nestedDataGetter =
+            .data >> getter
+
         actualWidth =
-            (field item / toFloat 100) * toFloat maxWidth
+            (nestedDataGetter item / toFloat 100) * toFloat maxWidth
     in
     div
         [ css
@@ -1287,8 +1323,8 @@ returns the field to be displayed in this column.
 
 -}
 compareFields : (Item a -> comparable) -> Item a -> Item a -> Order
-compareFields field item1 item2 =
-    compare (field item1) (field item2)
+compareFields dataValue item1 item2 =
+    compare (dataValue item1) (dataValue item2)
 
 
 {-| Compares two booleans. Use this function in a ColumnConfig
@@ -1301,8 +1337,8 @@ returns the field to be displayed in this column.
 
 -}
 compareBoolField : (Item a -> Bool) -> Item a -> Item a -> Order
-compareBoolField field item1 item2 =
-    case ( field item1, field item2 ) of
+compareBoolField dataValue item1 item2 =
+    case ( dataValue item1, dataValue item2 ) of
         ( True, True ) ->
             EQ
 
@@ -1420,6 +1456,9 @@ viewSelectionHeader model _ =
     div
         [ css
             [ width <| px <| toFloat <| selectionColumn.properties.width - cumulatedBorderWidth
+            , displayFlex
+            , justifyContent right
+            , alignItems center
             ]
         ]
         [ input
