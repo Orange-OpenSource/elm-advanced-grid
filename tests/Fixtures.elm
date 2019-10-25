@@ -1,4 +1,4 @@
-module Fixtures exposing (Item, columns, gridConfig, isValidColumn, item1, item2, item3, item4, item5, items, model, scoreColumn, titleColumn)
+module Fixtures exposing (Data, columns, data, gridConfig, isValidColumn, item1, item2, item3, item4, item5, model, scoreColumn, titleColumn)
 
 {- Copyright (c) 2019 Orange
    This code is released under the MIT license.
@@ -11,70 +11,90 @@ module Fixtures exposing (Item, columns, gridConfig, isValidColumn, item1, item2
 -}
 
 import Grid exposing (ColumnConfig, Model, Sorting(..), boolColumnConfig, floatColumnConfig, stringColumnConfig)
+import Grid.Item as Item exposing (Item)
 
 
-type alias Item =
-    { index : Int
+type alias Data =
+    { count : Int
     , isValid : Bool
     , score : Float
-    , selected : Bool
     , title : String
     }
 
 
-item1 : Item
-item1 =
-    { index = 0
+data1 : Data
+data1 =
+    { count = 1
     , isValid = True
     , score = 1.0
-    , selected = False
     , title = "ITEM 1"
     }
 
 
-item2 : Item
-item2 =
-    { index = 1
+item1 : Item Data
+item1 =
+    Item.create data1 1
+
+
+data2 : Data
+data2 =
+    { count = 2
     , isValid = False
     , score = 2.0
-    , selected = False
     , title = "ITEM 2"
     }
 
 
-item3 : Item
-item3 =
-    { index = 2
+item2 : Item Data
+item2 =
+    Item.create data2 2
+
+
+data3 : Data
+data3 =
+    { count = 3
     , isValid = True
     , score = 4.0
-    , selected = False
     , title = "ITEM 3"
     }
 
 
-item4 : Item
-item4 =
-    { index = 3
+item3 : Item Data
+item3 =
+    Item.create data3 3
+
+
+data4 : Data
+data4 =
+    { count = 4
     , isValid = True
     , score = 3.0
-    , selected = False
     , title = "ITEM 4"
     }
 
 
-item5 : Item
-item5 =
-    { index = 3526
+item4 : Item Data
+item4 =
+    Item.create data4 4
+
+
+data5 : Data
+data5 =
+    { count = 520
     , isValid = True
     , score = 3.1415926
-    , selected = False
     , title = "ITEM 5"
     }
 
 
-items : List Item
-items =
-    [ item1, item2, item3, item4 ]
+item5 : Item Data
+item5 =
+    Item.create data5 5
+
+
+data : List Data
+data =
+    [ data1, data2, data3, data4 ]
 
 
 scoreColumn =
@@ -110,7 +130,7 @@ isValidColumn =
         }
 
 
-columns : List (ColumnConfig Item)
+columns : List (ColumnConfig Data)
 columns =
     [ scoreColumn
     , titleColumn
@@ -118,7 +138,7 @@ columns =
     ]
 
 
-gridConfig : Grid.Config Item
+gridConfig : Grid.Config Data
 gridConfig =
     { canSelectRows = True
     , columns = columns
@@ -131,7 +151,7 @@ gridConfig =
     }
 
 
-rowClass : Item -> String
+rowClass : Item Data -> String
 rowClass item =
     if item.selected then
         "selected-item"
@@ -140,6 +160,6 @@ rowClass item =
         ""
 
 
-model : Model Item
+model : Model Data
 model =
-    Grid.init gridConfig items
+    Grid.init gridConfig data
