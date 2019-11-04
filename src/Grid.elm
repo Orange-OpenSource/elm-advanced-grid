@@ -408,13 +408,16 @@ init config data =
             else
                 config
 
+        sanitizedConfig =
+            { newConfig | columns = sanitizedColumns newConfig.columns }
+
         -- ensure indexes are set to prevent systematic selection of the first item when clicking a checkbox
         indexedItems =
             List.indexedMap (\index value -> Item.create value index) data
 
         initialModel =
             { clickedItem = Nothing
-            , config = newConfig
+            , config = sanitizedConfig
             , columnsX = []
             , content = indexedItems
             , dragStartX = 0
