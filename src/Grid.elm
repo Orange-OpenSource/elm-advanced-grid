@@ -1287,6 +1287,7 @@ viewClosebutton =
                 ]
             ]
         , onClick UserClickedPreferenceCloseButton
+        , attribute "data-testid" "configureDisplayCloseCross"
         ]
         []
 
@@ -1628,6 +1629,7 @@ viewDragHandle columnConfig =
         , fromUnstyled <| Mouse.onOver (\_ -> UserHoveredDragHandle)
         , fromUnstyled <| Mouse.onDown (\event -> UserClickedDragHandle columnConfig (event |> toPosition))
         , fromUnstyled <| Mouse.onUp (\_ -> UserEndedMouseInteraction)
+        , attribute "data-testid" <| "dragHandle-" ++ columnConfig.properties.id
         ]
         (List.repeat 2 <|
             div [] <|
