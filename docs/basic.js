@@ -8784,6 +8784,7 @@ var pascallemerrer$elm_advanced_grid$Grid$stopPropagationOnClick = function (msg
 			pascallemerrer$elm_advanced_grid$Grid$alwaysPreventDefault,
 			elm$json$Json$Decode$succeed(msg)));
 };
+var rtfeldman$elm_css$Css$flexEnd = rtfeldman$elm_css$Css$prop1('flex-end');
 var rtfeldman$elm_css$Css$justifyContent = function (fn) {
 	return A3(
 		rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
@@ -8791,7 +8792,6 @@ var rtfeldman$elm_css$Css$justifyContent = function (fn) {
 		'justify-content',
 		fn(rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
 };
-var rtfeldman$elm_css$Css$right = rtfeldman$elm_css$Css$prop1('right');
 var rtfeldman$elm_css$Html$Styled$input = rtfeldman$elm_css$Html$Styled$node('input');
 var elm$json$Json$Encode$bool = _Json_wrap;
 var rtfeldman$elm_css$VirtualDom$Styled$property = F2(
@@ -8829,7 +8829,7 @@ var pascallemerrer$elm_advanced_grid$Grid$viewBool = F3(
 						rtfeldman$elm_css$Html$Styled$Attributes$css(
 						_List_fromArray(
 							[
-								rtfeldman$elm_css$Css$justifyContent(rtfeldman$elm_css$Css$right)
+								rtfeldman$elm_css$Css$justifyContent(rtfeldman$elm_css$Css$flexEnd)
 							]))
 					])),
 			_List_fromArray(
@@ -8994,6 +8994,36 @@ var pascallemerrer$elm_advanced_grid$Grid$isSelectionColumnProperties = function
 var pascallemerrer$elm_advanced_grid$Grid$isSelectionColumn = function (columnConfig) {
 	return pascallemerrer$elm_advanced_grid$Grid$isSelectionColumnProperties(columnConfig.b);
 };
+var elm_community$list_extra$List$Extra$updateIf = F3(
+	function (predicate, update, list) {
+		return A2(
+			elm$core$List$map,
+			function (item) {
+				return predicate(item) ? update(item) : item;
+			},
+			list);
+	});
+var pascallemerrer$elm_advanced_grid$Grid$sanitizedColumns = function (columns) {
+	return A3(
+		elm_community$list_extra$List$Extra$updateIf,
+		A2(
+			elm$core$Basics$composeL,
+			A2(
+				elm$core$Basics$composeL,
+				elm$core$Basics$not,
+				function ($) {
+					return $.ap;
+				}),
+			function ($) {
+				return $.b;
+			}),
+		function (c) {
+			return _Utils_update(
+				c,
+				{A: elm$core$Maybe$Nothing});
+		},
+		columns);
+};
 var pascallemerrer$elm_advanced_grid$Grid$Item$create = F2(
 	function (data, index) {
 		return {b$: data, cO: index, dl: false};
@@ -9022,10 +9052,15 @@ var pascallemerrer$elm_advanced_grid$Grid$init = F2(
 			{
 				dL: A2(elm$core$List$cons, pascallemerrer$elm_advanced_grid$Grid$selectionColumn, config.dL)
 			}) : config;
+		var sanitizedConfig = _Utils_update(
+			newConfig,
+			{
+				dL: pascallemerrer$elm_advanced_grid$Grid$sanitizedColumns(newConfig.dL)
+			});
 		var initialModel = {
 			bv: elm$core$Maybe$Nothing,
 			av: _List_Nil,
-			h: newConfig,
+			h: sanitizedConfig,
 			cw: indexedItems,
 			ax: 0,
 			E: elm$core$Maybe$Nothing,
@@ -9998,15 +10033,6 @@ var elm_community$list_extra$List$Extra$find = F2(
 			}
 		}
 	});
-var elm_community$list_extra$List$Extra$updateIf = F3(
-	function (predicate, update, list) {
-		return A2(
-			elm$core$List$map,
-			function (item) {
-				return predicate(item) ? update(item) : item;
-			},
-			list);
-	});
 var elm_community$list_extra$List$Extra$setIf = F3(
 	function (predicate, replacement, list) {
 		return A3(
@@ -10550,27 +10576,6 @@ var pascallemerrer$elm_advanced_grid$Grid$updateColumnWidthProperty = F3(
 		};
 		return A3(pascallemerrer$elm_advanced_grid$Grid$updateColumnProperties, setWidth, model, columnConfig.b.M);
 	});
-var pascallemerrer$elm_advanced_grid$Grid$sanitizedColumns = function (columns) {
-	return A3(
-		elm_community$list_extra$List$Extra$updateIf,
-		A2(
-			elm$core$Basics$composeL,
-			A2(
-				elm$core$Basics$composeL,
-				elm$core$Basics$not,
-				function ($) {
-					return $.ap;
-				}),
-			function ($) {
-				return $.b;
-			}),
-		function (c) {
-			return _Utils_update(
-				c,
-				{A: elm$core$Maybe$Nothing});
-		},
-		columns);
-};
 var pascallemerrer$elm_advanced_grid$Grid$withColumnsX = function (model) {
 	return _Utils_update(
 		model,
@@ -11360,7 +11365,8 @@ var pascallemerrer$elm_advanced_grid$Grid$viewDragHandle = function (columnConfi
 				mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onUp(
 					function (_n1) {
 						return pascallemerrer$elm_advanced_grid$Grid$UserEndedMouseInteraction;
-					}))
+					})),
+				A2(rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', 'dragHandle-' + columnConfig.b.M)
 			]),
 		A2(
 			elm$core$List$repeat,
@@ -11777,7 +11783,7 @@ var pascallemerrer$elm_advanced_grid$Grid$viewSelectionHeader = F2(
 							rtfeldman$elm_css$Css$width(
 							rtfeldman$elm_css$Css$px(pascallemerrer$elm_advanced_grid$Grid$selectionColumn.b.bp - pascallemerrer$elm_advanced_grid$Grid$cumulatedBorderWidth)),
 							rtfeldman$elm_css$Css$displayFlex,
-							rtfeldman$elm_css$Css$justifyContent(rtfeldman$elm_css$Css$right),
+							rtfeldman$elm_css$Css$justifyContent(rtfeldman$elm_css$Css$center),
 							rtfeldman$elm_css$Css$alignItems(rtfeldman$elm_css$Css$center)
 						]))
 				]),
@@ -12137,6 +12143,7 @@ var rtfeldman$elm_css$Css$float = function (fn) {
 		fn(rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
 };
 var rtfeldman$elm_css$Css$pointer = {c: 0, bn: 'pointer'};
+var rtfeldman$elm_css$Css$right = rtfeldman$elm_css$Css$prop1('right');
 var rtfeldman$elm_css$Css$rotate = function (_n0) {
 	var value = _n0.bn;
 	return {
@@ -12225,7 +12232,8 @@ var pascallemerrer$elm_advanced_grid$Grid$viewClosebutton = A2(
 								rtfeldman$elm_css$Css$deg(-45)))
 						]))
 				])),
-			rtfeldman$elm_css$Html$Styled$Events$onClick(pascallemerrer$elm_advanced_grid$Grid$UserClickedPreferenceCloseButton)
+			rtfeldman$elm_css$Html$Styled$Events$onClick(pascallemerrer$elm_advanced_grid$Grid$UserClickedPreferenceCloseButton),
+			A2(rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', 'configureDisplayCloseCross')
 		]),
 	_List_Nil);
 var pascallemerrer$elm_advanced_grid$Grid$UserToggledColumnVisibility = function (a) {
