@@ -308,6 +308,8 @@ type alias Model a =
     , infList : IL.Model
     , isAllSelected : Bool
     , headerContainerPosition : Position
+
+    -- TODO: order and sortedBy can have uncompatible values. It would be better to join them in a single Maybe
     , order : Sorting
     , resizedColumn : Maybe (ColumnConfig a)
     , showPreferences : Bool
