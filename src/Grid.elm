@@ -235,11 +235,11 @@ boolColumnConfig
             , visible = True
             , width = 50
             }
-        , comparator = compareIntField (\item -> item.id)
-        , filters = IntFilter <| intFilter (\item -> item.id)
+        , comparator = compareIntField .id
+        , filters = IntFilter <| intFilter .id
         , filteringValue = Nothing
-        , toString = String.fromInt (\item -> item.id)
-        , renderer = viewInt (\item -> item.id)
+        , toString = String.fromInt .id
+        , renderer = viewInt .id
         }
 
 -}
