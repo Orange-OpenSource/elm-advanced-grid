@@ -86,25 +86,8 @@ describeHeaderClicked =
         [ test "should clear the filtering value" <|
             \_ ->
                 let
-                    -- TODO: simplify the setup for this test
-                    filteredScoreColumn =
-                        { scoreColumn | filteringValue = Just "> 10" }
-
-                    filteredColumns =
-                        model.config.columns
-                            |> List.Extra.updateIf isScoreColumn (\_ -> filteredScoreColumn)
-
-                    currentConfig =
-                        model.config
-
-                    filteredConfig =
-                        { currentConfig | columns = filteredColumns }
-
-                    filteredModel =
-                        { model | config = filteredConfig }
-
                     ( newModel, _ ) =
-                        update (UserToggledColumnVisibility filteredScoreColumn) filteredModel
+                        update (UserToggledColumnVisibility filteredScoreColumn) (withColumns filteredColumns model)
 
                     updatedScoreColumn =
                         List.Extra.find isScoreColumn newModel.config.columns
@@ -152,3 +135,12 @@ modelSortedByDescendingScore =
 isScoreColumn : ColumnConfig Data -> Bool
 isScoreColumn columnConfig =
     columnConfig.properties.id == scoreColumn.properties.id
+
+
+filteredScoreColumn =
+    { scoreColumn | filteringValue = Just "> 10" }
+
+
+filteredColumns =
+    model.config.columns
+        |> List.Extra.updateIf isScoreColumn (\_ -> filteredScoreColumn)

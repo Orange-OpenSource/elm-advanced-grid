@@ -17,7 +17,7 @@ module Grid exposing
     , Model, Msg(..), init, update, view
     , filteredItems
     , visibleColumns, isSelectionColumn, isSelectionColumnProperties
-    , isColumn, withConfig
+    , isColumn, withColumns, withConfig
     )
 
 {-| This module allows to create dynamically configurable data grid.
