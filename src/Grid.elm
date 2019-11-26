@@ -17,7 +17,7 @@ module Grid exposing
     , Model, Msg(..), init, update, view
     , filteredItems
     , visibleColumns, isSelectionColumn, isSelectionColumnProperties
-    , isColumn, withColumns, withConfig
+    , isColumn, selectedAndVisibleItems, withColumns, withConfig
     )
 
 {-| This module allows to create dynamically configurable data grid.
@@ -223,7 +223,7 @@ type Sorting
 using a list of ColumnConfigs.
 
 NB: This is a "low level API", useful to define custom column types.
-In order to define common column types, you may want to use higher level API,
+In order to define common column types, you may want to use the higher level API,
 i.e. stringColumnConfig, intColumnConfig, floatColumnConfig,
 boolColumnConfig
 
@@ -256,7 +256,7 @@ type alias ColumnConfig a =
 {-| ColumnProperties are a part of the configuration for a column.
 
 NB: This is a "low level API", useful to define custom column types.
-In order to define common column types, you may want to use higher level API,
+In order to define common column types, you may want to use the higher level API,
 i.e. stringColumnConfig, intColumnConfig, floatColumnConfig,
 boolColumnConfig
 
@@ -300,7 +300,7 @@ type alias Model a =
     { clickedItem : Maybe (Item a)
     , config : Config a
     , columnsX : List Int
-    , content : List (Item a)
+    , content : List a -- all items, visible or not
     , draggedColumn : Maybe (DraggedColumn a)
     , dragStartX : Float
     , filterHasFocus : Bool -- Prevents clicking in an input field to trigger a sort
@@ -314,9 +314,12 @@ type alias Model a =
     , resizedColumn : Maybe (ColumnConfig a)
     , showPreferences : Bool
     , sortedBy : Maybe (ColumnConfig a)
+    , visibleItems : List (Item a) -- the subset of items remaining visible after applying filters
     }
 
 
+{-| Sets the grid configuration
+-}
 withConfig : Config a -> Model a -> Model a
 withConfig config model =
     { model | config = config }
@@ -327,6 +330,8 @@ withColumnsX model =
     { model | columnsX = columnsX model }
 
 
+{-| Sets the column definitions into the configuration
+-}
 withColumns : List (ColumnConfig a) -> Model a -> Model a
 withColumns columns model =
     let
@@ -338,10 +343,13 @@ withColumns columns model =
         |> withColumnsX
 
 
+withVisibleItems : List (Item a) -> Model a -> Model a
+withVisibleItems visibleItems model =
+    { model | visibleItems = visibleItems }
 
--- clear the filter of hidden columns to avoid filtering with invisible criteria
 
-
+{-| Clears the filter of hidden columns to avoid filtering with an invisible criteria
+-}
 sanitizedColumns : List (ColumnConfig a) -> List (ColumnConfig a)
 sanitizedColumns columns =
     List.Extra.updateIf (not << .visible << .properties) (\c -> { c | filteringValue = Nothing }) columns
@@ -355,7 +363,6 @@ withDraggedColumn draggedColumn model =
 {-| Definition for the row selection column,
 used when canSelectRows is True in grid config.
 -}
-selectionColumn : ColumnConfig a
 selectionColumn =
     let
         properties =
@@ -369,7 +376,7 @@ selectionColumn =
     in
     { properties =
         columnConfigProperties properties
-    , filters = BoolFilter <| boolFilter .selected
+    , filters = NoFilter
     , filteringValue = Nothing
     , toString = .selected >> boolToString
     , renderer = viewBool .selected
@@ -421,7 +428,7 @@ init config data =
             { clickedItem = Nothing
             , config = sanitizedConfig
             , columnsX = []
-            , content = indexedItems
+            , content = data
             , dragStartX = 0
             , filterHasFocus = False
             , hoveredColumn = Nothing
@@ -433,6 +440,7 @@ init config data =
             , resizedColumn = Nothing
             , showPreferences = False
             , sortedBy = Nothing
+            , visibleItems = indexedItems
             }
     in
     { initialModel | columnsX = columnsX initialModel }
@@ -460,11 +468,8 @@ update msg model =
 
         ScrollTo isTargetItem ->
             let
-                filteredContent =
-                    filteredItems model
-
                 targetItemIndex =
-                    Maybe.withDefault 0 <| findIndex isTargetItem filteredContent
+                    Maybe.withDefault 0 <| findIndex isTargetItem model.visibleItems
             in
             ( model
             , IL.scrollToNthItem
@@ -472,7 +477,7 @@ update msg model =
                 , listHtmlId = gridHtmlId
                 , itemIndex = targetItemIndex
                 , configValue = gridConfig model
-                , items = filteredContent
+                , items = model.visibleItems
                 }
             )
 
@@ -498,8 +503,11 @@ modelUpdate msg model =
 
                 newColumns =
                     List.Extra.setIf (isColumn columnConfig) newColumnconfig model.config.columns
+
+                newModel =
+                    model |> withColumns newColumns
             in
-            model |> withColumns newColumns
+            updateVisibleItems newModel
 
         GotHeaderContainerInfo (Ok info) ->
             { model | headerContainerPosition = { x = info.element.x, y = info.element.y } }
@@ -514,8 +522,11 @@ modelUpdate msg model =
             let
                 newColumns =
                     List.map (initializeFilter filterValues) model.config.columns
+
+                newModel =
+                    model |> withColumns newColumns
             in
-            model |> withColumns newColumns
+            updateVisibleItems newModel
 
         InitializeSorting columnId sorting ->
             let
@@ -619,15 +630,18 @@ modelUpdate msg model =
 
         UserToggledAllItemSelection ->
             let
+                updatedVisibleItems =
+                    List.map setSelectionStatus model.visibleItems
+
+                setSelectionStatus item =
+                    { item | selected = newStatus }
+
                 newStatus =
                     not model.isAllSelected
-
-                newContent =
-                    List.map (\item -> { item | selected = newStatus }) model.content
             in
             { model
                 | isAllSelected = newStatus
-                , content = newContent
+                , visibleItems = updatedVisibleItems
             }
 
         UserToggledColumnVisibility columnConfig ->
@@ -646,10 +660,22 @@ modelUpdate msg model =
 
         UserToggledSelection item ->
             let
-                newContent =
-                    List.Extra.updateAt item.index (\it -> toggleSelection it) model.content
+                newItems =
+                    List.Extra.updateAt item.index (\it -> toggleSelection it) model.visibleItems
             in
-            { model | content = newContent }
+            { model | visibleItems = newItems }
+
+
+updateVisibleItems : Model a -> Model a
+updateVisibleItems model =
+    let
+        filteredContent =
+            filteredItems model
+
+        visibleItems =
+            List.indexedMap (\index value -> Item.create value index) filteredContent
+    in
+    model |> withVisibleItems visibleItems
 
 
 initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
@@ -664,16 +690,16 @@ initializeFilter filterValues columnConfig =
 sort : Model a -> ColumnConfig a -> Sorting -> (Model a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )) -> Model a
 sort model columnConfig order sorter =
     let
-        ( sortedContent, newOrder ) =
+        ( sortedItems, newOrder ) =
             sorter model columnConfig order
 
-        updatedContent =
-            updateIndexes sortedContent
+        updatedItems =
+            updateIndexes sortedItems
     in
     { model
-        | content = updatedContent
-        , order = newOrder
+        | order = newOrder
         , sortedBy = Just columnConfig
+        , visibleItems = updatedItems
     }
 
 
@@ -681,23 +707,23 @@ toggleOrder : Model a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )
 toggleOrder model columnConfig order =
     case order of
         Ascending ->
-            ( List.sortWith columnConfig.comparator model.content |> List.reverse, Descending )
+            ( List.sortWith columnConfig.comparator model.visibleItems |> List.reverse, Descending )
 
         _ ->
-            ( List.sortWith columnConfig.comparator model.content, Ascending )
+            ( List.sortWith columnConfig.comparator model.visibleItems, Ascending )
 
 
 orderBy : Model a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )
 orderBy model columnConfig order =
     case order of
         Descending ->
-            ( List.sortWith columnConfig.comparator model.content |> List.reverse, Descending )
+            ( List.sortWith columnConfig.comparator model.visibleItems |> List.reverse, Descending )
 
         Ascending ->
-            ( List.sortWith columnConfig.comparator model.content, Ascending )
+            ( List.sortWith columnConfig.comparator model.visibleItems, Ascending )
 
         Unsorted ->
-            ( model.content, Unsorted )
+            ( model.visibleItems, Unsorted )
 
 
 hasId : String -> ColumnConfig a -> Bool
@@ -767,8 +793,8 @@ updatePropertiesInColumnConfig updateFunction columnConfig =
 
 
 updateIndexes : List (Item a) -> List (Item a)
-updateIndexes content =
-    List.indexedMap (\i item -> { item | index = i }) content
+updateIndexes items =
+    List.indexedMap (\i item -> { item | index = i }) items
 
 
 toggleSelection : Item a -> Item a
@@ -842,6 +868,11 @@ moveItemRight list originIndex indexDelta =
         Array.empty
         [ beforeOrigin, betweenOriginAndDestination, origin, afterDestination ]
         |> Array.toList
+
+
+selectedAndVisibleItems : Model a -> List (Item a)
+selectedAndVisibleItems model =
+    List.filter .selected model.visibleItems
 
 
 gridConfig : Model a -> IL.Config (Item a) (Msg a)
@@ -935,11 +966,11 @@ viewRows model =
             , fromUnstyled <| IL.onScroll InfListMsg
             , id gridHtmlId
             ]
-            [ Html.Styled.fromUnstyled <| IL.view (gridConfig model) model.infList (filteredItems model) ]
+            [ Html.Styled.fromUnstyled <| IL.view (gridConfig model) model.infList model.visibleItems ]
         ]
 
 
-columnFilters : Model a -> List (Item a -> Bool)
+columnFilters : Model a -> List (a -> Bool)
 columnFilters model =
     model.config.columns
         |> List.filterMap (\c -> parseFilteringString c.filteringValue c.filters)
@@ -947,7 +978,7 @@ columnFilters model =
 
 {-| The list of items satisfying the current filtering values
 -}
-filteredItems : Model a -> List (Item a)
+filteredItems : Model a -> List a
 filteredItems model =
     columnFilters model
         |> List.foldl (\filter remainingValues -> List.filter filter remainingValues) model.content
@@ -1052,7 +1083,7 @@ stringColumnConfig ({ id, title, tooltip, width, getter, localize } as propertie
     in
     { properties =
         columnConfigProperties properties
-    , filters = StringFilter <| stringFilter nestedDataGetter
+    , filters = StringFilter <| stringFilter getter
     , filteringValue = Nothing
     , toString = nestedDataGetter
     , renderer = viewString nestedDataGetter
@@ -1076,7 +1107,7 @@ floatColumnConfig ({ id, title, tooltip, width, getter, localize } as properties
     in
     { properties =
         columnConfigProperties properties
-    , filters = FloatFilter <| floatFilter nestedDataGetter
+    , filters = FloatFilter <| floatFilter getter
     , filteringValue = Nothing
     , toString = nestedDataGetter >> String.fromFloat
     , renderer = viewFloat nestedDataGetter
@@ -1100,7 +1131,7 @@ intColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) 
     in
     { properties =
         columnConfigProperties properties
-    , filters = IntFilter <| intFilter nestedDataGetter
+    , filters = IntFilter <| intFilter getter
     , filteringValue = Nothing
     , toString = nestedDataGetter >> String.fromInt
     , renderer = viewInt nestedDataGetter
@@ -1122,7 +1153,7 @@ boolColumnConfig ({ id, title, tooltip, width, getter, localize } as properties)
     in
     { properties =
         columnConfigProperties properties
-    , filters = BoolFilter <| boolFilter nestedDataGetter
+    , filters = BoolFilter <| boolFilter getter
     , filteringValue = Nothing
     , toString = nestedDataGetter >> boolToString
     , renderer = viewBool nestedDataGetter
@@ -1457,7 +1488,7 @@ viewSelectionHeader : Model a -> ColumnConfig a -> Html (Msg a)
 viewSelectionHeader model _ =
     let
         areAllItemsChecked =
-            List.all .selected model.content
+            List.all .selected model.visibleItems
     in
     div
         [ css

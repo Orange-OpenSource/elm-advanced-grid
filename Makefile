@@ -19,7 +19,7 @@ test_gui: build
 	./node_modules/.bin/cypress open
 
 build:
-	elm make src/Examples/Basic.elm --output=example.js --optimize
+	elm make src/Examples/Basic.elm --output=example.js --debug
 
 doc:
 	elm make src/Examples/Basic.elm --output=docs/basic.js --optimize

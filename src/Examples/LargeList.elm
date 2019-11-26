@@ -13,7 +13,7 @@ module Examples.LargeList exposing (main)
 
 import Browser
 import Dict exposing (Dict)
-import Grid exposing (ColumnConfig, Msg(..), Sorting(..), floatColumnConfig, intColumnConfig, stringColumnConfig, viewProgressBar)
+import Grid exposing (ColumnConfig, Msg(..), Sorting(..), floatColumnConfig, intColumnConfig, selectedAndVisibleItems, stringColumnConfig, viewProgressBar)
 import Grid.Item exposing (Item)
 import Html exposing (Html, button, div, input, label, li, text, ul)
 import Html.Attributes exposing (attribute, style)
@@ -201,13 +201,10 @@ update msg model =
             let
                 ( newGridModel, gridCmd ) =
                     Grid.update (UserToggledSelection item) model.gridModel
-
-                selectedItems =
-                    List.filter .selected newGridModel.content
             in
             ( { model
                 | gridModel = newGridModel
-                , selectedItems = selectedItems
+                , selectedItems = selectedAndVisibleItems newGridModel
               }
             , Cmd.map GridMsg gridCmd
             )
@@ -216,17 +213,10 @@ update msg model =
             let
                 ( newGridModel, gridCmd ) =
                     Grid.update UserToggledAllItemSelection model.gridModel
-
-                selectedItems =
-                    if newGridModel.isAllSelected then
-                        newGridModel.content
-
-                    else
-                        []
             in
             ( { model
                 | gridModel = newGridModel
-                , selectedItems = selectedItems
+                , selectedItems = selectedAndVisibleItems newGridModel
               }
             , Cmd.map GridMsg gridCmd
             )
