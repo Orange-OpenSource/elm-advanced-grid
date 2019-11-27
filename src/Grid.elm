@@ -300,7 +300,7 @@ type alias Model a =
     { clickedItem : Maybe (Item a)
     , config : Config a
     , columnsX : List Int
-    , content : List a -- all items, visible or not
+    , content : List a -- all data, visible or not
     , draggedColumn : Maybe (DraggedColumn a)
     , dragStartX : Float
     , filterHasFocus : Bool -- Prevents clicking in an input field to trigger a sort
@@ -309,7 +309,7 @@ type alias Model a =
     , isAllSelected : Bool
     , headerContainerPosition : Position
 
-    -- TODO: order and sortedBy can have uncompatible values. It would be better to join them in a single Maybe
+    -- TODO: order and sortedBy can have incompatible values. It would be better to join them in a single Maybe
     , order : Sorting
     , resizedColumn : Maybe (ColumnConfig a)
     , showPreferences : Bool
