@@ -40,29 +40,30 @@ type Filter a
     | IntFilter (TypedFilter a Int)
     | FloatFilter (TypedFilter a Float)
     | BoolFilter (TypedFilter a Bool)
+    | NoFilter
 
 
 type alias TypedFilter a b =
     { equal :
-        { filter : b -> Item a -> Bool
+        { filter : b -> a -> Bool
         , parser : Parser b
         }
     , lessThan :
-        { filter : b -> Item a -> Bool
+        { filter : b -> a -> Bool
         , parser : Parser b
         }
     , greaterThan :
-        { filter : b -> Item a -> Bool
+        { filter : b -> a -> Bool
         , parser : Parser b
         }
     , contains :
-        { filter : b -> Item a -> Bool
+        { filter : b -> a -> Bool
         , parser : Parser b
         }
     }
 
 
-parseFilteringString : Maybe String -> Filter a -> Maybe (Item a -> Bool)
+parseFilteringString : Maybe String -> Filter a -> Maybe (a -> Bool)
 parseFilteringString filteringValue filter =
     let
         filteringString =
@@ -85,8 +86,11 @@ parseFilteringString filteringValue filter =
             BoolFilter boolTypedFilter ->
                 validateFilter filteringString boolTypedFilter
 
+            NoFilter ->
+                Nothing
 
-validateFilter : String -> TypedFilter a b -> Maybe (Item a -> Bool)
+
+validateFilter : String -> TypedFilter a b -> Maybe (a -> Bool)
 validateFilter filteringString filters =
     let
         validators =
@@ -98,7 +102,7 @@ validateFilter filteringString filters =
     findFirstOK <| List.map (\validator -> validator filters filteringString) validators
 
 
-findFirstOK : List (Result (List DeadEnd) (Item a -> Bool)) -> Maybe (Item a -> Bool)
+findFirstOK : List (Result (List DeadEnd) (a -> Bool)) -> Maybe (a -> Bool)
 findFirstOK results =
     case results of
         [] ->
@@ -111,22 +115,22 @@ findFirstOK results =
             findFirstOK tail
 
 
-validateEqualFilter : TypedFilter a b -> String -> Result (List DeadEnd) (Item a -> Bool)
+validateEqualFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
 validateEqualFilter filters filteringString =
     Result.map filters.equal.filter (Parser.run filters.equal.parser filteringString)
 
 
-validateLessThanFilter : TypedFilter a b -> String -> Result (List DeadEnd) (Item a -> Bool)
+validateLessThanFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
 validateLessThanFilter filters filteringString =
     Result.map filters.lessThan.filter (Parser.run filters.lessThan.parser filteringString)
 
 
-validateGreaterThanFilter : TypedFilter a b -> String -> Result (List DeadEnd) (Item a -> Bool)
+validateGreaterThanFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
 validateGreaterThanFilter filters filteringString =
     Result.map filters.greaterThan.filter (Parser.run filters.greaterThan.parser filteringString)
 
 
-validateContainsFilter : TypedFilter a b -> String -> Result (List DeadEnd) (Item a -> Bool)
+validateContainsFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
 validateContainsFilter filters filteringString =
     Result.map filters.contains.filter (Parser.run filters.contains.parser filteringString)
 
@@ -139,7 +143,7 @@ the value of the field to be filtered.
         StringFilter <| stringFilter (\item -> item.name)
 
 -}
-stringFilter : (Item a -> String) -> TypedFilter a String
+stringFilter : (a -> String) -> TypedFilter a String
 stringFilter getter =
     makeFilter
         { getter = getter
@@ -159,7 +163,7 @@ the value of the field to be filtered.
         IntFilter <| intFilter (\\item -> item.id)
 
 -}
-intFilter : (Item a -> Int) -> TypedFilter a Int
+intFilter : (a -> Int) -> TypedFilter a Int
 intFilter getter =
     makeFilter
         { getter = getter
@@ -179,7 +183,7 @@ the value of the field to be filtered.
         FloatFilter <| floatFilter (\item -> item.value)
 
 -}
-floatFilter : (Item a -> Float) -> TypedFilter a Float
+floatFilter : (a -> Float) -> TypedFilter a Float
 floatFilter getter =
     makeFilter
         { getter = getter
@@ -199,7 +203,7 @@ the value of the field to be filtered.
         BoolFilter <| boolFilter (\item -> item.even)
 
 -}
-boolFilter : (Item a -> Bool) -> TypedFilter a Bool
+boolFilter : (a -> Bool) -> TypedFilter a Bool
 boolFilter getter =
     makeFilter
         { getter = getter
@@ -222,7 +226,7 @@ boolGreaterThan a b =
 
 
 makeFilter :
-    { getter : Item a -> b
+    { getter : a -> b
     , equal : b -> b -> Bool
     , lessThan : b -> b -> Bool
     , greaterThan : b -> b -> Bool

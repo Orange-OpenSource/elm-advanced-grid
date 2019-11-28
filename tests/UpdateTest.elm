@@ -31,7 +31,7 @@ describeHeaderClicked =
                     newModel =
                         simulateHeaderClick model
                 in
-                Expect.equalLists modelSortedByAscendingScore.content newModel.content
+                Expect.equalLists modelSortedByAscendingScore.visibleItems newModel.visibleItems
         , test "scoreColumn msg once should set order to Ascending" <|
             \_ ->
                 let
@@ -52,7 +52,7 @@ describeHeaderClicked =
                     newModel =
                         simulateHeaderClick modelSortedByAscendingScore
                 in
-                Expect.equalLists modelSortedByDescendingScore.content newModel.content
+                Expect.equalLists modelSortedByDescendingScore.visibleItems newModel.visibleItems
         , test "scoreColumn msg twice should set order to Descending" <|
             \_ ->
                 let
@@ -86,31 +86,35 @@ describeHeaderClicked =
         [ test "should clear the filtering value" <|
             \_ ->
                 let
-                    -- TODO: simplify the setup for this test
-                    filteredScoreColumn =
-                        { scoreColumn | filteringValue = Just "> 10" }
-
-                    filteredColumns =
-                        model.config.columns
-                            |> List.Extra.updateIf isScoreColumn (\_ -> filteredScoreColumn)
-
-                    currentConfig =
-                        model.config
-
-                    filteredConfig =
-                        { currentConfig | columns = filteredColumns }
-
-                    filteredModel =
-                        { model | config = filteredConfig }
-
                     ( newModel, _ ) =
-                        update (UserToggledColumnVisibility filteredScoreColumn) filteredModel
+                        update (UserToggledColumnVisibility filteredScoreColumn) (withColumns filteredColumns model)
 
                     updatedScoreColumn =
                         List.Extra.find isScoreColumn newModel.config.columns
                             |> Maybe.withDefault filteredScoreColumn
                 in
                 Expect.equal Nothing updatedScoreColumn.filteringValue
+        ]
+    , describe "receiving FilterModified msg"
+        [ test "should filter items" <|
+            \_ ->
+                let
+                    ( filteredModel, _ ) =
+                        update (FilterModified scoreColumn "< 3.0") model
+                in
+                Expect.equal 2 (List.length filteredModel.visibleItems)
+        ]
+    , describe "receiving UserToggledAllItemSelection msg"
+        [ test "should select visible rows only" <|
+            \_ ->
+                let
+                    ( filteredModel, _ ) =
+                        update (FilterModified scoreColumn "> 2.0") model
+
+                    ( updatedModel, _ ) =
+                        update UserToggledAllItemSelection filteredModel
+                in
+                Expect.equal 2 (List.length updatedModel.visibleItems)
         ]
     ]
 
@@ -126,29 +130,50 @@ simulateHeaderClick model =
 modelSortedByAscendingScore =
     { model
         | content =
+            [ { count = 1, isValid = True, score = 1, title = "ITEM 1" }
+            , { count = 2, isValid = False, score = 2, title = "ITEM 2" }
+            , { count = 4, isValid = True, score = 3, title = "ITEM 4" }
+            , { count = 3, isValid = True, score = 4, title = "ITEM 3" }
+            ]
+        , order = Ascending
+        , sortedBy = Just scoreColumn
+        , visibleItems =
             [ { index = 0, selected = False, data = { count = 1, isValid = True, score = 1, title = "ITEM 1" } }
             , { index = 1, selected = False, data = { count = 2, isValid = False, score = 2, title = "ITEM 2" } }
             , { index = 2, selected = False, data = { count = 4, isValid = True, score = 3, title = "ITEM 4" } }
             , { index = 3, selected = False, data = { count = 3, isValid = True, score = 4, title = "ITEM 3" } }
             ]
-        , order = Ascending
-        , sortedBy = Just scoreColumn
     }
 
 
 modelSortedByDescendingScore =
     { model
         | content =
+            [ { count = 3, isValid = True, score = 4, title = "ITEM 3" }
+            , { count = 4, isValid = True, score = 3, title = "ITEM 4" }
+            , { count = 2, isValid = False, score = 2, title = "ITEM 2" }
+            , { count = 1, isValid = True, score = 1, title = "ITEM 1" }
+            ]
+        , order = Descending
+        , sortedBy = Just scoreColumn
+        , visibleItems =
             [ { index = 0, selected = False, data = { count = 3, isValid = True, score = 4, title = "ITEM 3" } }
             , { index = 1, selected = False, data = { count = 4, isValid = True, score = 3, title = "ITEM 4" } }
             , { index = 2, selected = False, data = { count = 2, isValid = False, score = 2, title = "ITEM 2" } }
             , { index = 3, selected = False, data = { count = 1, isValid = True, score = 1, title = "ITEM 1" } }
             ]
-        , order = Descending
-        , sortedBy = Just scoreColumn
     }
 
 
 isScoreColumn : ColumnConfig Data -> Bool
 isScoreColumn columnConfig =
     columnConfig.properties.id == scoreColumn.properties.id
+
+
+filteredScoreColumn =
+    { scoreColumn | filteringValue = Just "> 2.0" }
+
+
+filteredColumns =
+    model.config.columns
+        |> List.Extra.updateIf isScoreColumn (\_ -> filteredScoreColumn)
