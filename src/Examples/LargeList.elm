@@ -37,7 +37,6 @@ type alias Data =
 type alias Model =
     { gridModel : Grid.Model Data
     , clickedItem : Maybe (Item Data)
-    , selectedItems : List (Item Data)
     }
 
 
@@ -117,14 +116,18 @@ viewClickedItem model =
 
 viewSelectedItems : Model -> Html Msg
 viewSelectedItems model =
+    let
+        selectedItems =
+            selectedAndVisibleItems model.gridModel
+    in
     div (menuItemAttributes "label")
         [ text <|
-            if not <| List.isEmpty model.selectedItems then
+            if not <| List.isEmpty selectedItems then
                 "SelectedItems:"
 
             else
                 "Use checkboxes to select items."
-        , ul (menuItemAttributes "selectedItems") <| List.map (\it -> li [] [ viewItem it ]) model.selectedItems
+        , ul (menuItemAttributes "selectedItems") <| List.map (\it -> li [] [ viewItem it ]) selectedItems
         ]
 
 
@@ -205,7 +208,6 @@ update msg model =
             in
             ( { model
                 | gridModel = newGridModel
-                , selectedItems = selectedAndVisibleItems newGridModel
               }
             , Cmd.map GridMsg gridCmd
             )
@@ -217,7 +219,6 @@ update msg model =
             in
             ( { model
                 | gridModel = newGridModel
-                , selectedItems = selectedAndVisibleItems newGridModel
               }
             , Cmd.map GridMsg gridCmd
             )
@@ -335,7 +336,6 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { gridModel = Grid.init gridConfig items
       , clickedItem = Nothing
-      , selectedItems = []
       }
     , Cmd.none
     )
