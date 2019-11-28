@@ -79,6 +79,7 @@ viewGrid model =
         [ style "background-color" "white"
         , style "margin-left" "auto"
         , style "margin-right" "auto"
+        , style "color" "#555555"
         ]
         [ Html.map GridMsg <| Grid.view model.gridModel ]
 
