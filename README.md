@@ -2,7 +2,7 @@
 
 This library displays a dynamically configurable grid of data.
 
-![](https://raw.githubusercontent.com/Orange-OpenSource/elm-advanced-grid/1.0.0/docs/screenshot.png)
+![](https://raw.githubusercontent.com/Orange-OpenSource/elm-advanced-grid/1.0.1/docs/screenshot.png)
 
 It offers in-place filtering and  sorting, multiple selection, click event listener and
 customizable rendering of the rows and cells.
