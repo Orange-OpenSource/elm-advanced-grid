@@ -10,14 +10,13 @@
 
 
 module Grid exposing
-    ( Config
+    ( Config, withColumns, withConfig
     , ColumnConfig, ColumnProperties, stringColumnConfig, intColumnConfig, floatColumnConfig, boolColumnConfig
     , Sorting(..), compareFields, compareBoolField
     , viewBool, viewFloat, viewInt, viewProgressBar, viewString, cumulatedBorderWidth, cellAttributes
     , Model, Msg(..), init, update, view
-    , filteredItems
-    , visibleColumns, isSelectionColumn, isSelectionColumnProperties
-    , isColumn, selectedAndVisibleItems, withColumns, withConfig
+    , filteredItems, selectedAndVisibleItems
+    , visibleColumns, isColumn, isSelectionColumn, isSelectionColumnProperties
     )
 
 {-| This module allows to create dynamically configurable data grid.
@@ -27,7 +26,7 @@ module Grid exposing
 
 A grid is defined using a `Config`
 
-@docs Config
+@docs Config, withColumns, withConfig
 
 
 # Configure a column
@@ -52,12 +51,12 @@ A grid is defined using a `Config`
 
 # Get data
 
-@docs filteredItems
+@docs filteredItems, selectedAndVisibleItems
 
 
 # Get grid config
 
-@docs visibleColumns, isSelectionColumn, isSelectionColumnProperties
+@docs visibleColumns, isColumn, isSelectionColumn, isSelectionColumnProperties
 
 -}
 
@@ -171,11 +170,11 @@ You probably should not use the other constructors.
 -}
 type Msg a
     = ColumnsModificationRequested (List (ColumnConfig a))
-    | InfListMsg IL.Model
+    | InfiniteListMsg IL.Model
     | FilterLostFocus
     | FilterModified (ColumnConfig a) String
-    | InitializeFilters (Dict String String) -- column ID, filter value
-    | InitializeSorting String Sorting -- column ID, Ascending or Descending
+    | SetFilters (Dict String String) -- column ID, filter value
+    | SetSorting String Sorting -- column ID, Ascending or Descending
     | NoOp
     | GotHeaderContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | ScrollTo (Item a -> Bool) -- scroll to the first item for which the function returns True
@@ -200,7 +199,7 @@ type Msg a
 
 NB: This type is useful to define custom column types. You wont need it for common usages.
 
-By default should use "Unsorted" as the value for the order field.
+By default you probably should use "Unsorted" as the value for the order field.
 If you give any other value (Ascending or Descending), it must match the order
 of the data provided to initialize the grid model.
 
@@ -343,6 +342,8 @@ withColumns columns model =
         |> withColumnsX
 
 
+{-| Sets the filtered data
+-}
 withVisibleItems : List (Item a) -> Model a -> Model a
 withVisibleItems visibleItems model =
     { model | visibleItems = visibleItems }
@@ -355,6 +356,8 @@ sanitizedColumns columns =
     List.Extra.updateIf (not << .visible << .properties) (\c -> { c | filteringValue = Nothing }) columns
 
 
+{-| Sets the column being moved by the user
+-}
 withDraggedColumn : Maybe (DraggedColumn a) -> Model a -> Model a
 withDraggedColumn draggedColumn model =
     { model | draggedColumn = draggedColumn }
@@ -389,7 +392,7 @@ and content.
 
       init : () -> ( Model, Cmd Msg )
       init _ =
-         ( { gridModel = Grid.init gridConfig items
+         ( { gridModel = Grid.init gridConfig data
            }
          , Cmd.none
          )
@@ -446,7 +449,7 @@ init config data =
     { initialModel | columnsX = columnsX initialModel }
 
 
-{-| the list of X coordinates of columns; coordinates are expressed in pixel. The first one is at 0.
+{-| The list of X coordinates of columns; coordinates are expressed in pixels. The first one is at 0.
 -}
 columnsX : Model a -> List Int
 columnsX model =
@@ -476,7 +479,7 @@ update msg model =
                 { postScrollMessage = NoOp
                 , listHtmlId = gridHtmlId
                 , itemIndex = targetItemIndex
-                , configValue = gridConfig model
+                , configValue = infiniteListConfig model
                 , items = model.visibleItems
                 }
             )
@@ -485,7 +488,7 @@ update msg model =
             ( modelUpdate msg model, Cmd.none )
 
 
-{-| update for messages for which no command is generated
+{-| Updates the grid model for messages which won't generate any command
 -}
 modelUpdate : Msg a -> Model a -> Model a
 modelUpdate msg model =
@@ -515,20 +518,20 @@ modelUpdate msg model =
         GotHeaderContainerInfo (Err _) ->
             model
 
-        InfListMsg infList ->
+        InfiniteListMsg infList ->
             { model | infList = infList }
 
-        InitializeFilters filterValues ->
+        SetFilters filterValues ->
             let
                 newColumns =
-                    List.map (initializeFilter filterValues) model.config.columns
+                    List.map (setFilter filterValues) model.config.columns
 
                 newModel =
                     model |> withColumns newColumns
             in
             updateVisibleItems newModel
 
-        InitializeSorting columnId sorting ->
+        SetSorting columnId sorting ->
             let
                 sortedColumnConfig =
                     List.Extra.find (hasId columnId) model.config.columns
@@ -666,6 +669,8 @@ modelUpdate msg model =
             { model | visibleItems = newItems }
 
 
+{-| Apply the current filters to the whole data
+-}
 updateVisibleItems : Model a -> Model a
 updateVisibleItems model =
     let
@@ -678,8 +683,10 @@ updateVisibleItems model =
     model |> withVisibleItems visibleItems
 
 
-initializeFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
-initializeFilter filterValues columnConfig =
+{-| Updates the filter for a given column
+-}
+setFilter : Dict String String -> ColumnConfig a -> ColumnConfig a
+setFilter filterValues columnConfig =
     let
         value =
             Dict.get columnConfig.properties.id filterValues
@@ -687,6 +694,8 @@ initializeFilter filterValues columnConfig =
     { columnConfig | filteringValue = value }
 
 
+{-| Sorts visible items according the the content of a given column, in a given order
+-}
 sort : Model a -> ColumnConfig a -> Sorting -> (Model a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )) -> Model a
 sort model columnConfig order sorter =
     let
@@ -703,6 +712,8 @@ sort model columnConfig order sorter =
     }
 
 
+{-| Reverse the sorting order -or define it as Ascending if the data were not sorted according to the content of the given column
+-}
 toggleOrder : Model a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )
 toggleOrder model columnConfig order =
     case order of
@@ -731,6 +742,8 @@ hasId id columnConfig =
     columnConfig.properties.id == id
 
 
+{-| Compares the identity of two columns
+-}
 isColumn : ColumnConfig a -> ColumnConfig a -> Bool
 isColumn firstColumnConfig secondColumnConfig =
     firstColumnConfig.properties.id == secondColumnConfig.properties.id
@@ -741,6 +754,8 @@ minColumnWidth =
     25
 
 
+{-| Sets the width, in pixels, of the column whose resize handle is being dragged by the user
+-}
 resizeColumn : Model a -> Float -> Model a
 resizeColumn model x =
     case model.resizedColumn of
@@ -870,13 +885,15 @@ moveItemRight list originIndex indexDelta =
         |> Array.toList
 
 
+{-| the list of items selected by the user, after filters were applied
+-}
 selectedAndVisibleItems : Model a -> List (Item a)
 selectedAndVisibleItems model =
     List.filter .selected model.visibleItems
 
 
-gridConfig : Model a -> IL.Config (Item a) (Msg a)
-gridConfig model =
+infiniteListConfig : Model a -> IL.Config (Item a) (Msg a)
+infiniteListConfig model =
     IL.config
         { itemView = viewRow model
         , itemHeight = IL.withConstantHeight model.config.lineHeight
@@ -897,9 +914,11 @@ view model =
             viewGrid model
 
 
+{-| the id of the Html node containing the grid
+-}
 gridHtmlId : String
 gridHtmlId =
-    "grid"
+    "_grid_"
 
 
 {-| Renders the grid
@@ -933,7 +952,7 @@ viewGrid model =
                 [ css
                     [ borderLeft3 (px 1) solid lightGrey2
                     , borderRight3 (px 1) solid lightGrey2
-                    , width (px <| toFloat <| totalWidth model)
+                    , width (px <| toFloat <| gridWidth model)
                     ]
                 ]
                 [ viewHeaderContainer model
@@ -955,7 +974,7 @@ viewRows model =
         [ div
             [ css
                 [ height (px <| toFloat model.config.containerHeight)
-                , width (px <| toFloat <| totalWidth model)
+                , width (px <| toFloat <| gridWidth model)
                 , overflowX hidden
                 , overflowY auto
                 , border3 (px 1) solid lightGrey
@@ -963,10 +982,10 @@ viewRows model =
                 -- displays the vertical scrollbar to the left. https://stackoverflow.com/questions/7347532/how-to-position-a-div-scrollbar-on-the-left-hand-side
                 , property "direction" "rtl"
                 ]
-            , fromUnstyled <| IL.onScroll InfListMsg
+            , fromUnstyled <| IL.onScroll InfiniteListMsg
             , id gridHtmlId
             ]
-            [ Html.Styled.fromUnstyled <| IL.view (gridConfig model) model.infList model.visibleItems ]
+            [ Html.Styled.fromUnstyled <| IL.view (infiniteListConfig model) model.infList model.visibleItems ]
         ]
 
 
@@ -984,7 +1003,8 @@ filteredItems model =
         |> List.foldl (\filter remainingValues -> List.filter filter remainingValues) model.content
 
 
-{-| idx is the index of the visible line; if there are 25 visible lines, 0 <= idx < 25
+{-| Renders the row for a given item
+idx is the index of the visible line; if there are 25 visible lines, 0 <= idx < 25
 listIdx is the index in the data source; if the total number of items is 1000, 0<= listidx < 1000
 -}
 viewRow : Model a -> Int -> Int -> Item a -> Html.Html (Msg a)
@@ -996,7 +1016,7 @@ viewRow model idx listIdx item =
             , css
                 [ displayFlex
                 , height (px <| toFloat model.config.lineHeight)
-                , width (px <| toFloat <| totalWidth model)
+                , width (px <| toFloat <| gridWidth model)
 
                 -- restore reading order, while preserving the left position of the scrollbar
                 , property "direction" "ltr"
@@ -1007,8 +1027,8 @@ viewRow model idx listIdx item =
         List.map (\columnConfig -> viewColumn columnConfig item) (visibleColumns model)
 
 
-totalWidth : Model a -> Int
-totalWidth model =
+gridWidth : Model a -> Int
+gridWidth model =
     List.foldl (\columnConfig -> (+) columnConfig.properties.width) 0 (visibleColumns model)
 
 
@@ -1482,7 +1502,7 @@ headerStyles model =
         ]
 
 
-{-| specific header content for the selection column
+{-| Specific header content for the selection column
 -}
 viewSelectionHeader : Model a -> ColumnConfig a -> Html (Msg a)
 viewSelectionHeader model _ =
@@ -1508,7 +1528,7 @@ viewSelectionHeader model _ =
         ]
 
 
-{-| header content for data columns
+{-| Header content for data columns
 -}
 viewDataHeader : Model a -> ColumnConfig a -> List (Attribute (Msg a)) -> Html (Msg a)
 viewDataHeader model columnConfig conditionalAttributes =
@@ -1528,7 +1548,7 @@ viewDataHeader model columnConfig conditionalAttributes =
                 , flexDirection column
                 , alignItems flexStart
                 , overflow hidden
-                , width <| px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth) - resizeHandleWidth
+                , width <| px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth) - resizingHandleWidth
                 ]
              ]
                 ++ conditionalAttributes
@@ -1591,7 +1611,7 @@ viewGhostHeader model =
             noContent
 
 
-{-| Returns true when the given ColumnConfig corresponds to the multiple selection column
+{-| Returns true when the given ColumnConfig is the multiple selection column
 (column added by Grid when row selection is activated)
 -}
 isSelectionColumn : ColumnConfig a -> Bool
@@ -1607,6 +1627,8 @@ isSelectionColumnProperties columnProperties =
     columnProperties.id == selectionColumn.properties.id
 
 
+{-| Renders a column title
+-}
 viewTitle : Model a -> ColumnConfig a -> Html (Msg a)
 viewTitle model columnConfig =
     let
@@ -1637,10 +1659,10 @@ viewSortingSymbol model columnConfig =
         Just config ->
             if config.properties.id == columnConfig.properties.id then
                 if model.order == Descending then
-                    arrowUp
+                    viewArrowUp
 
                 else
-                    arrowDown
+                    viewArrowDown
 
             else
                 noContent
@@ -1698,7 +1720,7 @@ viewResizeHandle columnConfig =
             , justifyContent spaceAround
             , height (pct 100)
             , visibility hidden
-            , width (px resizeHandleWidth)
+            , width (px resizingHandleWidth)
             ]
         , fromUnstyled <| Mouse.onDown (\event -> UserClickedResizeHandle columnConfig (event |> toPosition))
         , onBlur UserEndedMouseInteraction
@@ -1718,8 +1740,8 @@ viewVerticalBar =
         []
 
 
-resizeHandleWidth : Float
-resizeHandleWidth =
+resizingHandleWidth : Float
+resizingHandleWidth =
     5
 
 
@@ -1728,18 +1750,18 @@ noContent =
     text ""
 
 
-arrowUp : Html (Msg a)
-arrowUp =
-    arrow borderBottom3
+viewArrowUp : Html (Msg a)
+viewArrowUp =
+    viewArrow borderBottom3
 
 
-arrowDown : Html (Msg a)
-arrowDown =
-    arrow borderTop3
+viewArrowDown : Html (Msg a)
+viewArrowDown =
+    viewArrow borderTop3
 
 
-arrow : (Px -> BorderStyle (TextDecorationStyle {}) -> Color -> Style) -> Html msg
-arrow horizontalBorder =
+viewArrow : (Px -> BorderStyle (TextDecorationStyle {}) -> Color -> Style) -> Html msg
+viewArrow horizontalBorder =
     div
         [ css
             [ width (px 0)
@@ -1762,7 +1784,7 @@ viewFilter model columnConfig =
             , height (px <| toFloat <| model.config.lineHeight)
             , paddingLeft (px 2)
             , paddingRight (px 2)
-            , marginLeft (px resizeHandleWidth) -- for visual centering in the header
+            , marginLeft (px resizingHandleWidth) -- for visual centering in the header
             , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth * 2))
             ]
         , onClick UserClickedFilter

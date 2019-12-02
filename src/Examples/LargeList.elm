@@ -235,7 +235,7 @@ update msg model =
         ResetFilters ->
             let
                 message =
-                    Grid.InitializeFilters Dict.empty
+                    Grid.SetFilters Dict.empty
 
                 ( newGridModel, gridCmd ) =
                     Grid.update message model.gridModel
@@ -250,7 +250,7 @@ update msg model =
                     Dict.fromList [ ( "City", "o" ) ]
 
                 message =
-                    Grid.InitializeFilters filters
+                    Grid.SetFilters filters
 
                 ( newGridModel, gridCmd ) =
                     Grid.update message model.gridModel
@@ -262,7 +262,7 @@ update msg model =
         SetAscendingOrder ->
             let
                 message =
-                    Grid.InitializeSorting "City" Ascending
+                    Grid.SetSorting "City" Ascending
 
                 ( newGridModel, gridCmd ) =
                     Grid.update message model.gridModel
@@ -274,7 +274,7 @@ update msg model =
         SetDecendingOrder ->
             let
                 message =
-                    Grid.InitializeSorting "City" Descending
+                    Grid.SetSorting "City" Descending
 
                 ( newGridModel, gridCmd ) =
                     Grid.update message model.gridModel

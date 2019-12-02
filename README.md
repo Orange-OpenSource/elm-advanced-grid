@@ -8,7 +8,7 @@ It offers in-place filtering and  sorting, multiple selection, click event liste
 customizable rendering of the rows and cells.
 Columns can be resized using the mouse. They can also be reordered by drag and drop. 
  
-The data can count more than 20,000 lines, with no performance impact, thanks to the use of [FabienHenon/elm-infinite-list-view](https://package.elm-lang.org/packages/FabienHenon/elm-infinite-list-view/latest/) under the hood.
+The data can count more than 20,000 lines, with a limited performance impact, thanks to the use of [FabienHenon/elm-infinite-list-view](https://package.elm-lang.org/packages/FabienHenon/elm-infinite-list-view/latest/) under the hood.
 
 [Demos](https://orange-opensource.github.io/elm-advanced-grid/) are available.
  
