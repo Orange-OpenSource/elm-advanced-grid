@@ -3,7 +3,7 @@
     "name": "pascallemerrer/elm-advanced-grid",
     "summary": "A dynamically configurable grid",
     "license": "MIT",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "exposed-modules": [
         "Grid",
         "Grid.Csv"
