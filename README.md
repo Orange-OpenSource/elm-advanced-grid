@@ -1,5 +1,8 @@
 # Elm Advanced Grid
 
+## Please use Orange-Opensource/elm-advanced-grid instead of this module.
+
+
 This library displays a dynamically configurable grid of data.
 
 ![](https://raw.githubusercontent.com/Orange-OpenSource/elm-advanced-grid/1.0.2/docs/screenshot.png)
