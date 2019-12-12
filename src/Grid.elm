@@ -15,8 +15,9 @@ module Grid exposing
     , Sorting(..), compareFields, compareBoolField
     , viewBool, viewFloat, viewInt, viewProgressBar, viewString, cumulatedBorderWidth, cellAttributes
     , Model, Msg(..), init, update, view
-    , filteredItems, selectedAndVisibleItems
+    , selectedAndVisibleItems
     , visibleColumns, isColumn, isSelectionColumn, isSelectionColumnProperties
+    , filteredData
     )
 
 {-| This module allows to create dynamically configurable data grid.
@@ -179,6 +180,7 @@ type Msg a
     | GotHeaderContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | ScrollTo (Item a -> Bool) -- scroll to the first item for which the function returns True
     | ShowPreferences
+    | UpdateContent (a -> a)
     | UserClickedHeader (ColumnConfig a)
     | UserClickedFilter
     | UserClickedLine (Item a)
@@ -324,11 +326,6 @@ withConfig config model =
     { model | config = config }
 
 
-withColumnsX : Model a -> Model a
-withColumnsX model =
-    { model | columnsX = columnsX model }
-
-
 {-| Sets the column definitions into the configuration
 -}
 withColumns : List (ColumnConfig a) -> Model a -> Model a
@@ -340,6 +337,25 @@ withColumns columns model =
     model
         |> withConfig { config | columns = sanitizedColumns columns }
         |> withColumnsX
+
+
+withColumnsX : Model a -> Model a
+withColumnsX model =
+    { model | columnsX = columnsX model }
+
+
+{-| Sets the data in the grid
+-}
+withContent : List a -> Model a -> Model a
+withContent data model =
+    { model | content = data }
+
+
+{-| Sets the column being moved by the user
+-}
+withDraggedColumn : Maybe (DraggedColumn a) -> Model a -> Model a
+withDraggedColumn draggedColumn model =
+    { model | draggedColumn = draggedColumn }
 
 
 {-| Sets the filtered data
@@ -354,13 +370,6 @@ withVisibleItems visibleItems model =
 sanitizedColumns : List (ColumnConfig a) -> List (ColumnConfig a)
 sanitizedColumns columns =
     List.Extra.updateIf (not << .visible << .properties) (\c -> { c | filteringValue = Nothing }) columns
-
-
-{-| Sets the column being moved by the user
--}
-withDraggedColumn : Maybe (DraggedColumn a) -> Model a -> Model a
-withDraggedColumn draggedColumn model =
-    { model | draggedColumn = draggedColumn }
 
 
 {-| Definition for the row selection column,
@@ -668,6 +677,15 @@ modelUpdate msg model =
             in
             { model | visibleItems = newItems }
 
+        UpdateContent updateContent ->
+            let
+                updatedData =
+                    List.map updateContent model.content
+            in
+            model
+                |> withContent updatedData
+                |> updateVisibleItems
+
 
 {-| Apply the current filters to the whole data
 -}
@@ -675,7 +693,7 @@ updateVisibleItems : Model a -> Model a
 updateVisibleItems model =
     let
         filteredContent =
-            filteredItems model
+            filteredData model
 
         visibleItems =
             List.indexedMap (\index value -> Item.create value index) filteredContent
@@ -997,8 +1015,8 @@ columnFilters model =
 
 {-| The list of items satisfying the current filtering values
 -}
-filteredItems : Model a -> List a
-filteredItems model =
+filteredData : Model a -> List a
+filteredData model =
     columnFilters model
         |> List.foldl (\filter remainingValues -> List.filter filter remainingValues) model.content
 

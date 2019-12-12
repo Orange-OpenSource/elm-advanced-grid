@@ -20,7 +20,7 @@ module Grid.Csv exposing (visibleItemsToCsv)
 
 -}
 
-import Grid exposing (ColumnConfig, Model, filteredItems, isSelectionColumn, visibleColumns)
+import Grid exposing (ColumnConfig, Model, isSelectionColumn, visibleColumns)
 import Grid.Item exposing (Item)
 import List.Extra
 
