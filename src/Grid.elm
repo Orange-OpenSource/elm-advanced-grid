@@ -373,8 +373,8 @@ withDraggedColumn draggedColumn state =
 {-| Sets the filtered data
 -}
 withVisibleItems : List (Item a) -> State a -> State a
-withVisibleItems visibleItems model =
-    { model | visibleItems = visibleItems }
+withVisibleItems visibleItems state =
+    { state | visibleItems = visibleItems }
 
 
 {-| Clears the filter of hidden columns to avoid filtering with an invisible criteria

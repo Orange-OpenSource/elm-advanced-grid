@@ -10467,9 +10467,9 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$columnFilters = function (model) {
 		model.h.dM);
 };
 var $Orange_OpenSource$elm_advanced_grid$Grid$withVisibleItems = F2(
-	function (visibleItems, model) {
+	function (visibleItems, state) {
 		return _Utils_update(
-			model,
+			state,
 			{p: visibleItems});
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$updateVisibleItems = function (state) {
