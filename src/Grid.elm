@@ -1347,7 +1347,7 @@ viewClosebutton =
                 , property "content" "' '"
                 , height (px 17)
                 , width (px 2)
-                , backgroundColor darkGrey2
+                , backgroundColor black
                 , transform (rotate (deg 45))
                 ]
             , after
@@ -1356,7 +1356,7 @@ viewClosebutton =
                 , property "content" "' '"
                 , height (px 17)
                 , width (px 2)
-                , backgroundColor darkGrey2
+                , backgroundColor black
                 , transform (rotate (deg -45))
                 ]
             ]

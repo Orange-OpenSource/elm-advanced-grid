@@ -12125,7 +12125,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewClosebutton = A2(
 							$rtfeldman$elm_css$Css$px(17)),
 							$rtfeldman$elm_css$Css$width(
 							$rtfeldman$elm_css$Css$px(2)),
-							$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey2),
+							$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$black),
 							$rtfeldman$elm_css$Css$transform(
 							$rtfeldman$elm_css$Css$rotate(
 								$rtfeldman$elm_css$Css$deg(45)))
@@ -12141,7 +12141,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewClosebutton = A2(
 							$rtfeldman$elm_css$Css$px(17)),
 							$rtfeldman$elm_css$Css$width(
 							$rtfeldman$elm_css$Css$px(2)),
-							$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey2),
+							$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$black),
 							$rtfeldman$elm_css$Css$transform(
 							$rtfeldman$elm_css$Css$rotate(
 								$rtfeldman$elm_css$Css$deg(-45)))
