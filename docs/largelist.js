@@ -10410,34 +10410,36 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$updateColumnWidthProperty = F3(
 		};
 		return A3($Orange_OpenSource$elm_advanced_grid$Grid$updateColumnProperties, setWidth, model, columnConfig.b.m);
 	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$withColumnsX = function (_v0) {
-	var state = _v0;
+var $Orange_OpenSource$elm_advanced_grid$Grid$withColumnsXState = function (state) {
 	return _Utils_update(
 		state,
 		{
 			a4: $Orange_OpenSource$elm_advanced_grid$Grid$columnsX(state)
 		});
 };
-var $Orange_OpenSource$elm_advanced_grid$Grid$withConfig = F2(
-	function (config, _v0) {
-		var state = _v0;
+var $Orange_OpenSource$elm_advanced_grid$Grid$withConfigState = F2(
+	function (config, state) {
 		return _Utils_update(
 			state,
 			{h: config});
 	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$withColumns = F2(
-	function (columns, _v0) {
-		var state = _v0;
+var $Orange_OpenSource$elm_advanced_grid$Grid$withColumnsState = F2(
+	function (columns, state) {
 		var config = state.h;
-		return $Orange_OpenSource$elm_advanced_grid$Grid$withColumnsX(
+		return $Orange_OpenSource$elm_advanced_grid$Grid$withColumnsXState(
 			A2(
-				$Orange_OpenSource$elm_advanced_grid$Grid$withConfig,
+				$Orange_OpenSource$elm_advanced_grid$Grid$withConfigState,
 				_Utils_update(
 					config,
 					{
 						dT: $Orange_OpenSource$elm_advanced_grid$Grid$sanitizedColumns(columns)
 					}),
 				state));
+	});
+var $Orange_OpenSource$elm_advanced_grid$Grid$withColumns = F2(
+	function (columns, _v0) {
+		var state = _v0;
+		return A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumnsState, columns, state);
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$resizeColumn = F2(
 	function (state, x) {
@@ -10735,19 +10737,17 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$withContent = F2(
 			{a5: data});
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$withDraggedColumn = F2(
-	function (draggedColumn, _v0) {
-		var state = _v0;
+	function (draggedColumn, state) {
 		return _Utils_update(
 			state,
 			{O: draggedColumn});
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
-	function (msg, _v0) {
-		var state = _v0;
+	function (msg, state) {
 		switch (msg.$) {
 			case 0:
 				var columns = msg.a;
-				return A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumns, columns, state);
+				return A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumnsState, columns, state);
 			case 2:
 				return _Utils_update(
 					state,
@@ -10765,8 +10765,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
 					$Orange_OpenSource$elm_advanced_grid$Grid$isColumn(columnConfig),
 					newColumnconfig,
 					state.h.dT);
-				var _v2 = A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumns, newColumns, state);
-				var newState = _v2;
+				var newState = A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumnsState, newColumns, state);
 				return $Orange_OpenSource$elm_advanced_grid$Grid$updateVisibleItems(newState);
 			case 7:
 				if (!msg.a.$) {
@@ -10790,8 +10789,8 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
 					$elm$core$List$map,
 					$Orange_OpenSource$elm_advanced_grid$Grid$setFilter(filterValues),
 					state.h.dT);
-				var _v3 = A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumns, newColumns, state);
-				var newState = _v3;
+				var _v1 = A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumns, newColumns, state);
+				var newState = _v1;
 				return $Orange_OpenSource$elm_advanced_grid$Grid$updateVisibleItems(newState);
 			case 5:
 				var columnId = msg.a;
@@ -10852,9 +10851,9 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
 			case 18:
 				var mousePosition = msg.a;
 				var newDraggedColumn = function () {
-					var _v5 = state.O;
-					if (!_v5.$) {
-						var draggedColumn = _v5.a;
+					var _v3 = state.O;
+					if (!_v3.$) {
+						var draggedColumn = _v3.a;
 						return $elm$core$Maybe$Just(
 							_Utils_update(
 								draggedColumn,
@@ -10878,9 +10877,9 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
 			case 21:
 				var columnConfig = msg.a;
 				var draggedColumnConfig = msg.b;
-				var _v6 = state.O;
-				if (!_v6.$) {
-					var draggedColumn = _v6.a;
+				var _v4 = state.O;
+				if (!_v4.$) {
+					var draggedColumn = _v4.a;
 					if (_Utils_eq(columnConfig.b.m, draggedColumn.bO)) {
 						return state;
 					} else {
@@ -10891,7 +10890,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
 								_Utils_update(
 									draggedColumn,
 									{bO: columnConfig.b.m})),
-							A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumns, newColumns, state));
+							A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumnsState, newColumns, state));
 					}
 				} else {
 					return state;
@@ -10923,10 +10922,9 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
 							{J: $elm$core$Maybe$Nothing});
 					},
 					A3($Orange_OpenSource$elm_advanced_grid$Grid$updateColumnProperties, toggleVisibility, state, columnConfig.b.m));
-				var _v7 = A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumns, newColumns, state);
-				var stateWithNewColumns = _v7;
-				var updatedState = $Orange_OpenSource$elm_advanced_grid$Grid$updateVisibleItems(stateWithNewColumns);
-				return updatedState;
+				var _v5 = A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumns, newColumns, state);
+				var stateWithNewColumns = _v5;
+				return $Orange_OpenSource$elm_advanced_grid$Grid$updateVisibleItems(stateWithNewColumns);
 			case 24:
 				var item = msg.a;
 				var newItems = A3(

@@ -325,25 +325,35 @@ type alias State a =
 -}
 withConfig : Config a -> Model a -> Model a
 withConfig config (Model state) =
-    Model { state | config = config }
+    Model (withConfigState config state)
+
+
+withConfigState : Config a -> State a -> State a
+withConfigState config state =
+    { state | config = config }
 
 
 {-| Sets the column definitions into the configuration
 -}
 withColumns : List (ColumnConfig a) -> Model a -> Model a
 withColumns columns (Model state) =
+    Model (withColumnsState columns state)
+
+
+withColumnsState : List (ColumnConfig a) -> State a -> State a
+withColumnsState columns state =
     let
         config =
             state.config
     in
-    Model state
-        |> withConfig { config | columns = sanitizedColumns columns }
-        |> withColumnsX
+    state
+        |> withConfigState { config | columns = sanitizedColumns columns }
+        |> withColumnsXState
 
 
-withColumnsX : Model a -> Model a
-withColumnsX (Model state) =
-    Model { state | columnsX = columnsX (Model state) }
+withColumnsXState : State a -> State a
+withColumnsXState state =
+    { state | columnsX = columnsX state }
 
 
 {-| Sets the data in the grid
@@ -355,9 +365,9 @@ withContent data state =
 
 {-| Sets the column being moved by the user
 -}
-withDraggedColumn : Maybe (DraggedColumn a) -> Model a -> Model a
-withDraggedColumn draggedColumn (Model state) =
-    Model { state | draggedColumn = draggedColumn }
+withDraggedColumn : Maybe (DraggedColumn a) -> State a -> State a
+withDraggedColumn draggedColumn state =
+    { state | draggedColumn = draggedColumn }
 
 
 {-| Sets the filtered data
@@ -457,14 +467,14 @@ init config data =
             , visibleItems = indexedItems
             }
     in
-    Model { initialState | columnsX = columnsX (Model initialState) }
+    Model { initialState | columnsX = columnsX initialState }
 
 
 {-| The list of X coordinates of columns; coordinates are expressed in pixels. The first one is at 0.
 -}
-columnsX : Model a -> List Int
+columnsX : State a -> List Int
 columnsX model =
-    visibleColumns model
+    visibleColumns (Model model)
         |> List.Extra.scanl (\col x -> x + col.properties.width) 0
 
 
@@ -496,19 +506,19 @@ update msg (Model state) =
             )
 
         _ ->
-            ( modelUpdate msg (Model state), Cmd.none )
+            ( modelUpdate msg state |> Model, Cmd.none )
 
 
-{-| Updates the grid model for messages which won't generate any command
+{-| Updates the grid state for messages which won't generate any command
 -}
-modelUpdate : Msg a -> Model a -> Model a
-modelUpdate msg (Model state) =
+modelUpdate : Msg a -> State a -> State a
+modelUpdate msg state =
     case msg of
         ColumnsModificationRequested columns ->
-            Model state |> withColumns columns
+            state |> withColumnsState columns
 
         FilterLostFocus ->
-            Model { state | filterHasFocus = False }
+            { state | filterHasFocus = False }
 
         FilterModified columnConfig string ->
             let
@@ -518,19 +528,19 @@ modelUpdate msg (Model state) =
                 newColumns =
                     List.Extra.setIf (isColumn columnConfig) newColumnconfig state.config.columns
 
-                (Model newState) =
-                    Model state |> withColumns newColumns
+                newState =
+                    state |> withColumnsState newColumns
             in
-            Model (updateVisibleItems newState)
+            updateVisibleItems newState
 
         GotHeaderContainerInfo (Ok info) ->
-            Model { state | headerContainerPosition = { x = info.element.x, y = info.element.y } }
+            { state | headerContainerPosition = { x = info.element.x, y = info.element.y } }
 
         GotHeaderContainerInfo (Err _) ->
-            Model state
+            state
 
         InfiniteListMsg infList ->
-            Model { state | infList = infList }
+            { state | infList = infList }
 
         SetFilters filterValues ->
             let
@@ -540,7 +550,7 @@ modelUpdate msg (Model state) =
                 (Model newState) =
                     Model state |> withColumns newColumns
             in
-            Model (updateVisibleItems newState)
+            updateVisibleItems newState
 
         SetSorting columnId sorting ->
             let
@@ -549,20 +559,20 @@ modelUpdate msg (Model state) =
             in
             case sortedColumnConfig of
                 Just columnConfig ->
-                    Model (sort state columnConfig sorting orderBy)
+                    sort state columnConfig sorting orderBy
 
                 Nothing ->
-                    Model state
+                    state
 
         NoOp ->
-            Model state
+            state
 
         ScrollTo _ ->
             -- This message is handled in the `update` function
-            Model state
+            state
 
         ShowPreferences ->
-            Model { state | showPreferences = True }
+            { state | showPreferences = True }
 
         UserClickedDragHandle columnConfig mousePosition ->
             let
@@ -573,31 +583,30 @@ modelUpdate msg (Model state) =
                     , lastSwappedColumnId = ""
                     }
             in
-            Model state
+            state
                 |> withDraggedColumn (Just draggedColumn)
 
         UserClickedFilter ->
-            Model { state | filterHasFocus = True }
+            { state | filterHasFocus = True }
 
         UserClickedHeader columnConfig ->
             if state.filterHasFocus then
-                Model state
+                state
 
             else
-                Model (sort state columnConfig state.order toggleOrder)
+                sort state columnConfig state.order toggleOrder
 
         UserClickedLine item ->
-            Model { state | clickedItem = Just item }
+            { state | clickedItem = Just item }
 
         UserClickedPreferenceCloseButton ->
-            Model { state | showPreferences = False }
+            { state | showPreferences = False }
 
         UserClickedResizeHandle columnConfig position ->
-            Model
-                { state
-                    | resizedColumn = Just columnConfig
-                    , dragStartX = position.x
-                }
+            { state
+                | resizedColumn = Just columnConfig
+                , dragStartX = position.x
+            }
 
         UserDraggedColumn mousePosition ->
             let
@@ -610,39 +619,38 @@ modelUpdate msg (Model state) =
                         Nothing ->
                             Nothing
             in
-            Model { state | draggedColumn = newDraggedColumn }
+            { state | draggedColumn = newDraggedColumn }
 
         UserEndedMouseInteraction ->
-            Model
-                { state
-                    | resizedColumn = Nothing
-                    , draggedColumn = Nothing
-                }
+            { state
+                | resizedColumn = Nothing
+                , draggedColumn = Nothing
+            }
 
         UserHoveredDragHandle ->
             -- This message is handled in the `update` function
-            Model state
+            state
 
         UserMovedResizeHandle position ->
-            Model (resizeColumn state position.x)
+            resizeColumn state position.x
 
         UserSwappedColumns columnConfig draggedColumnConfig ->
             case state.draggedColumn of
                 Just draggedColumn ->
                     if columnConfig.properties.id == draggedColumn.lastSwappedColumnId then
-                        Model state
+                        state
 
                     else
                         let
                             newColumns =
                                 moveColumn columnConfig draggedColumnConfig state.config.columns
                         in
-                        Model state
-                            |> withColumns newColumns
+                        state
+                            |> withColumnsState newColumns
                             |> withDraggedColumn (Just { draggedColumn | lastSwappedColumnId = columnConfig.properties.id })
 
                 Nothing ->
-                    Model state
+                    state
 
         UserToggledAllItemSelection ->
             let
@@ -655,11 +663,10 @@ modelUpdate msg (Model state) =
                 newStatus =
                     not state.isAllSelected
             in
-            Model
-                { state
-                    | isAllSelected = newStatus
-                    , visibleItems = updatedVisibleItems
-                }
+            { state
+                | isAllSelected = newStatus
+                , visibleItems = updatedVisibleItems
+            }
 
         UserToggledColumnVisibility columnConfig ->
             let
@@ -672,18 +679,15 @@ modelUpdate msg (Model state) =
 
                 (Model stateWithNewColumns) =
                     Model state |> withColumns newColumns
-
-                updatedState =
-                    updateVisibleItems stateWithNewColumns
             in
-            Model updatedState
+            updateVisibleItems stateWithNewColumns
 
         UserToggledSelection item ->
             let
                 newItems =
                     List.Extra.updateAt item.index (\it -> toggleSelection it) state.visibleItems
             in
-            Model { state | visibleItems = newItems }
+            { state | visibleItems = newItems }
 
         UpdateContent updateContent ->
             let
@@ -693,7 +697,6 @@ modelUpdate msg (Model state) =
             state
                 |> withContent updatedData
                 |> updateVisibleItems
-                |> Model
 
 
 {-| Apply the current filters to the whole data
@@ -807,7 +810,7 @@ resizeColumn state x =
                     Model state |> withColumns newColumns
             in
             { newState
-                | columnsX = columnsX (Model state)
+                | columnsX = columnsX state
             }
 
         _ ->
