@@ -37,12 +37,14 @@ type alias Data =
 type alias Model =
     { gridModel : Grid.Model Data
     , clickedItem : Maybe (Item Data)
+    , arePreferencesVisible : Bool
     }
 
 
 type Msg
     = DisplayPreferences
     | GridMsg (Grid.Msg Data)
+    | HidePreferences
     | ResetFilters
     | SetFilters
     | SetAscendingOrder
@@ -89,7 +91,11 @@ viewMenu model =
         [ style "display" "flex"
         , style "flex-direction" "column"
         ]
-        [ viewButton "Show Preferences" DisplayPreferences
+        [ if model.arePreferencesVisible then
+            viewButton "Hide Preferences" HidePreferences
+
+          else
+            viewButton "Show Preferences" DisplayPreferences
         , viewButton "Set Filters" SetFilters
         , viewButton "Reset Filters" ResetFilters
         , viewButton "Sort cities ascending" SetAscendingOrder
@@ -185,6 +191,7 @@ update msg model =
             in
             ( { model
                 | gridModel = newGridModel
+                , arePreferencesVisible = True
               }
             , Cmd.map GridMsg gridCmd
             )
@@ -229,6 +236,18 @@ update msg model =
                     Grid.update message model.gridModel
             in
             ( { model | gridModel = newGridModel }
+            , Cmd.map GridMsg gridCmd
+            )
+
+        HidePreferences ->
+            let
+                ( newGridModel, gridCmd ) =
+                    Grid.update UserClickedPreferenceCloseButton model.gridModel
+            in
+            ( { model
+                | gridModel = newGridModel
+                , arePreferencesVisible = False
+              }
             , Cmd.map GridMsg gridCmd
             )
 
@@ -336,6 +355,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { gridModel = Grid.init gridConfig items
       , clickedItem = Nothing
+      , arePreferencesVisible = False
       }
     , Cmd.none
     )
