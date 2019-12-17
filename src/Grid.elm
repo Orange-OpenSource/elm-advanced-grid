@@ -506,13 +506,13 @@ update msg (Model state) =
             )
 
         _ ->
-            ( modelUpdate msg state |> Model, Cmd.none )
+            ( stateUpdate msg state |> Model, Cmd.none )
 
 
 {-| Updates the grid state for messages which won't generate any command
 -}
-modelUpdate : Msg a -> State a -> State a
-modelUpdate msg state =
+stateUpdate : Msg a -> State a -> State a
+stateUpdate msg state =
     case msg of
         ColumnsModificationRequested columns ->
             state |> withColumnsState columns
@@ -547,8 +547,8 @@ modelUpdate msg state =
                 newColumns =
                     List.map (setFilter filterValues) state.config.columns
 
-                (Model newState) =
-                    Model state |> withColumns newColumns
+                newState =
+                    state |> withColumnsState newColumns
             in
             updateVisibleItems newState
 
@@ -686,8 +686,8 @@ modelUpdate msg state =
                     updateColumnProperties toggleVisibility state columnConfig.properties.id
                         |> List.Extra.updateIf (isColumn columnConfig) (\col -> { col | filteringValue = Nothing })
 
-                (Model stateWithNewColumns) =
-                    Model state |> withColumns newColumns
+                stateWithNewColumns =
+                    state |> withColumnsState newColumns
             in
             updateVisibleItems stateWithNewColumns
 
@@ -806,8 +806,8 @@ resizeColumn state x =
                     else
                         state.config.columns
 
-                (Model newState) =
-                    Model state |> withColumns newColumns
+                newState =
+                    state |> withColumnsState newColumns
             in
             { newState
                 | columnsX = columnsX state

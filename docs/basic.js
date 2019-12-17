@@ -9644,6 +9644,96 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$infiniteListConfig = function (sta
 				eg: $Orange_OpenSource$elm_advanced_grid$Grid$viewRow(state)
 			}));
 };
+var $FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizesForMultipleHeights = F4(
+	function (_v0, getHeight, scrollTop, items) {
+		var offset = _v0.a9;
+		var containerHeight = _v0.dQ;
+		var updateComputations = F2(
+			function (item, calculatedTuple) {
+				var _v1 = calculatedTuple;
+				var idx = _v1.a4;
+				var elementsCountToSkip = _v1.bB;
+				var elementsToShow = _v1.bC;
+				var topMargin = _v1.ag;
+				var currentHeight = _v1.aA;
+				var height = A2(getHeight, idx, item);
+				var newCurrentHeight = currentHeight + height;
+				return (_Utils_cmp(newCurrentHeight, scrollTop - offset) < 1) ? _Utils_update(
+					calculatedTuple,
+					{aA: newCurrentHeight, bB: elementsCountToSkip + 1, a4: idx + 1, ag: topMargin + height}) : ((_Utils_cmp(currentHeight, (scrollTop + containerHeight) + offset) < 0) ? _Utils_update(
+					calculatedTuple,
+					{
+						aA: newCurrentHeight,
+						bC: A2($elm$core$List$cons, item, elementsToShow),
+						a4: idx + 1
+					}) : _Utils_update(
+					calculatedTuple,
+					{aA: newCurrentHeight, a4: idx + 1}));
+			});
+		var initialValue = {aA: 0, bB: 0, bC: _List_Nil, a4: 0, ag: 0};
+		var computedValues = A3($elm$core$List$foldl, updateComputations, initialValue, items);
+		return {
+			bA: $elm$core$List$reverse(computedValues.bC),
+			bY: computedValues.bB,
+			ag: computedValues.ag,
+			bk: computedValues.aA
+		};
+	});
+var $FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizesForSimpleHeight = F4(
+	function (_v0, itemHeight, scrollTop, items) {
+		var offset = _v0.a9;
+		var containerHeight = _v0.dQ;
+		var totalHeight = $elm$core$List$length(items) * itemHeight;
+		var elementsCountToSkip = A2($elm$core$Basics$max, 0, ((scrollTop - offset) / itemHeight) | 0);
+		var topMargin = elementsCountToSkip * itemHeight;
+		var elementsCountToShow = ((((offset * 2) + containerHeight) / itemHeight) | 0) + 1;
+		var elementsToShow = A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$drop(elementsCountToSkip),
+			$elm$core$List$take(elementsCountToShow))(items);
+		return {bA: elementsToShow, bY: elementsCountToSkip, ag: topMargin, bk: totalHeight};
+	});
+var $FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizes = F3(
+	function (configValue, scrollTop, items) {
+		var itemHeight = configValue.ee;
+		var itemView = configValue.eg;
+		var customContainer = configValue.a$;
+		if (!itemHeight.$) {
+			var height = itemHeight.a;
+			return A4($FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizesForSimpleHeight, configValue, height, scrollTop, items);
+		} else {
+			var _function = itemHeight.a;
+			return A4($FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizesForMultipleHeights, configValue, _function, scrollTop, items);
+		}
+	});
+var $FabienHenon$elm_infinite_list_view$InfiniteList$firstNItemsHeight = F3(
+	function (idx, configValue, items) {
+		var _v0 = A3(
+			$FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizes,
+			configValue,
+			0,
+			A2($elm$core$List$take, idx, items));
+		var totalHeight = _v0.bk;
+		return totalHeight;
+	});
+var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
+var $FabienHenon$elm_infinite_list_view$InfiniteList$scrollToNthItem = function (_v0) {
+	var postScrollMessage = _v0.eH;
+	var listHtmlId = _v0.el;
+	var itemIndex = _v0.ef;
+	var configValue = _v0.dO;
+	var items = _v0.eh;
+	return A2(
+		$elm$core$Task$attempt,
+		function (_v1) {
+			return postScrollMessage;
+		},
+		A3(
+			$elm$browser$Browser$Dom$setViewportOf,
+			listHtmlId,
+			0,
+			A3($FabienHenon$elm_infinite_list_view$InfiniteList$firstNItemsHeight, itemIndex, configValue, items)));
+};
 var $elm_community$list_extra$List$Extra$find = F2(
 	function (predicate, list) {
 		find:
@@ -10198,11 +10288,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$withColumnsState = F2(
 					}),
 				state));
 	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$withColumns = F2(
-	function (columns, _v0) {
-		var state = _v0;
-		return A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumnsState, columns, state);
-	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$resizeColumn = F2(
 	function (state, x) {
 		var _v0 = state.af;
@@ -10211,8 +10296,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$resizeColumn = F2(
 			var deltaX = x - state.aB;
 			var newWidth = columnConfig.b.br + $elm$core$Basics$round(deltaX);
 			var newColumns = (_Utils_cmp(newWidth, $Orange_OpenSource$elm_advanced_grid$Grid$minColumnWidth) > 0) ? A3($Orange_OpenSource$elm_advanced_grid$Grid$updateColumnWidthProperty, state, columnConfig, newWidth) : state.i.dN;
-			var _v1 = A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumns, newColumns, state);
-			var newState = _v1;
+			var newState = A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumnsState, newColumns, state);
 			return _Utils_update(
 				newState,
 				{
@@ -10504,7 +10588,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$withDraggedColumn = F2(
 			state,
 			{I: draggedColumn});
 	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
+var $Orange_OpenSource$elm_advanced_grid$Grid$stateUpdate = F2(
 	function (msg, state) {
 		switch (msg.$) {
 			case 0:
@@ -10551,8 +10635,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
 					$elm$core$List$map,
 					$Orange_OpenSource$elm_advanced_grid$Grid$setFilter(filterValues),
 					state.i.dN);
-				var _v1 = A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumns, newColumns, state);
-				var newState = _v1;
+				var newState = A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumnsState, newColumns, state);
 				return $Orange_OpenSource$elm_advanced_grid$Grid$updateVisibleItems(newState);
 			case 5:
 				var columnId = msg.a;
@@ -10618,9 +10701,9 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
 			case 18:
 				var mousePosition = msg.a;
 				var newDraggedColumn = function () {
-					var _v3 = state.I;
-					if (!_v3.$) {
-						var draggedColumn = _v3.a;
+					var _v2 = state.I;
+					if (!_v2.$) {
+						var draggedColumn = _v2.a;
 						return $elm$core$Maybe$Just(
 							_Utils_update(
 								draggedColumn,
@@ -10644,9 +10727,9 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
 			case 21:
 				var columnConfig = msg.a;
 				var draggedColumnConfig = msg.b;
-				var _v4 = state.I;
-				if (!_v4.$) {
-					var draggedColumn = _v4.a;
+				var _v3 = state.I;
+				if (!_v3.$) {
+					var draggedColumn = _v3.a;
 					if (_Utils_eq(columnConfig.b.R, draggedColumn.bI)) {
 						return state;
 					} else {
@@ -10689,8 +10772,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
 							{D: $elm$core$Maybe$Nothing});
 					},
 					A3($Orange_OpenSource$elm_advanced_grid$Grid$updateColumnProperties, toggleVisibility, state, columnConfig.b.R));
-				var _v5 = A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumns, newColumns, state);
-				var stateWithNewColumns = _v5;
+				var stateWithNewColumns = A2($Orange_OpenSource$elm_advanced_grid$Grid$withColumnsState, newColumns, state);
 				return $Orange_OpenSource$elm_advanced_grid$Grid$updateVisibleItems(stateWithNewColumns);
 			default:
 				var item = msg.a;
@@ -10706,96 +10788,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate = F2(
 					{p: newItems});
 		}
 	});
-var $FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizesForMultipleHeights = F4(
-	function (_v0, getHeight, scrollTop, items) {
-		var offset = _v0.a9;
-		var containerHeight = _v0.dQ;
-		var updateComputations = F2(
-			function (item, calculatedTuple) {
-				var _v1 = calculatedTuple;
-				var idx = _v1.a4;
-				var elementsCountToSkip = _v1.bB;
-				var elementsToShow = _v1.bC;
-				var topMargin = _v1.ag;
-				var currentHeight = _v1.aA;
-				var height = A2(getHeight, idx, item);
-				var newCurrentHeight = currentHeight + height;
-				return (_Utils_cmp(newCurrentHeight, scrollTop - offset) < 1) ? _Utils_update(
-					calculatedTuple,
-					{aA: newCurrentHeight, bB: elementsCountToSkip + 1, a4: idx + 1, ag: topMargin + height}) : ((_Utils_cmp(currentHeight, (scrollTop + containerHeight) + offset) < 0) ? _Utils_update(
-					calculatedTuple,
-					{
-						aA: newCurrentHeight,
-						bC: A2($elm$core$List$cons, item, elementsToShow),
-						a4: idx + 1
-					}) : _Utils_update(
-					calculatedTuple,
-					{aA: newCurrentHeight, a4: idx + 1}));
-			});
-		var initialValue = {aA: 0, bB: 0, bC: _List_Nil, a4: 0, ag: 0};
-		var computedValues = A3($elm$core$List$foldl, updateComputations, initialValue, items);
-		return {
-			bA: $elm$core$List$reverse(computedValues.bC),
-			bY: computedValues.bB,
-			ag: computedValues.ag,
-			bk: computedValues.aA
-		};
-	});
-var $FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizesForSimpleHeight = F4(
-	function (_v0, itemHeight, scrollTop, items) {
-		var offset = _v0.a9;
-		var containerHeight = _v0.dQ;
-		var totalHeight = $elm$core$List$length(items) * itemHeight;
-		var elementsCountToSkip = A2($elm$core$Basics$max, 0, ((scrollTop - offset) / itemHeight) | 0);
-		var topMargin = elementsCountToSkip * itemHeight;
-		var elementsCountToShow = ((((offset * 2) + containerHeight) / itemHeight) | 0) + 1;
-		var elementsToShow = A2(
-			$elm$core$Basics$composeR,
-			$elm$core$List$drop(elementsCountToSkip),
-			$elm$core$List$take(elementsCountToShow))(items);
-		return {bA: elementsToShow, bY: elementsCountToSkip, ag: topMargin, bk: totalHeight};
-	});
-var $FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizes = F3(
-	function (configValue, scrollTop, items) {
-		var itemHeight = configValue.ee;
-		var itemView = configValue.eg;
-		var customContainer = configValue.a$;
-		if (!itemHeight.$) {
-			var height = itemHeight.a;
-			return A4($FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizesForSimpleHeight, configValue, height, scrollTop, items);
-		} else {
-			var _function = itemHeight.a;
-			return A4($FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizesForMultipleHeights, configValue, _function, scrollTop, items);
-		}
-	});
-var $FabienHenon$elm_infinite_list_view$InfiniteList$firstNItemsHeight = F3(
-	function (idx, configValue, items) {
-		var _v0 = A3(
-			$FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizes,
-			configValue,
-			0,
-			A2($elm$core$List$take, idx, items));
-		var totalHeight = _v0.bk;
-		return totalHeight;
-	});
-var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
-var $FabienHenon$elm_infinite_list_view$InfiniteList$scrollToNthItem = function (_v0) {
-	var postScrollMessage = _v0.eH;
-	var listHtmlId = _v0.el;
-	var itemIndex = _v0.ef;
-	var configValue = _v0.dO;
-	var items = _v0.eh;
-	return A2(
-		$elm$core$Task$attempt,
-		function (_v1) {
-			return postScrollMessage;
-		},
-		A3(
-			$elm$browser$Browser$Dom$setViewportOf,
-			listHtmlId,
-			0,
-			A3($FabienHenon$elm_infinite_list_view$InfiniteList$firstNItemsHeight, itemIndex, configValue, items)));
-};
 var $Orange_OpenSource$elm_advanced_grid$Grid$update = F2(
 	function (msg, _v0) {
 		var state = _v0;
@@ -10825,7 +10817,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$update = F2(
 						}));
 			default:
 				return _Utils_Tuple2(
-					A2($Orange_OpenSource$elm_advanced_grid$Grid$modelUpdate, msg, state),
+					A2($Orange_OpenSource$elm_advanced_grid$Grid$stateUpdate, msg, state),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
