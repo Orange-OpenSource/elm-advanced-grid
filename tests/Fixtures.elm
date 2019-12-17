@@ -1,4 +1,4 @@
-module Fixtures exposing (Data, columns, data, gridConfig, isValidColumn, item1, item2, item3, item4, item5, model, scoreColumn, titleColumn)
+module Fixtures exposing (Data, columns, data, dataOrderedByAscendingScore, dataOrderedByDescendingScore, dataWithScoreGreaterThan2, gridConfig, isValidColumn, item1, item2, item3, item4, item5, model, scoreColumn, titleColumn)
 
 {- Copyright (c) 2019 Orange
    This code is released under the MIT license.
@@ -95,6 +95,21 @@ item5 =
 data : List Data
 data =
     [ data1, data2, data3, data4 ]
+
+
+dataOrderedByAscendingScore : List Data
+dataOrderedByAscendingScore =
+    [ data1, data2, data4, data3 ]
+
+
+dataOrderedByDescendingScore : List Data
+dataOrderedByDescendingScore =
+    [ data3, data4, data2, data1 ]
+
+
+dataWithScoreGreaterThan2 : List Data
+dataWithScoreGreaterThan2 =
+    [ data3, data4 ]
 
 
 scoreColumn =
