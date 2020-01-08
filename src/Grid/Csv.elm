@@ -20,7 +20,7 @@ module Grid.Csv exposing (visibleItemsToCsv)
 
 -}
 
-import Grid exposing (ColumnConfig, Model, isSelectionColumn, visibleColumns)
+import Grid exposing (ColumnConfig, Model, isSelectionColumn, visibleColumns, visibleData)
 import Grid.Item exposing (Item)
 import List.Extra
 
@@ -52,20 +52,20 @@ visibleItemsToCsv separator model =
                 ++ csvEndOfLine
 
         dataLines =
-            model.visibleItems
-                |> List.map (itemToCsv columnsToBeExported separator)
+            visibleData model
+                |> List.map (dataToCsv columnsToBeExported separator)
                 |> String.join csvEndOfLine
     in
     bom ++ headerLine ++ dataLines
 
 
-itemToCsv : List (ColumnConfig a) -> String -> Item a -> String
-itemToCsv columnConfigs separator item =
+dataToCsv : List (ColumnConfig a) -> String -> a -> String
+dataToCsv columnConfigs separator data =
     columnConfigs
-        |> List.map (columnToString item)
+        |> List.indexedMap (\index column -> columnToString data index column)
         |> String.join separator
 
 
-columnToString : Item a -> ColumnConfig a -> String
-columnToString item columnConfig =
-    columnConfig.toString item
+columnToString : a -> Int -> ColumnConfig a -> String
+columnToString data index columnConfig =
+    columnConfig.toString <| Grid.Item.create data index

@@ -10,14 +10,14 @@
 
 
 module Grid exposing
-    ( Config, withColumns, withConfig
+    ( Config, withColumns, withConfig, currentConfig
     , ColumnConfig, ColumnProperties, stringColumnConfig, intColumnConfig, floatColumnConfig, boolColumnConfig
     , Sorting(..), compareFields, compareBoolField
     , viewBool, viewFloat, viewInt, viewProgressBar, viewString, cumulatedBorderWidth, cellAttributes
     , Model, Msg(..), init, update, view
-    , selectedAndVisibleItems
+    , selectedAndVisibleItems, visibleData
     , visibleColumns, isColumn, isSelectionColumn, isSelectionColumnProperties
-    , filteredData
+    , currentOrder, sortedBy
     )
 
 {-| This module allows to create dynamically configurable data grid.
@@ -27,7 +27,7 @@ module Grid exposing
 
 A grid is defined using a `Config`
 
-@docs Config, withColumns, withConfig
+@docs Config, withColumns, withConfig, currentConfig
 
 
 # Configure a column
@@ -52,7 +52,7 @@ A grid is defined using a `Config`
 
 # Get data
 
-@docs filteredItems, selectedAndVisibleItems
+@docs selectedAndVisibleItems, visibleData
 
 
 # Get grid config
@@ -66,17 +66,19 @@ import Browser.Dom
 import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector)
 import Dict exposing (Dict)
-import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, white, white2)
+import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, lightGrey3, white, white2)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
+import Grid.Icons as Icons exposing (drawSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
 import Html
 import Html.Events.Extra.Mouse as Mouse
-import Html.Styled exposing (Attribute, Html, div, input, label, span, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
+import Html.Styled exposing (Attribute, Html, div, hr, i, input, label, span, text, toUnstyled)
+import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, tabindex, title, type_, value)
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
-import List.Extra exposing (findIndex)
+import List exposing (take)
+import List.Extra exposing (findIndex, unique)
 import String
 import Task
 
@@ -173,7 +175,7 @@ type Msg a
     = ColumnsModificationRequested (List (ColumnConfig a))
     | InfiniteListMsg IL.Model
     | FilterLostFocus
-    | FilterModified (ColumnConfig a) String
+    | FilterModified (ColumnConfig a) (Maybe String)
     | SetFilters (Dict String String) -- column ID, filter value
     | SetSorting String Sorting -- column ID, Ascending or Descending
     | NoOp
@@ -181,7 +183,9 @@ type Msg a
     | ScrollTo (Item a -> Bool) -- scroll to the first item for which the function returns True
     | ShowPreferences
     | UpdateContent (a -> a)
+    | UpdateContentPreservingSelection (a -> a)
     | UserClickedHeader (ColumnConfig a)
+    | UserClickedQuickFilterButton (ColumnConfig a)
     | UserClickedFilter
     | UserClickedLine (Item a)
     | UserClickedDragHandle (ColumnConfig a) Position
@@ -246,6 +250,7 @@ boolColumnConfig
 -}
 type alias ColumnConfig a =
     { properties : ColumnProperties
+    , hasQuickFilter : Bool
     , comparator : Item a -> Item a -> Order
     , filteringValue : Maybe String
     , filters : Filter a
@@ -294,21 +299,25 @@ type alias Position =
     }
 
 
-{-| The grid model. You'll use it but should not have to access its fields,
-and definitely should not modify them directly
+{-| The internal grid model
 -}
-type alias Model a =
+type Model a
+    = Model (State a)
+
+
+type alias State a =
     { clickedItem : Maybe (Item a)
     , config : Config a
     , columnsX : List Int
     , content : List a -- all data, visible or not
     , draggedColumn : Maybe (DraggedColumn a)
     , dragStartX : Float
-    , filterHasFocus : Bool -- Prevents clicking in an input field to trigger a sort
+    , filterHasFocus : Bool -- Avoids triggering a sort when clicking in an input field or a quick filter
     , hoveredColumn : Maybe (ColumnConfig a)
     , infList : IL.Model
     , isAllSelected : Bool
     , headerContainerPosition : Position
+    , openedQuickFilter : Maybe (ColumnConfig a)
 
     -- TODO: order and sortedBy can have incompatible values. It would be better to join them in a single Maybe
     , order : Sorting
@@ -319,50 +328,81 @@ type alias Model a =
     }
 
 
+{-| The current configuration of the grid
+-}
+currentConfig : Model a -> Config a
+currentConfig (Model state) =
+    state.config
+
+
+{-| The column according to which the grid content is sorted, if any
+-}
+sortedBy : Model a -> Maybe (ColumnConfig a)
+sortedBy (Model state) =
+    state.sortedBy
+
+
+{-| The order used if the grid is sorted using the value of a given column}
+-}
+currentOrder : Model a -> Sorting
+currentOrder (Model state) =
+    state.order
+
+
 {-| Sets the grid configuration
 -}
 withConfig : Config a -> Model a -> Model a
-withConfig config model =
-    { model | config = config }
+withConfig config (Model state) =
+    Model (withConfigState config state)
+
+
+withConfigState : Config a -> State a -> State a
+withConfigState config state =
+    { state | config = config }
 
 
 {-| Sets the column definitions into the configuration
 -}
 withColumns : List (ColumnConfig a) -> Model a -> Model a
-withColumns columns model =
+withColumns columns (Model state) =
+    Model (withColumnsState columns state)
+
+
+withColumnsState : List (ColumnConfig a) -> State a -> State a
+withColumnsState columns state =
     let
         config =
-            model.config
+            state.config
     in
-    model
-        |> withConfig { config | columns = sanitizedColumns columns }
-        |> withColumnsX
+    state
+        |> withConfigState { config | columns = sanitizedColumns columns }
+        |> withColumnsXState
 
 
-withColumnsX : Model a -> Model a
-withColumnsX model =
-    { model | columnsX = columnsX model }
+withColumnsXState : State a -> State a
+withColumnsXState state =
+    { state | columnsX = columnsX state }
 
 
 {-| Sets the data in the grid
 -}
-withContent : List a -> Model a -> Model a
-withContent data model =
-    { model | content = data }
+withContent : List a -> State a -> State a
+withContent data state =
+    { state | content = data }
 
 
 {-| Sets the column being moved by the user
 -}
-withDraggedColumn : Maybe (DraggedColumn a) -> Model a -> Model a
-withDraggedColumn draggedColumn model =
-    { model | draggedColumn = draggedColumn }
+withDraggedColumn : Maybe (DraggedColumn a) -> State a -> State a
+withDraggedColumn draggedColumn state =
+    { state | draggedColumn = draggedColumn }
 
 
 {-| Sets the filtered data
 -}
-withVisibleItems : List (Item a) -> Model a -> Model a
-withVisibleItems visibleItems model =
-    { model | visibleItems = visibleItems }
+withVisibleItems : List (Item a) -> State a -> State a
+withVisibleItems visibleItems state =
+    { state | visibleItems = visibleItems }
 
 
 {-| Clears the filter of hidden columns to avoid filtering with an invisible criteria
@@ -393,6 +433,7 @@ selectionColumn =
     , toString = .selected >> boolToString
     , renderer = viewBool .selected
     , comparator = compareBoolField .selected
+    , hasQuickFilter = False
     }
 
 
@@ -436,7 +477,7 @@ init config data =
         indexedItems =
             List.indexedMap (\index value -> Item.create value index) data
 
-        initialModel =
+        initialState =
             { clickedItem = Nothing
             , config = sanitizedConfig
             , columnsX = []
@@ -447,6 +488,7 @@ init config data =
             , infList = IL.init
             , isAllSelected = False
             , draggedColumn = Nothing
+            , openedQuickFilter = Nothing
             , order = Unsorted
             , headerContainerPosition = { x = 0, y = 0 }
             , resizedColumn = Nothing
@@ -455,24 +497,24 @@ init config data =
             , visibleItems = indexedItems
             }
     in
-    { initialModel | columnsX = columnsX initialModel }
+    Model { initialState | columnsX = columnsX initialState }
 
 
 {-| The list of X coordinates of columns; coordinates are expressed in pixels. The first one is at 0.
 -}
-columnsX : Model a -> List Int
+columnsX : State a -> List Int
 columnsX model =
-    visibleColumns model
+    visibleColumns (Model model)
         |> List.Extra.scanl (\col x -> x + col.properties.width) 0
 
 
 {-| Updates the grid model
 -}
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
-update msg model =
+update msg (Model state) =
     case msg of
         UserHoveredDragHandle ->
-            ( model
+            ( Model state
               -- get the position of the header container, in order to fix the ghost header position
             , Browser.Dom.getElement headerContainerId
                 |> Task.attempt GotHeaderContainerInfo
@@ -481,86 +523,138 @@ update msg model =
         ScrollTo isTargetItem ->
             let
                 targetItemIndex =
-                    Maybe.withDefault 0 <| findIndex isTargetItem model.visibleItems
+                    Maybe.withDefault 0 <| findIndex isTargetItem state.visibleItems
             in
-            ( model
+            ( Model state
             , IL.scrollToNthItem
                 { postScrollMessage = NoOp
                 , listHtmlId = gridHtmlId
                 , itemIndex = targetItemIndex
-                , configValue = infiniteListConfig model
-                , items = model.visibleItems
+                , configValue = infiniteListConfig state
+                , items = state.visibleItems
                 }
             )
 
+        UserClickedQuickFilterButton columnConfig ->
+            -- the focus must be put on opened filter div, so that the blur event will be launched when we leave it
+            ( Model
+                { state
+                    | openedQuickFilter = Just columnConfig
+                    , filterHasFocus = True
+                }
+            , focusOn openedQuickFilterHtmlId
+            )
+
         _ ->
-            ( modelUpdate msg model, Cmd.none )
+            ( stateUpdate msg state |> Model, Cmd.none )
 
 
-{-| Updates the grid model for messages which won't generate any command
+{-| focus on an HTML element.
+No callback is called (even if focus fails)
 -}
-modelUpdate : Msg a -> Model a -> Model a
-modelUpdate msg model =
+focusOn : String -> Cmd (Msg a)
+focusOn elementId =
+    Browser.Dom.focus elementId |> Task.attempt (\result -> NoOp)
+
+
+closeQuickFilter : State a -> State a
+closeQuickFilter state =
+    { state
+        | openedQuickFilter = Nothing
+        , filterHasFocus = False
+    }
+
+
+{-| Updates the grid state for messages which won't generate any command
+-}
+stateUpdate : Msg a -> State a -> State a
+stateUpdate msg state =
     case msg of
         ColumnsModificationRequested columns ->
-            model |> withColumns columns
+            state |> withColumnsState columns
 
         FilterLostFocus ->
-            { model | filterHasFocus = False }
+            { state | filterHasFocus = False } |> closeQuickFilter
 
-        FilterModified columnConfig string ->
+        FilterModified columnConfig maybeString ->
             let
                 newColumnconfig =
-                    { columnConfig | filteringValue = Just string }
+                    { columnConfig | filteringValue = maybeString }
 
                 newColumns =
-                    List.Extra.setIf (isColumn columnConfig) newColumnconfig model.config.columns
+                    List.Extra.setIf (isColumn columnConfig) newColumnconfig state.config.columns
 
-                newModel =
-                    model |> withColumns newColumns
+                newState =
+                    state |> withColumnsState newColumns
             in
-            updateVisibleItems newModel
+            updateVisibleItems newState |> closeQuickFilter
 
         GotHeaderContainerInfo (Ok info) ->
-            { model | headerContainerPosition = { x = info.element.x, y = info.element.y } }
+            { state | headerContainerPosition = { x = info.element.x, y = info.element.y } }
 
         GotHeaderContainerInfo (Err _) ->
-            model
+            state
 
         InfiniteListMsg infList ->
-            { model | infList = infList }
+            { state | infList = infList }
 
         SetFilters filterValues ->
             let
                 newColumns =
-                    List.map (setFilter filterValues) model.config.columns
+                    List.map (setFilter filterValues) state.config.columns
 
-                newModel =
-                    model |> withColumns newColumns
+                newState =
+                    state |> withColumnsState newColumns
             in
-            updateVisibleItems newModel
+            updateVisibleItems newState
 
         SetSorting columnId sorting ->
             let
                 sortedColumnConfig =
-                    List.Extra.find (hasId columnId) model.config.columns
+                    List.Extra.find (hasId columnId) state.config.columns
             in
             case sortedColumnConfig of
                 Just columnConfig ->
-                    sort model columnConfig sorting orderBy
+                    sort columnConfig sorting orderBy state
 
                 Nothing ->
-                    model
+                    state
 
         NoOp ->
-            model
+            state
 
         ScrollTo _ ->
             -- This message is handled in the `update` function
-            model
+            state
 
         ShowPreferences ->
-            { model | showPreferences = True }
+            { state | showPreferences = True }
+
+        UpdateContent updateContent ->
+            let
+                updatedData =
+                    List.map updateContent state.content
+            in
+            state
+                |> withContent updatedData
+                |> updateVisibleItems
+
+        -- updates the content, but does not apply filters. WARNING: the data modification function must not modify any value affected by the current filters
+        UpdateContentPreservingSelection updateContent ->
+            let
+                updatedData =
+                    List.map updateContent state.content
+
+                updateVisibleItem : Item a -> Item a
+                updateVisibleItem item =
+                    { item | data = updateContent item.data }
+
+                updatedVisibleItems =
+                    List.map updateVisibleItem state.visibleItems
+            in
+            state
+                |> withContent updatedData
+                |> withVisibleItems updatedVisibleItems
 
         UserClickedDragHandle columnConfig mousePosition ->
             let
@@ -571,27 +665,32 @@ modelUpdate msg model =
                     , lastSwappedColumnId = ""
                     }
             in
-            model
+            state
                 |> withDraggedColumn (Just draggedColumn)
 
         UserClickedFilter ->
-            { model | filterHasFocus = True }
+            { state | filterHasFocus = True }
+
+        UserClickedQuickFilterButton _ ->
+            -- This message is handled in the `update` function
+            state
 
         UserClickedHeader columnConfig ->
-            if model.filterHasFocus then
-                model
+            -- useful when user clicks in filter input
+            if state.filterHasFocus then
+                state
 
             else
-                sort model columnConfig model.order toggleOrder
+                sort columnConfig state.order toggleOrder state
 
         UserClickedLine item ->
-            { model | clickedItem = Just item }
+            { state | clickedItem = Just item }
 
         UserClickedPreferenceCloseButton ->
-            { model | showPreferences = False }
+            { state | showPreferences = False }
 
         UserClickedResizeHandle columnConfig position ->
-            { model
+            { state
                 | resizedColumn = Just columnConfig
                 , dragStartX = position.x
             }
@@ -599,7 +698,7 @@ modelUpdate msg model =
         UserDraggedColumn mousePosition ->
             let
                 newDraggedColumn =
-                    case model.draggedColumn of
+                    case state.draggedColumn of
                         Just draggedColumn ->
                             Just
                                 { draggedColumn | x = mousePosition.x }
@@ -607,51 +706,51 @@ modelUpdate msg model =
                         Nothing ->
                             Nothing
             in
-            { model | draggedColumn = newDraggedColumn }
+            { state | draggedColumn = newDraggedColumn }
 
         UserEndedMouseInteraction ->
-            { model
+            { state
                 | resizedColumn = Nothing
                 , draggedColumn = Nothing
             }
 
         UserHoveredDragHandle ->
             -- This message is handled in the `update` function
-            model
+            state
 
         UserMovedResizeHandle position ->
-            resizeColumn model position.x
+            resizeColumn state position.x
 
         UserSwappedColumns columnConfig draggedColumnConfig ->
-            case model.draggedColumn of
+            case state.draggedColumn of
                 Just draggedColumn ->
                     if columnConfig.properties.id == draggedColumn.lastSwappedColumnId then
-                        model
+                        state
 
                     else
                         let
                             newColumns =
-                                moveColumn columnConfig draggedColumnConfig model.config.columns
+                                moveColumn columnConfig draggedColumnConfig state.config.columns
                         in
-                        model
-                            |> withColumns newColumns
+                        state
+                            |> withColumnsState newColumns
                             |> withDraggedColumn (Just { draggedColumn | lastSwappedColumnId = columnConfig.properties.id })
 
                 Nothing ->
-                    model
+                    state
 
         UserToggledAllItemSelection ->
             let
                 updatedVisibleItems =
-                    List.map setSelectionStatus model.visibleItems
+                    List.map setSelectionStatus state.visibleItems
 
                 setSelectionStatus item =
                     { item | selected = newStatus }
 
                 newStatus =
-                    not model.isAllSelected
+                    not state.isAllSelected
             in
-            { model
+            { state
                 | isAllSelected = newStatus
                 , visibleItems = updatedVisibleItems
             }
@@ -662,43 +761,43 @@ modelUpdate msg model =
                     { properties | visible = not properties.visible }
 
                 newColumns =
-                    updateColumnProperties toggleVisibility model columnConfig.properties.id
+                    updateColumnProperties toggleVisibility state columnConfig.properties.id
                         |> List.Extra.updateIf (isColumn columnConfig) (\col -> { col | filteringValue = Nothing })
 
-                updatedModel =
-                    model |> withColumns newColumns
+                stateWithNewColumns =
+                    state |> withColumnsState newColumns
             in
-            { updatedModel | columnsX = columnsX updatedModel }
+            updateVisibleItems stateWithNewColumns
 
         UserToggledSelection item ->
             let
                 newItems =
-                    List.Extra.updateAt item.index (\it -> toggleSelection it) model.visibleItems
+                    List.Extra.updateAt item.index (\it -> toggleSelection it) state.visibleItems
             in
-            { model | visibleItems = newItems }
-
-        UpdateContent updateContent ->
-            let
-                updatedData =
-                    List.map updateContent model.content
-            in
-            model
-                |> withContent updatedData
-                |> updateVisibleItems
+            { state | visibleItems = newItems }
 
 
 {-| Apply the current filters to the whole data
 -}
-updateVisibleItems : Model a -> Model a
-updateVisibleItems model =
+updateVisibleItems : State a -> State a
+updateVisibleItems state =
     let
         filteredContent =
-            filteredData model
+            columnFilters state
+                |> List.foldl (\filter remainingValues -> List.filter filter remainingValues) state.content
 
         visibleItems =
             List.indexedMap (\index value -> Item.create value index) filteredContent
     in
-    model |> withVisibleItems visibleItems
+    case state.sortedBy of
+        Just columnConfig ->
+            state
+                |> withVisibleItems visibleItems
+                |> sort columnConfig state.order orderBy
+
+        Nothing ->
+            state
+                |> withVisibleItems visibleItems
 
 
 {-| Updates the filter for a given column
@@ -714,16 +813,16 @@ setFilter filterValues columnConfig =
 
 {-| Sorts visible items according the the content of a given column, in a given order
 -}
-sort : Model a -> ColumnConfig a -> Sorting -> (Model a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )) -> Model a
-sort model columnConfig order sorter =
+sort : ColumnConfig a -> Sorting -> (State a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )) -> State a -> State a
+sort columnConfig order sorter state =
     let
         ( sortedItems, newOrder ) =
-            sorter model columnConfig order
+            sorter state columnConfig order
 
         updatedItems =
             updateIndexes sortedItems
     in
-    { model
+    { state
         | order = newOrder
         , sortedBy = Just columnConfig
         , visibleItems = updatedItems
@@ -732,7 +831,7 @@ sort model columnConfig order sorter =
 
 {-| Reverse the sorting order -or define it as Ascending if the data were not sorted according to the content of the given column
 -}
-toggleOrder : Model a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )
+toggleOrder : State a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )
 toggleOrder model columnConfig order =
     case order of
         Ascending ->
@@ -742,7 +841,7 @@ toggleOrder model columnConfig order =
             ( List.sortWith columnConfig.comparator model.visibleItems, Ascending )
 
 
-orderBy : Model a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )
+orderBy : State a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )
 orderBy model columnConfig order =
     case order of
         Descending ->
@@ -774,13 +873,13 @@ minColumnWidth =
 
 {-| Sets the width, in pixels, of the column whose resize handle is being dragged by the user
 -}
-resizeColumn : Model a -> Float -> Model a
-resizeColumn model x =
-    case model.resizedColumn of
+resizeColumn : State a -> Float -> State a
+resizeColumn state x =
+    case state.resizedColumn of
         Just columnConfig ->
             let
                 deltaX =
-                    x - model.dragStartX
+                    x - state.dragStartX
 
                 newWidth =
                     columnConfig.properties.width
@@ -788,23 +887,23 @@ resizeColumn model x =
 
                 newColumns =
                     if newWidth > minColumnWidth then
-                        updateColumnWidthProperty model columnConfig newWidth
+                        updateColumnWidthProperty state columnConfig newWidth
 
                     else
-                        model.config.columns
+                        state.config.columns
 
-                newModel =
-                    model |> withColumns newColumns
+                newState =
+                    state |> withColumnsState newColumns
             in
-            { newModel
-                | columnsX = columnsX model
+            { newState
+                | columnsX = columnsX state
             }
 
         _ ->
-            model
+            state
 
 
-updateColumnWidthProperty : Model a -> ColumnConfig a -> Int -> List (ColumnConfig a)
+updateColumnWidthProperty : State a -> ColumnConfig a -> Int -> List (ColumnConfig a)
 updateColumnWidthProperty model columnConfig width =
     let
         setWidth properties =
@@ -813,7 +912,7 @@ updateColumnWidthProperty model columnConfig width =
     updateColumnProperties setWidth model columnConfig.properties.id
 
 
-updateColumnProperties : (ColumnProperties -> ColumnProperties) -> Model a -> String -> List (ColumnConfig a)
+updateColumnProperties : (ColumnProperties -> ColumnProperties) -> State a -> String -> List (ColumnConfig a)
 updateColumnProperties updateFunction model columnId =
     List.Extra.updateIf (hasId columnId)
         (updatePropertiesInColumnConfig updateFunction)
@@ -906,16 +1005,16 @@ moveItemRight list originIndex indexDelta =
 {-| the list of items selected by the user, after filters were applied
 -}
 selectedAndVisibleItems : Model a -> List (Item a)
-selectedAndVisibleItems model =
-    List.filter .selected model.visibleItems
+selectedAndVisibleItems (Model state) =
+    List.filter .selected state.visibleItems
 
 
-infiniteListConfig : Model a -> IL.Config (Item a) (Msg a)
-infiniteListConfig model =
+infiniteListConfig : State a -> IL.Config (Item a) (Msg a)
+infiniteListConfig state =
     IL.config
-        { itemView = viewRow model
-        , itemHeight = IL.withConstantHeight model.config.lineHeight
-        , containerHeight = model.config.containerHeight
+        { itemView = viewRow state
+        , itemHeight = IL.withConstantHeight state.config.lineHeight
+        , containerHeight = state.config.containerHeight
         }
         |> IL.withOffset 300
 
@@ -923,13 +1022,13 @@ infiniteListConfig model =
 {-| Renders the grid
 -}
 view : Model a -> Html.Html (Msg a)
-view model =
+view (Model state) =
     toUnstyled <|
-        if model.showPreferences then
-            viewPreferences model
+        if state.showPreferences then
+            viewPreferences state
 
         else
-            viewGrid model
+            viewGrid state
 
 
 {-| the id of the Html node containing the grid
@@ -939,14 +1038,19 @@ gridHtmlId =
     "_grid_"
 
 
+openedQuickFilterHtmlId : String
+openedQuickFilterHtmlId =
+    "openedQuickFilter"
+
+
 {-| Renders the grid
 -}
-viewGrid : Model a -> Html (Msg a)
-viewGrid model =
+viewGrid : State a -> Html (Msg a)
+viewGrid state =
     let
         attributes =
             [ css
-                [ width (px <| toFloat (model.config.containerWidth + cumulatedBorderWidth))
+                [ width (px <| toFloat (state.config.containerWidth + cumulatedBorderWidth))
                 , overflow auto
                 , margin auto
                 , position relative
@@ -954,7 +1058,7 @@ viewGrid model =
             ]
 
         conditionalAttributes =
-            if model.resizedColumn /= Nothing || model.draggedColumn /= Nothing then
+            if state.resizedColumn /= Nothing || state.draggedColumn /= Nothing then
                 [ onMouseUp UserEndedMouseInteraction
                 , fromUnstyled <| Mouse.onLeave (\_ -> UserEndedMouseInteraction)
                 ]
@@ -965,34 +1069,34 @@ viewGrid model =
     div
         (attributes ++ conditionalAttributes)
     <|
-        if model.config.hasFilters then
+        if state.config.hasFilters then
             [ div
                 [ css
                     [ borderLeft3 (px 1) solid lightGrey2
                     , borderRight3 (px 1) solid lightGrey2
-                    , width (px <| toFloat <| gridWidth model)
+                    , width (px <| toFloat <| gridWidth state)
                     ]
                 ]
-                [ viewHeaderContainer model
+                [ viewHeaderContainer state
                 ]
-            , viewGhostHeader model
-            , viewRows model
+            , viewGhostHeader state
+            , viewRows state
             ]
 
         else
-            [ viewHeaderContainer model
-            , viewRows model
-            , viewGhostHeader model
+            [ viewHeaderContainer state
+            , viewRows state
+            , viewGhostHeader state
             ]
 
 
-viewRows : Model a -> Html (Msg a)
-viewRows model =
+viewRows : State a -> Html (Msg a)
+viewRows state =
     div []
         [ div
             [ css
-                [ height (px <| toFloat model.config.containerHeight)
-                , width (px <| toFloat <| gridWidth model)
+                [ height (px <| toFloat state.config.containerHeight)
+                , width (px <| toFloat <| gridWidth state)
                 , overflowX hidden
                 , overflowY auto
                 , border3 (px 1) solid lightGrey
@@ -1003,38 +1107,38 @@ viewRows model =
             , fromUnstyled <| IL.onScroll InfiniteListMsg
             , id gridHtmlId
             ]
-            [ Html.Styled.fromUnstyled <| IL.view (infiniteListConfig model) model.infList model.visibleItems ]
+            [ Html.Styled.fromUnstyled <| IL.view (infiniteListConfig state) state.infList state.visibleItems ]
         ]
 
 
-columnFilters : Model a -> List (a -> Bool)
+columnFilters : State a -> List (a -> Bool)
 columnFilters model =
     model.config.columns
         |> List.filterMap (\c -> parseFilteringString c.filteringValue c.filters)
 
 
-{-| The list of items satisfying the current filtering values
+{-| The list of raw data satisfying the current filtering values
 -}
-filteredData : Model a -> List a
-filteredData model =
-    columnFilters model
-        |> List.foldl (\filter remainingValues -> List.filter filter remainingValues) model.content
+visibleData : Model a -> List a
+visibleData (Model state) =
+    state.visibleItems
+        |> List.map .data
 
 
 {-| Renders the row for a given item
 idx is the index of the visible line; if there are 25 visible lines, 0 <= idx < 25
 listIdx is the index in the data source; if the total number of items is 1000, 0<= listidx < 1000
 -}
-viewRow : Model a -> Int -> Int -> Item a -> Html.Html (Msg a)
-viewRow model idx listIdx item =
+viewRow : State a -> Int -> Int -> Item a -> Html.Html (Msg a)
+viewRow state idx listIdx item =
     toUnstyled
         << div
             [ attribute "data-testid" "row"
-            , class (model.config.rowClass item)
+            , class (state.config.rowClass item)
             , css
                 [ displayFlex
-                , height (px <| toFloat model.config.lineHeight)
-                , width (px <| toFloat <| gridWidth model)
+                , height (px <| toFloat state.config.lineHeight)
+                , width (px <| toFloat <| gridWidth state)
 
                 -- restore reading order, while preserving the left position of the scrollbar
                 , property "direction" "ltr"
@@ -1042,12 +1146,12 @@ viewRow model idx listIdx item =
             , onClick (UserClickedLine item)
             ]
     <|
-        List.map (\columnConfig -> viewColumn columnConfig item) (visibleColumns model)
+        List.map (\columnConfig -> viewColumn columnConfig item) (visibleColumns (Model state))
 
 
-gridWidth : Model a -> Int
-gridWidth model =
-    List.foldl (\columnConfig -> (+) columnConfig.properties.width) 0 (visibleColumns model)
+gridWidth : State a -> Int
+gridWidth state =
+    List.foldl (\columnConfig -> (+) columnConfig.properties.width) 0 (visibleColumns (Model state))
 
 
 viewColumn : ColumnConfig a -> Item a -> Html (Msg a)
@@ -1126,6 +1230,7 @@ stringColumnConfig ({ id, title, tooltip, width, getter, localize } as propertie
     , toString = nestedDataGetter
     , renderer = viewString nestedDataGetter
     , comparator = compareFields nestedDataGetter
+    , hasQuickFilter = True
     }
 
 
@@ -1150,6 +1255,7 @@ floatColumnConfig ({ id, title, tooltip, width, getter, localize } as properties
     , toString = nestedDataGetter >> String.fromFloat
     , renderer = viewFloat nestedDataGetter
     , comparator = compareFields nestedDataGetter
+    , hasQuickFilter = True
     }
 
 
@@ -1174,6 +1280,7 @@ intColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) 
     , toString = nestedDataGetter >> String.fromInt
     , renderer = viewInt nestedDataGetter
     , comparator = compareFields nestedDataGetter
+    , hasQuickFilter = True
     }
 
 
@@ -1196,6 +1303,7 @@ boolColumnConfig ({ id, title, tooltip, width, getter, localize } as properties)
     , toString = nestedDataGetter >> boolToString
     , renderer = viewBool nestedDataGetter
     , comparator = compareBoolField nestedDataGetter
+    , hasQuickFilter = True
     }
 
 
@@ -1309,18 +1417,18 @@ viewProgressBar barHeight getter properties item =
 
 {-| Renders the column visibility panel
 -}
-viewPreferences : Model a -> Html (Msg a)
-viewPreferences model =
+viewPreferences : State a -> Html (Msg a)
+viewPreferences state =
     let
         dataColumns =
-            List.filter (not << isSelectionColumn) model.config.columns
+            List.filter (not << isSelectionColumn) state.config.columns
     in
     div
         [ css
             [ border3 (px 1) solid lightGrey2
             , margin auto
             , padding (px 5)
-            , width (px <| toFloat model.config.containerWidth * 0.6)
+            , width (px <| toFloat state.config.containerWidth * 0.6)
             ]
         ]
     <|
@@ -1432,24 +1540,24 @@ This list ignores the actual position of the columns; some of them may require
 an horizontal scrolling to be seen
 -}
 visibleColumns : Model a -> List (ColumnConfig a)
-visibleColumns model =
-    List.filter (\column -> column.properties.visible) model.config.columns
+visibleColumns (Model state) =
+    List.filter (\column -> column.properties.visible) state.config.columns
 
 
-viewHeaderContainer : Model a -> Html (Msg a)
-viewHeaderContainer model =
+viewHeaderContainer : State a -> Html (Msg a)
+viewHeaderContainer state =
     let
         attributes =
             [ css
                 [ backgroundColor darkGrey
                 , displayFlex
-                , height (px <| toFloat model.config.headerHeight)
+                , height (px <| toFloat state.config.headerHeight)
                 ]
             , id headerContainerId
             ]
 
         conditionalAttributes =
-            if model.resizedColumn /= Nothing then
+            if state.resizedColumn /= Nothing then
                 [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle (event |> toPosition)) ]
 
             else
@@ -1457,12 +1565,12 @@ viewHeaderContainer model =
     in
     div
         (attributes ++ conditionalAttributes)
-        (viewHeaders model)
+        (viewHeaders state)
 
 
-viewHeaders : Model a -> List (Html (Msg a))
-viewHeaders model =
-    List.indexedMap (\index column -> viewHeader model column index) <| visibleColumns model
+viewHeaders : State a -> List (Html (Msg a))
+viewHeaders state =
+    List.indexedMap (\index column -> viewHeader state column index) <| visibleColumns (Model state)
 
 
 headerContainerId : String
@@ -1470,8 +1578,8 @@ headerContainerId =
     "_header_-_container_"
 
 
-viewHeader : Model a -> ColumnConfig a -> Int -> Html (Msg a)
-viewHeader model columnConfig index =
+viewHeader : State a -> ColumnConfig a -> Int -> Html (Msg a)
+viewHeader state columnConfig index =
     let
         headerId =
             "header-" ++ columnConfig.properties.id
@@ -1479,12 +1587,12 @@ viewHeader model columnConfig index =
         attributes =
             [ attribute "data-testid" headerId
             , id headerId
-            , headerStyles model
+            , headerStyles state
             , title columnConfig.properties.tooltip
             ]
 
         conditionalAttributes =
-            if model.resizedColumn == Nothing then
+            if state.resizedColumn == Nothing && not state.filterHasFocus then
                 [ onClick (UserClickedHeader columnConfig) ]
 
             else
@@ -1493,22 +1601,22 @@ viewHeader model columnConfig index =
     div
         (attributes ++ conditionalAttributes)
         [ if isSelectionColumn columnConfig then
-            viewSelectionHeader model columnConfig
+            viewSelectionHeader state columnConfig
 
           else
-            viewDataHeader model columnConfig (draggingAttributes model columnConfig)
+            viewDataHeader state columnConfig (draggingAttributes state columnConfig)
         ]
 
 
-headerStyles : Model a -> Attribute (Msg a)
-headerStyles model =
+headerStyles : State a -> Attribute (Msg a)
+headerStyles state =
     css
         [ backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
         , display inlineFlex
         , flexDirection row
         , border3 (px 1) solid lightGrey2
         , boxSizing contentBox
-        , height (px <| toFloat <| model.config.headerHeight - cumulatedBorderWidth)
+        , height (px <| toFloat <| state.config.headerHeight - cumulatedBorderWidth)
         , hover
             [ descendants
                 [ typeSelector "div"
@@ -1522,11 +1630,11 @@ headerStyles model =
 
 {-| Specific header content for the selection column
 -}
-viewSelectionHeader : Model a -> ColumnConfig a -> Html (Msg a)
-viewSelectionHeader model _ =
+viewSelectionHeader : State a -> ColumnConfig a -> Html (Msg a)
+viewSelectionHeader state _ =
     let
         areAllItemsChecked =
-            List.all .selected model.visibleItems
+            List.all .selected state.visibleItems
     in
     div
         [ css
@@ -1548,8 +1656,8 @@ viewSelectionHeader model _ =
 
 {-| Header content for data columns
 -}
-viewDataHeader : Model a -> ColumnConfig a -> List (Attribute (Msg a)) -> Html (Msg a)
-viewDataHeader model columnConfig conditionalAttributes =
+viewDataHeader : State a -> ColumnConfig a -> List (Attribute (Msg a)) -> Html (Msg a)
+viewDataHeader state columnConfig conditionalAttributes =
     let
         attributes =
             [ css
@@ -1580,18 +1688,18 @@ viewDataHeader model columnConfig conditionalAttributes =
                     ]
                 ]
                 [ viewDragHandle columnConfig
-                , viewTitle model columnConfig
-                , viewSortingSymbol model columnConfig
+                , viewTitle state columnConfig
+                , viewSortingSymbol state columnConfig
                 ]
-            , viewFilter model columnConfig
+            , viewFilter state columnConfig
             ]
         , viewResizeHandle columnConfig
         ]
 
 
-draggingAttributes : Model a -> ColumnConfig a -> List (Attribute (Msg a))
-draggingAttributes model currentColumn =
-    case model.draggedColumn of
+draggingAttributes : State a -> ColumnConfig a -> List (Attribute (Msg a))
+draggingAttributes state currentColumn =
+    case state.draggedColumn of
         Just draggedColumn ->
             [ fromUnstyled <| Mouse.onMove (\event -> UserDraggedColumn (event |> toPosition)) ]
                 ++ (if isColumn currentColumn draggedColumn.column then
@@ -1609,21 +1717,21 @@ draggingAttributes model currentColumn =
 
 {-| Renders the dragged header
 -}
-viewGhostHeader : Model a -> Html (Msg a)
-viewGhostHeader model =
-    case model.draggedColumn of
+viewGhostHeader : State a -> Html (Msg a)
+viewGhostHeader state =
+    case state.draggedColumn of
         Just draggedColumn ->
             div
-                (headerStyles model
+                (headerStyles state
                     :: [ css
                             [ position absolute
-                            , left (px <| draggedColumn.x - model.headerContainerPosition.x)
+                            , left (px <| draggedColumn.x - state.headerContainerPosition.x)
                             , top (px 2)
                             , pointerEvents none
                             ]
                        ]
                 )
-                [ viewDataHeader model draggedColumn.column [] ]
+                [ viewDataHeader state draggedColumn.column [] ]
 
         Nothing ->
             noContent
@@ -1647,11 +1755,11 @@ isSelectionColumnProperties columnProperties =
 
 {-| Renders a column title
 -}
-viewTitle : Model a -> ColumnConfig a -> Html (Msg a)
-viewTitle model columnConfig =
+viewTitle : State a -> ColumnConfig a -> Html (Msg a)
+viewTitle state columnConfig =
     let
         titleFontStyle =
-            case model.sortedBy of
+            case state.sortedBy of
                 Just column ->
                     if column.properties.id == columnConfig.properties.id then
                         fontStyle italic
@@ -1665,18 +1773,19 @@ viewTitle model columnConfig =
     span
         [ css
             [ titleFontStyle
+            , lineHeight (num 1.2)
             ]
         ]
         [ text <| columnConfig.properties.title
         ]
 
 
-viewSortingSymbol : Model a -> ColumnConfig a -> Html (Msg a)
-viewSortingSymbol model columnConfig =
-    case model.sortedBy of
+viewSortingSymbol : State a -> ColumnConfig a -> Html (Msg a)
+viewSortingSymbol state columnConfig =
+    case state.sortedBy of
         Just config ->
             if config.properties.id == columnConfig.properties.id then
-                if model.order == Descending then
+                if state.order == Descending then
                     viewArrowUp
 
                 else
@@ -1793,24 +1902,190 @@ viewArrow horizontalBorder =
         []
 
 
-viewFilter : Model a -> ColumnConfig a -> Html (Msg a)
-viewFilter model columnConfig =
-    input
-        [ attribute "data-testid" <| "filter-" ++ columnConfig.properties.id
-        , css
-            [ border (px 0)
-            , height (px <| toFloat <| model.config.lineHeight)
-            , paddingLeft (px 2)
-            , paddingRight (px 2)
-            , marginLeft (px resizingHandleWidth) -- for visual centering in the header
-            , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth * 2))
+filterInputWidth : ColumnConfig a -> Px
+filterInputWidth columnConfig =
+    px
+        (toFloat <|
+            columnConfig.properties.width
+                - cumulatedBorderWidth
+                * 2
+                - (if columnConfig.hasQuickFilter then
+                    30
+
+                   else
+                    0
+                  )
+        )
+
+
+viewFilter : State a -> ColumnConfig a -> Html (Msg a)
+viewFilter state columnConfig =
+    div
+        [ css
+            [ displayFlex
+            , flexDirection row
+            , justifyContent spaceBetween
+            , alignItems center
+            , alignSelf stretch
+            , backgroundColor white
+            , borderRadius (px 3)
+            , marginLeft (px 4)
             ]
-        , onClick UserClickedFilter
-        , onBlur FilterLostFocus
-        , onInput <| FilterModified columnConfig
-        , value <| Maybe.withDefault "" columnConfig.filteringValue
         ]
+        [ input
+            [ attribute "data-testid" <| "filter-" ++ columnConfig.properties.id
+            , css
+                [ border (px 0)
+                , height (px <| toFloat <| state.config.lineHeight)
+                , paddingLeft (px 2)
+                , paddingRight (px 2)
+                , marginLeft (px resizingHandleWidth) -- for visual centering in the header
+                , width <| filterInputWidth columnConfig
+                ]
+            , onClick UserClickedFilter
+            , onBlur FilterLostFocus
+            , onInput <| FilterModified columnConfig << Just
+            , title ""
+            , value <| Maybe.withDefault "" columnConfig.filteringValue
+            ]
+            []
+        , viewQuickFilter state columnConfig
+        ]
+
+
+type QuickFilterState
+    = Open
+    | Closed
+    | None
+
+
+viewQuickFilter : State a -> ColumnConfig a -> Html (Msg a)
+viewQuickFilter state columnConfig =
+    let
+        isQuickFilterOpen =
+            Maybe.map (isColumn columnConfig) state.openedQuickFilter |> Maybe.withDefault False
+
+        quickFilterState =
+            if not columnConfig.hasQuickFilter then
+                None
+
+            else if isQuickFilterOpen then
+                Open
+
+            else
+                Closed
+    in
+    case quickFilterState of
+        None ->
+            noContent
+
+        Open ->
+            div [ css [ position absolute ] ]
+                [ viewOpenedQuickFilter state columnConfig ]
+
+        Closed ->
+            div
+                [ css
+                    [ cursor pointer
+                    , displayFlex
+                    , justifyContent center
+                    , flexDirection row
+                    , padding (px 2)
+                    , paddingTop (px 6)
+                    ]
+                , attribute "data-testid" <| "quickFilter-" ++ columnConfig.properties.id
+                , onClick UserClickedFilter
+
+                -- TODO add a localized text
+                , title ""
+                ]
+                [ drawSvg Icons.width filterIcon (UserClickedQuickFilterButton columnConfig)
+                ]
+
+
+viewOpenedQuickFilter : State a -> ColumnConfig a -> Html (Msg a)
+viewOpenedQuickFilter state columnConfig =
+    let
+        maxQuickFilterPropositions =
+            5000
+
+        filterPropositions =
+            columnVisibleValues columnConfig state
+
+        limitedPropositions =
+            take maxQuickFilterPropositions filterPropositions
+    in
+    div
+        [ css
+            [ position absolute
+            , left (px <| contextualMenuPosition columnConfig)
+            , top (px -10)
+            , zIndex (int 1000)
+            , border3 (px 1) solid lightGrey2
+            , margin auto
+            , padding (px 5)
+            , opacity (int 1)
+            , width (px <| toFloat <| max columnConfig.properties.width 100)
+            , maxHeight <| px <| toFloat 400
+            , backgroundColor white
+            , overflowX hidden
+            , overflowY auto
+            , whiteSpace noWrap
+            ]
+
+        -- TODO add a localized text
+        , title ""
+
+        -- allow this div to receive focus (necessary to receive blur event)
+        , tabindex 0
+        , onBlur FilterLostFocus
+        , id openedQuickFilterHtmlId
+        ]
+    <|
+        List.map (\value -> viewQuickFilterSelector columnConfig (text value) (Just ("=" ++ value)))
+            limitedPropositions
+            ++ viewEllipsis (List.length filterPropositions) maxQuickFilterPropositions
+            ++ viewResetSelector columnConfig
+
+
+{-| The horizontal position of the quick filtering menu, relative to the column left border
+-}
+contextualMenuPosition : ColumnConfig a -> Float
+contextualMenuPosition columnConfig =
+    toFloat columnConfig.properties.width - Icons.width - resizingHandleWidth - 10
+
+
+viewEllipsis : Int -> Int -> List (Html (Msg a))
+viewEllipsis totalNumber actualNumber =
+    if totalNumber > actualNumber then
+        [ span [ css [ cursor auto ] ] [ text "..." ] ]
+
+    else
         []
+
+
+viewResetSelector : ColumnConfig a -> List (Html (Msg a))
+viewResetSelector columnConfig =
+    if columnConfig.filteringValue == Nothing then
+        []
+
+    else
+        -- TODO localize the text
+        [ hr [ css [ color darkGrey2 ] ] []
+        , viewQuickFilterSelector columnConfig (span [ css [ fontStyle italic ] ] [ text "Effacer" ]) Nothing
+        ]
+
+
+viewQuickFilterSelector : ColumnConfig a -> Html (Msg a) -> Maybe String -> Html (Msg a)
+viewQuickFilterSelector columnConfig label filterString =
+    div
+        [ onClick <| FilterModified columnConfig filterString
+        , css
+            [ cursor pointer
+            , hover [ backgroundColor lightGrey3 ]
+            ]
+        ]
+        [ label ]
 
 
 {-| Left + right cell border width, including padding, in px.
@@ -1839,3 +2114,11 @@ cellAttributes properties =
         , width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
     ]
+
+
+columnVisibleValues : ColumnConfig a -> State a -> List String
+columnVisibleValues columnConfig state =
+    state.visibleItems
+        |> List.sortWith columnConfig.comparator
+        |> List.map columnConfig.toString
+        |> unique

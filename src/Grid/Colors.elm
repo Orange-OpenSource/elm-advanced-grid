@@ -9,7 +9,7 @@
 -}
 
 
-module Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, white, white2)
+module Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, lightGrey3, white, white2)
 
 import Css exposing (Color, hex)
 
@@ -47,6 +47,11 @@ lightGrey =
 lightGrey2 : Color
 lightGrey2 =
     hex "BBB"
+
+
+lightGrey3 : Color
+lightGrey3 =
+    hex "DDD"
 
 
 white2 : Color
