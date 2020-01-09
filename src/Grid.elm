@@ -1187,7 +1187,7 @@ returns the field to be displayed in this column.
 viewBool : (Item a -> Bool) -> ColumnProperties -> Item a -> Html (Msg a)
 viewBool field properties item =
     div
-        (cellAttributes properties ++ [ css [ justifyContent flexEnd ] ])
+        (cellAttributes properties)
         [ input
             [ type_ "checkbox"
             , Html.Styled.Attributes.checked (field item)
@@ -2104,6 +2104,7 @@ cellAttributes properties =
     , css
         [ alignItems center
         , display inlineFlex
+        , firstOfType [ justifyContent flexEnd ]
         , border3 (px 1) solid lightGrey
         , boxSizing contentBox
         , minHeight (pct 100) -- 100% min height forces empty divs to be correctly rendered
