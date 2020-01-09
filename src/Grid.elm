@@ -10,13 +10,14 @@
 
 
 module Grid exposing
-    ( Config, withColumns, withConfig
+    ( Config, withColumns, withConfig, currentConfig
     , ColumnConfig, ColumnProperties, stringColumnConfig, intColumnConfig, floatColumnConfig, boolColumnConfig
     , Sorting(..), compareFields, compareBoolField
     , viewBool, viewFloat, viewInt, viewProgressBar, viewString, cumulatedBorderWidth, cellAttributes
     , Model, Msg(..), init, update, view
     , selectedAndVisibleItems, visibleData
     , visibleColumns, isColumn, isSelectionColumn, isSelectionColumnProperties
+    , currentOrder, sortedBy
     )
 
 {-| This module allows to create dynamically configurable data grid.
@@ -26,7 +27,7 @@ module Grid exposing
 
 A grid is defined using a `Config`
 
-@docs Config, withColumns, withConfig
+@docs Config, withColumns, withConfig, currentConfig
 
 
 # Configure a column
@@ -65,17 +66,19 @@ import Browser.Dom
 import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector)
 import Dict exposing (Dict)
-import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, white, white2)
+import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, lightGrey3, white, white2)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
+import Grid.Icons as Icons exposing (drawSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
 import Html
 import Html.Events.Extra.Mouse as Mouse
-import Html.Styled exposing (Attribute, Html, div, input, label, span, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
+import Html.Styled exposing (Attribute, Html, div, hr, i, input, label, span, text, toUnstyled)
+import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, tabindex, title, type_, value)
 import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
-import List.Extra exposing (findIndex)
+import List exposing (take)
+import List.Extra exposing (findIndex, unique)
 import String
 import Task
 
@@ -172,7 +175,7 @@ type Msg a
     = ColumnsModificationRequested (List (ColumnConfig a))
     | InfiniteListMsg IL.Model
     | FilterLostFocus
-    | FilterModified (ColumnConfig a) String
+    | FilterModified (ColumnConfig a) (Maybe String)
     | SetFilters (Dict String String) -- column ID, filter value
     | SetSorting String Sorting -- column ID, Ascending or Descending
     | NoOp
@@ -180,7 +183,9 @@ type Msg a
     | ScrollTo (Item a -> Bool) -- scroll to the first item for which the function returns True
     | ShowPreferences
     | UpdateContent (a -> a)
+    | UpdateContentPreservingSelection (a -> a)
     | UserClickedHeader (ColumnConfig a)
+    | UserClickedQuickFilterButton (ColumnConfig a)
     | UserClickedFilter
     | UserClickedLine (Item a)
     | UserClickedDragHandle (ColumnConfig a) Position
@@ -245,6 +250,7 @@ boolColumnConfig
 -}
 type alias ColumnConfig a =
     { properties : ColumnProperties
+    , hasQuickFilter : Bool
     , comparator : Item a -> Item a -> Order
     , filteringValue : Maybe String
     , filters : Filter a
@@ -306,11 +312,12 @@ type alias State a =
     , content : List a -- all data, visible or not
     , draggedColumn : Maybe (DraggedColumn a)
     , dragStartX : Float
-    , filterHasFocus : Bool -- Prevents clicking in an input field to trigger a sort
+    , filterHasFocus : Bool -- Avoids triggering a sort when clicking in an input field or a quick filter
     , hoveredColumn : Maybe (ColumnConfig a)
     , infList : IL.Model
     , isAllSelected : Bool
     , headerContainerPosition : Position
+    , openedQuickFilter : Maybe (ColumnConfig a)
 
     -- TODO: order and sortedBy can have incompatible values. It would be better to join them in a single Maybe
     , order : Sorting
@@ -319,6 +326,27 @@ type alias State a =
     , sortedBy : Maybe (ColumnConfig a)
     , visibleItems : List (Item a) -- the subset of items remaining visible after applying filters
     }
+
+
+{-| The current configuration of the grid
+-}
+currentConfig : Model a -> Config a
+currentConfig (Model state) =
+    state.config
+
+
+{-| The column according to which the grid content is sorted, if any
+-}
+sortedBy : Model a -> Maybe (ColumnConfig a)
+sortedBy (Model state) =
+    state.sortedBy
+
+
+{-| The order used if the grid is sorted using the value of a given column}
+-}
+currentOrder : Model a -> Sorting
+currentOrder (Model state) =
+    state.order
 
 
 {-| Sets the grid configuration
@@ -405,6 +433,7 @@ selectionColumn =
     , toString = .selected >> boolToString
     , renderer = viewBool .selected
     , comparator = compareBoolField .selected
+    , hasQuickFilter = False
     }
 
 
@@ -459,6 +488,7 @@ init config data =
             , infList = IL.init
             , isAllSelected = False
             , draggedColumn = Nothing
+            , openedQuickFilter = Nothing
             , order = Unsorted
             , headerContainerPosition = { x = 0, y = 0 }
             , resizedColumn = Nothing
@@ -505,8 +535,34 @@ update msg (Model state) =
                 }
             )
 
+        UserClickedQuickFilterButton columnConfig ->
+            -- the focus must be put on opened filter div, so that the blur event will be launched when we leave it
+            ( Model
+                { state
+                    | openedQuickFilter = Just columnConfig
+                    , filterHasFocus = True
+                }
+            , focusOn openedQuickFilterHtmlId
+            )
+
         _ ->
             ( stateUpdate msg state |> Model, Cmd.none )
+
+
+{-| focus on an HTML element.
+No callback is called (even if focus fails)
+-}
+focusOn : String -> Cmd (Msg a)
+focusOn elementId =
+    Browser.Dom.focus elementId |> Task.attempt (\result -> NoOp)
+
+
+closeQuickFilter : State a -> State a
+closeQuickFilter state =
+    { state
+        | openedQuickFilter = Nothing
+        , filterHasFocus = False
+    }
 
 
 {-| Updates the grid state for messages which won't generate any command
@@ -518,12 +574,12 @@ stateUpdate msg state =
             state |> withColumnsState columns
 
         FilterLostFocus ->
-            { state | filterHasFocus = False }
+            { state | filterHasFocus = False } |> closeQuickFilter
 
-        FilterModified columnConfig string ->
+        FilterModified columnConfig maybeString ->
             let
                 newColumnconfig =
-                    { columnConfig | filteringValue = Just string }
+                    { columnConfig | filteringValue = maybeString }
 
                 newColumns =
                     List.Extra.setIf (isColumn columnConfig) newColumnconfig state.config.columns
@@ -531,7 +587,7 @@ stateUpdate msg state =
                 newState =
                     state |> withColumnsState newColumns
             in
-            updateVisibleItems newState
+            updateVisibleItems newState |> closeQuickFilter
 
         GotHeaderContainerInfo (Ok info) ->
             { state | headerContainerPosition = { x = info.element.x, y = info.element.y } }
@@ -559,7 +615,7 @@ stateUpdate msg state =
             in
             case sortedColumnConfig of
                 Just columnConfig ->
-                    sort state columnConfig sorting orderBy
+                    sort columnConfig sorting orderBy state
 
                 Nothing ->
                     state
@@ -583,6 +639,23 @@ stateUpdate msg state =
                 |> withContent updatedData
                 |> updateVisibleItems
 
+        -- updates the content, but does not apply filters. WARNING: the data modification function must not modify any value affected by the current filters
+        UpdateContentPreservingSelection updateContent ->
+            let
+                updatedData =
+                    List.map updateContent state.content
+
+                updateVisibleItem : Item a -> Item a
+                updateVisibleItem item =
+                    { item | data = updateContent item.data }
+
+                updatedVisibleItems =
+                    List.map updateVisibleItem state.visibleItems
+            in
+            state
+                |> withContent updatedData
+                |> withVisibleItems updatedVisibleItems
+
         UserClickedDragHandle columnConfig mousePosition ->
             let
                 draggedColumn =
@@ -599,17 +672,22 @@ stateUpdate msg state =
             { state | filterHasFocus = True }
 
         UserClickedHeader columnConfig ->
+            -- useful when user clicks in filter input
             if state.filterHasFocus then
                 state
 
             else
-                sort state columnConfig state.order toggleOrder
+                sort columnConfig state.order toggleOrder state
 
         UserClickedLine item ->
             { state | clickedItem = Just item }
 
         UserClickedPreferenceCloseButton ->
             { state | showPreferences = False }
+
+        UserClickedQuickFilterButton _ ->
+            -- This message is handled in the `update` function
+            state
 
         UserClickedResizeHandle columnConfig position ->
             { state
@@ -711,7 +789,15 @@ updateVisibleItems state =
         visibleItems =
             List.indexedMap (\index value -> Item.create value index) filteredContent
     in
-    state |> withVisibleItems visibleItems
+    case state.sortedBy of
+        Just columnConfig ->
+            state
+                |> withVisibleItems visibleItems
+                |> sort columnConfig state.order orderBy
+
+        Nothing ->
+            state
+                |> withVisibleItems visibleItems
 
 
 {-| Updates the filter for a given column
@@ -727,16 +813,16 @@ setFilter filterValues columnConfig =
 
 {-| Sorts visible items according the the content of a given column, in a given order
 -}
-sort : State a -> ColumnConfig a -> Sorting -> (State a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )) -> State a
-sort model columnConfig order sorter =
+sort : ColumnConfig a -> Sorting -> (State a -> ColumnConfig a -> Sorting -> ( List (Item a), Sorting )) -> State a -> State a
+sort columnConfig order sorter state =
     let
         ( sortedItems, newOrder ) =
-            sorter model columnConfig order
+            sorter state columnConfig order
 
         updatedItems =
             updateIndexes sortedItems
     in
-    { model
+    { state
         | order = newOrder
         , sortedBy = Just columnConfig
         , visibleItems = updatedItems
@@ -952,6 +1038,11 @@ gridHtmlId =
     "_grid_"
 
 
+openedQuickFilterHtmlId : String
+openedQuickFilterHtmlId =
+    "openedQuickFilter"
+
+
 {-| Renders the grid
 -}
 viewGrid : State a -> Html (Msg a)
@@ -1139,6 +1230,7 @@ stringColumnConfig ({ id, title, tooltip, width, getter, localize } as propertie
     , toString = nestedDataGetter
     , renderer = viewString nestedDataGetter
     , comparator = compareFields nestedDataGetter
+    , hasQuickFilter = True
     }
 
 
@@ -1163,6 +1255,7 @@ floatColumnConfig ({ id, title, tooltip, width, getter, localize } as properties
     , toString = nestedDataGetter >> String.fromFloat
     , renderer = viewFloat nestedDataGetter
     , comparator = compareFields nestedDataGetter
+    , hasQuickFilter = True
     }
 
 
@@ -1187,6 +1280,7 @@ intColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) 
     , toString = nestedDataGetter >> String.fromInt
     , renderer = viewInt nestedDataGetter
     , comparator = compareFields nestedDataGetter
+    , hasQuickFilter = True
     }
 
 
@@ -1209,6 +1303,7 @@ boolColumnConfig ({ id, title, tooltip, width, getter, localize } as properties)
     , toString = nestedDataGetter >> boolToString
     , renderer = viewBool nestedDataGetter
     , comparator = compareBoolField nestedDataGetter
+    , hasQuickFilter = True
     }
 
 
@@ -1497,7 +1592,7 @@ viewHeader state columnConfig index =
             ]
 
         conditionalAttributes =
-            if state.resizedColumn == Nothing then
+            if state.resizedColumn == Nothing && not state.filterHasFocus then
                 [ onClick (UserClickedHeader columnConfig) ]
 
             else
@@ -1678,6 +1773,7 @@ viewTitle state columnConfig =
     span
         [ css
             [ titleFontStyle
+            , lineHeight (num 1.2)
             ]
         ]
         [ text <| columnConfig.properties.title
@@ -1806,24 +1902,190 @@ viewArrow horizontalBorder =
         []
 
 
+filterInputWidth : ColumnConfig a -> Px
+filterInputWidth columnConfig =
+    px
+        (toFloat <|
+            columnConfig.properties.width
+                - cumulatedBorderWidth
+                * 2
+                - (if columnConfig.hasQuickFilter then
+                    30
+
+                   else
+                    0
+                  )
+        )
+
+
 viewFilter : State a -> ColumnConfig a -> Html (Msg a)
 viewFilter state columnConfig =
-    input
-        [ attribute "data-testid" <| "filter-" ++ columnConfig.properties.id
-        , css
-            [ border (px 0)
-            , height (px <| toFloat <| state.config.lineHeight)
-            , paddingLeft (px 2)
-            , paddingRight (px 2)
-            , marginLeft (px resizingHandleWidth) -- for visual centering in the header
-            , width (px (toFloat <| columnConfig.properties.width - cumulatedBorderWidth * 2))
+    div
+        [ css
+            [ displayFlex
+            , flexDirection row
+            , justifyContent spaceBetween
+            , alignItems center
+            , alignSelf stretch
+            , backgroundColor white
+            , borderRadius (px 3)
+            , marginLeft (px 4)
             ]
-        , onClick UserClickedFilter
-        , onBlur FilterLostFocus
-        , onInput <| FilterModified columnConfig
-        , value <| Maybe.withDefault "" columnConfig.filteringValue
         ]
+        [ input
+            [ attribute "data-testid" <| "filter-" ++ columnConfig.properties.id
+            , css
+                [ border (px 0)
+                , height (px <| toFloat <| state.config.lineHeight)
+                , paddingLeft (px 2)
+                , paddingRight (px 2)
+                , marginLeft (px resizingHandleWidth) -- for visual centering in the header
+                , width <| filterInputWidth columnConfig
+                ]
+            , onClick UserClickedFilter
+            , onBlur FilterLostFocus
+            , onInput <| FilterModified columnConfig << Just
+            , title ""
+            , value <| Maybe.withDefault "" columnConfig.filteringValue
+            ]
+            []
+        , viewQuickFilter state columnConfig
+        ]
+
+
+type QuickFilterState
+    = Open
+    | Closed
+    | None
+
+
+viewQuickFilter : State a -> ColumnConfig a -> Html (Msg a)
+viewQuickFilter state columnConfig =
+    let
+        isQuickFilterOpen =
+            Maybe.map (isColumn columnConfig) state.openedQuickFilter |> Maybe.withDefault False
+
+        quickFilterState =
+            if not columnConfig.hasQuickFilter then
+                None
+
+            else if isQuickFilterOpen then
+                Open
+
+            else
+                Closed
+    in
+    case quickFilterState of
+        None ->
+            noContent
+
+        Open ->
+            div [ css [ position absolute ] ]
+                [ viewOpenedQuickFilter state columnConfig ]
+
+        Closed ->
+            div
+                [ css
+                    [ cursor pointer
+                    , displayFlex
+                    , justifyContent center
+                    , flexDirection row
+                    , padding (px 2)
+                    , paddingTop (px 6)
+                    ]
+                , attribute "data-testid" <| "quickFilter-" ++ columnConfig.properties.id
+                , onClick UserClickedFilter
+
+                -- TODO add a localized text
+                , title ""
+                ]
+                [ drawSvg Icons.width filterIcon (UserClickedQuickFilterButton columnConfig)
+                ]
+
+
+viewOpenedQuickFilter : State a -> ColumnConfig a -> Html (Msg a)
+viewOpenedQuickFilter state columnConfig =
+    let
+        maxQuickFilterPropositions =
+            5000
+
+        filterPropositions =
+            columnVisibleValues columnConfig state
+
+        limitedPropositions =
+            take maxQuickFilterPropositions filterPropositions
+    in
+    div
+        [ css
+            [ position absolute
+            , left (px <| contextualMenuPosition columnConfig)
+            , top (px -10)
+            , zIndex (int 1000)
+            , border3 (px 1) solid lightGrey2
+            , margin auto
+            , padding (px 5)
+            , opacity (int 1)
+            , width (px <| toFloat <| max columnConfig.properties.width 100)
+            , maxHeight <| px <| toFloat 400
+            , backgroundColor white
+            , overflowX hidden
+            , overflowY auto
+            , whiteSpace noWrap
+            ]
+
+        -- TODO add a localized text
+        , title ""
+
+        -- allow this div to receive focus (necessary to receive blur event)
+        , tabindex 0
+        , onBlur FilterLostFocus
+        , id openedQuickFilterHtmlId
+        ]
+    <|
+        List.map (\value -> viewQuickFilterSelector columnConfig (text value) (Just ("=" ++ value)))
+            limitedPropositions
+            ++ viewEllipsis (List.length filterPropositions) maxQuickFilterPropositions
+            ++ viewResetSelector columnConfig
+
+
+{-| The horizontal position of the quick filtering menu, relative to the column left border
+-}
+contextualMenuPosition : ColumnConfig a -> Float
+contextualMenuPosition columnConfig =
+    toFloat columnConfig.properties.width - Icons.width - resizingHandleWidth - 10
+
+
+viewEllipsis : Int -> Int -> List (Html (Msg a))
+viewEllipsis totalNumber actualNumber =
+    if totalNumber > actualNumber then
+        [ span [ css [ cursor auto ] ] [ text "..." ] ]
+
+    else
         []
+
+
+viewResetSelector : ColumnConfig a -> List (Html (Msg a))
+viewResetSelector columnConfig =
+    if columnConfig.filteringValue == Nothing then
+        []
+
+    else
+        -- TODO localize the text
+        [ hr [ css [ color darkGrey2 ] ] []
+        , viewQuickFilterSelector columnConfig (span [ css [ fontStyle italic ] ] [ text "Effacer" ]) Nothing
+        ]
+
+
+viewQuickFilterSelector : ColumnConfig a -> Html (Msg a) -> Maybe String -> Html (Msg a)
+viewQuickFilterSelector columnConfig label filterString =
+    div
+        [ onClick <| FilterModified columnConfig filterString
+        , css
+            [ cursor pointer
+            , hover [ backgroundColor lightGrey3 ]
+            ]
+        ]
+        [ label ]
 
 
 {-| Left + right cell border width, including padding, in px.
@@ -1852,3 +2114,11 @@ cellAttributes properties =
         , width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
     ]
+
+
+columnVisibleValues : ColumnConfig a -> State a -> List String
+columnVisibleValues columnConfig state =
+    state.visibleItems
+        |> List.sortWith columnConfig.comparator
+        |> List.map columnConfig.toString
+        |> unique
