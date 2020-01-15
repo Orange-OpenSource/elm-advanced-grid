@@ -671,6 +671,10 @@ stateUpdate msg state =
         UserClickedFilter ->
             { state | filterHasFocus = True }
 
+        UserClickedQuickFilterButton _ ->
+            -- This message is handled in the `update` function
+            state
+
         UserClickedHeader columnConfig ->
             -- useful when user clicks in filter input
             if state.filterHasFocus then
@@ -684,10 +688,6 @@ stateUpdate msg state =
 
         UserClickedPreferenceCloseButton ->
             { state | showPreferences = False }
-
-        UserClickedQuickFilterButton _ ->
-            -- This message is handled in the `update` function
-            state
 
         UserClickedResizeHandle columnConfig position ->
             { state
@@ -1072,9 +1072,7 @@ viewGrid state =
         if state.config.hasFilters then
             [ div
                 [ css
-                    [ borderLeft3 (px 1) solid lightGrey2
-                    , borderRight3 (px 1) solid lightGrey2
-                    , width (px <| toFloat <| gridWidth state)
+                    [ width (px <| toFloat <| gridWidth state)
                     ]
                 ]
                 [ viewHeaderContainer state
@@ -1092,23 +1090,20 @@ viewGrid state =
 
 viewRows : State a -> Html (Msg a)
 viewRows state =
-    div []
-        [ div
-            [ css
-                [ height (px <| toFloat state.config.containerHeight)
-                , width (px <| toFloat <| gridWidth state)
-                , overflowX hidden
-                , overflowY auto
-                , border3 (px 1) solid lightGrey
+    div
+        [ css
+            [ height (px <| toFloat state.config.containerHeight)
+            , width (px <| toFloat <| gridWidth state)
+            , overflowX hidden
+            , overflowY auto
 
-                -- displays the vertical scrollbar to the left. https://stackoverflow.com/questions/7347532/how-to-position-a-div-scrollbar-on-the-left-hand-side
-                , property "direction" "rtl"
-                ]
-            , fromUnstyled <| IL.onScroll InfiniteListMsg
-            , id gridHtmlId
+            -- displays the vertical scrollbar to the left. https://stackoverflow.com/questions/7347532/how-to-position-a-div-scrollbar-on-the-left-hand-side
+            , property "direction" "rtl"
             ]
-            [ Html.Styled.fromUnstyled <| IL.view (infiniteListConfig state) state.infList state.visibleItems ]
+        , fromUnstyled <| IL.onScroll InfiniteListMsg
+        , id gridHtmlId
         ]
+        [ Html.Styled.fromUnstyled <| IL.view (infiniteListConfig state) state.infList state.visibleItems ]
 
 
 columnFilters : State a -> List (a -> Bool)
@@ -1139,6 +1134,7 @@ viewRow state idx listIdx item =
                 [ displayFlex
                 , height (px <| toFloat state.config.lineHeight)
                 , width (px <| toFloat <| gridWidth state)
+                , borderBottom3 (px 1) solid lightGrey
 
                 -- restore reading order, while preserving the left position of the scrollbar
                 , property "direction" "ltr"
@@ -1146,7 +1142,7 @@ viewRow state idx listIdx item =
             , onClick (UserClickedLine item)
             ]
     <|
-        List.map (\columnConfig -> viewColumn columnConfig item) (visibleColumns (Model state))
+        List.map (\columnConfig -> viewCell columnConfig item) (visibleColumns (Model state))
 
 
 gridWidth : State a -> Int
@@ -1154,8 +1150,8 @@ gridWidth state =
     List.foldl (\columnConfig -> (+) columnConfig.properties.width) 0 (visibleColumns (Model state))
 
 
-viewColumn : ColumnConfig a -> Item a -> Html (Msg a)
-viewColumn config item =
+viewCell : ColumnConfig a -> Item a -> Html (Msg a)
+viewCell config item =
     config.renderer config.properties item
 
 
@@ -1551,6 +1547,7 @@ viewHeaderContainer state =
             [ css
                 [ backgroundColor darkGrey
                 , displayFlex
+                , noShrink
                 , height (px <| toFloat state.config.headerHeight)
                 ]
             , id headerContainerId
@@ -1613,6 +1610,7 @@ headerStyles state =
     css
         [ backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
         , display inlineFlex
+        , noShrink
         , flexDirection row
         , border3 (px 1) solid lightGrey2
         , boxSizing contentBox
@@ -1640,6 +1638,7 @@ viewSelectionHeader state _ =
         [ css
             [ width <| px <| toFloat <| selectionColumn.properties.width - cumulatedBorderWidth
             , displayFlex
+            , noShrink
             , justifyContent center
             , alignItems center
             ]
@@ -1662,6 +1661,7 @@ viewDataHeader state columnConfig conditionalAttributes =
         attributes =
             [ css
                 [ displayFlex
+                , noShrink
                 , flexDirection row
                 ]
             ]
@@ -1671,6 +1671,7 @@ viewDataHeader state columnConfig conditionalAttributes =
         [ div
             ([ css
                 [ displayFlex
+                , noShrink
                 , flexDirection column
                 , alignItems flexStart
                 , overflow hidden
@@ -1682,6 +1683,7 @@ viewDataHeader state columnConfig conditionalAttributes =
             [ div
                 [ css
                     [ displayFlex
+                    , noShrink
                     , flexDirection row
                     , flexGrow (num 1)
                     , justifyContent flexStart
@@ -2104,8 +2106,10 @@ cellAttributes properties =
     , css
         [ alignItems center
         , display inlineFlex
+        , noShrink
+        , borderLeft3 (px 1) solid lightGrey
+        , borderRight3 (px 1) solid lightGrey
         , firstOfType [ justifyContent flexEnd ]
-        , border3 (px 1) solid lightGrey
         , boxSizing contentBox
         , minHeight (pct 100) -- 100% min height forces empty divs to be correctly rendered
         , paddingLeft (px 2)
@@ -2123,3 +2127,10 @@ columnVisibleValues columnConfig state =
         |> List.sortWith columnConfig.comparator
         |> List.map columnConfig.toString
         |> unique
+
+
+{-| prevents header width to be automatically reduced
+-}
+noShrink : Style
+noShrink =
+    flexShrink (num 0)
