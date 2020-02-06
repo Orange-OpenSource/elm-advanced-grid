@@ -70,6 +70,7 @@ import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, 
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Grid.Icons as Icons exposing (drawSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
+import Grid.Labels as Label
 import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, hr, i, input, label, span, text, toUnstyled)
@@ -2015,7 +2016,9 @@ viewOpenedQuickFilter state columnConfig =
             columnVisibleValues columnConfig state
 
         limitedPropositions =
-            take maxQuickFilterPropositions filterPropositions
+            -- TODO: i18n
+            Label.empty
+                :: take maxQuickFilterPropositions filterPropositions
     in
     div
         [ css

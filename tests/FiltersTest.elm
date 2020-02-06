@@ -11,8 +11,9 @@ module FiltersTest exposing (boolFilters, describeFilterParsing, floatFilters, i
 -}
 
 import Expect
-import Fixtures exposing (item1, item2, item5)
+import Fixtures exposing (item1, item2, item5, item6)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
+import Grid.Labels as Label
 import Test exposing (..)
 
 
@@ -164,6 +165,12 @@ describeFilterParsing =
         , test "should detect if a String is greater than another, doing a case-insensitive comparison" <|
             \_ ->
                 testStringComparisonParsingSucceeds ">item 1" item2
+        , test "should detect if a String is empty" <|
+            \_ ->
+                testStringComparisonParsingSucceeds ("=" ++ Label.empty) item6
+        , test "should detect if a String is not empty" <|
+            \_ ->
+                testStringComparisonParsingFails ("=" ++ Label.empty) item1
         , test "should detect if a String is not greater than another" <|
             \_ ->
                 testStringComparisonParsingFails ">ITEM 3" item2

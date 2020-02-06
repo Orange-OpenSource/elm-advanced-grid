@@ -1,4 +1,4 @@
-module Fixtures exposing (Data, columns, data, dataOrderedByAscendingScore, dataOrderedByDescendingScore, dataWithScoreGreaterThan2, gridConfig, isValidColumn, item1, item2, item3, item4, item5, model, scoreColumn, titleColumn)
+module Fixtures exposing (Data, columns, data, dataOrderedByAscendingScore, dataOrderedByDescendingScore, dataWithScoreGreaterThan2, gridConfig, isValidColumn, item1, item2, item3, item4, item5, item6, model, modelWithOneEmptyTitle, scoreColumn, titleColumn)
 
 {- Copyright (c) 2019 Orange
    This code is released under the MIT license.
@@ -92,6 +92,20 @@ item5 =
     Item.create data5 5
 
 
+data6 : Data
+data6 =
+    { count = 42
+    , isValid = True
+    , score = 1
+    , title = ""
+    }
+
+
+item6 : Item Data
+item6 =
+    Item.create data6 6
+
+
 data : List Data
 data =
     [ data1, data2, data3, data4 ]
@@ -110,6 +124,11 @@ dataOrderedByDescendingScore =
 dataWithScoreGreaterThan2 : List Data
 dataWithScoreGreaterThan2 =
     [ data3, data4 ]
+
+
+dataWithOneEmptyCell : List Data
+dataWithOneEmptyCell =
+    data6 :: data
 
 
 scoreColumn =
@@ -178,3 +197,8 @@ rowClass item =
 model : Model Data
 model =
     Grid.init gridConfig data
+
+
+modelWithOneEmptyTitle : Model Data
+modelWithOneEmptyTitle =
+    Grid.init gridConfig dataWithOneEmptyCell

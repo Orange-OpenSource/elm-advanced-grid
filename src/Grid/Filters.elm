@@ -28,7 +28,7 @@ module Grid.Filters exposing
 
 -}
 
-import Grid.Item exposing (Item)
+import Grid.Labels as Label
 import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, stringParser)
 import Parser exposing ((|=), DeadEnd, Parser)
 
@@ -147,7 +147,7 @@ stringFilter : (a -> String) -> TypedFilter a String
 stringFilter getter =
     makeFilter
         { getter = getter
-        , equal = \a b -> String.toLower a == String.toLower b
+        , equal = \a b -> (String.toLower a == String.toLower b) || (a == "" && b == Label.empty)
         , lessThan = \a b -> String.toLower a < String.toLower b
         , greaterThan = \a b -> String.toLower a > String.toLower b
         , contains = \a b -> String.contains (String.toLower b) (String.toLower a)

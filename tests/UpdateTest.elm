@@ -13,7 +13,7 @@ module UpdateTest exposing (describeHeaderClicked, suite)
 import Expect
 import Fixtures exposing (..)
 import Grid exposing (..)
-import List.Extra
+import Grid.Labels as Label
 import Test exposing (..)
 
 
@@ -60,16 +60,28 @@ describeHeaderClicked =
             \_ ->
                 let
                     ( filteredModel, _ ) =
-                        update (FilterModified scoreColumn "< 3.0") model
+                        update (FilterModified scoreColumn (Just "< 3.0")) model
                 in
                 Expect.equal 2 (List.length (visibleData filteredModel))
+        ]
+    , describe "when receiving FilterModified message with 'Empty Cell' content"
+        [ test "should filter items with an empty cell" <|
+            \_ ->
+                let
+                    emptyCellFilter =
+                        Just ("=" ++ Label.empty)
+
+                    ( filteredModel, _ ) =
+                        update (FilterModified titleColumn emptyCellFilter) modelWithOneEmptyTitle
+                in
+                Expect.equal 1 (List.length (visibleData filteredModel))
         ]
     , describe "when receiving UserToggledColumnVisibility message"
         [ test "should remove filters" <|
             \_ ->
                 let
                     ( filteredModel, _ ) =
-                        update (FilterModified scoreColumn "< 3.0") model
+                        update (FilterModified scoreColumn (Just "< 3.0")) model
 
                     ( newModel, _ ) =
                         update (UserToggledColumnVisibility scoreColumn) filteredModel
@@ -81,7 +93,7 @@ describeHeaderClicked =
             \_ ->
                 let
                     ( filteredModel, _ ) =
-                        update (FilterModified scoreColumn "> 2.0") model
+                        update (FilterModified scoreColumn (Just "> 2.0")) model
 
                     ( updatedModel, _ ) =
                         update UserToggledAllItemSelection filteredModel
