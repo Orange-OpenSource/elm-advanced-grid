@@ -2019,7 +2019,7 @@ viewOpenedQuickFilter : State a -> ColumnConfig a -> Html (Msg a)
 viewOpenedQuickFilter state columnConfig =
     let
         maxQuickFilterPropositions =
-            5000
+            100
 
         filterPropositions =
             columnVisibleValues columnConfig state
@@ -2091,6 +2091,7 @@ viewQuickFilterSelector columnConfig label filterString =
         [ onClick <| FilterModified columnConfig filterString
         , css
             [ cursor pointer
+            , firstOfType [ fontStyle italic ]
             , hover [ backgroundColor lightGrey3 ]
             ]
         ]
