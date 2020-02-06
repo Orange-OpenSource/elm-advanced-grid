@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.cg.a6 === region.cG.a6)
+	if (region.ch.a6 === region.cH.a6)
 	{
-		return 'on line ' + region.cg.a6;
+		return 'on line ' + region.ch.a6;
 	}
-	return 'on lines ' + region.cg.a6 + ' through ' + region.cG.a6;
+	return 'on lines ' + region.ch.a6 + ' through ' + region.cH.a6;
 }
 
 
@@ -1858,8 +1858,8 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 		flagDecoder,
 		args,
 		impl.eg,
-		impl.e1,
-		impl.eW,
+		impl.e2,
+		impl.eX,
 		function() { return function() {} }
 	);
 });
@@ -2705,8 +2705,8 @@ var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
 		ae: func(record.ae),
-		ch: record.ch,
-		cd: record.cd
+		ci: record.ci,
+		ce: record.ce
 	}
 });
 
@@ -2975,10 +2975,10 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 
 		var value = result.a;
 		var message = !tag ? value : tag < 3 ? value.a : value.ae;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.ch;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.ci;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.cd) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.ce) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3929,10 +3929,10 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 		flagDecoder,
 		args,
 		impl.eg,
-		impl.e1,
-		impl.eW,
+		impl.e2,
+		impl.eX,
 		function(sendToApp, initialModel) {
-			var view = impl.e3;
+			var view = impl.e4;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3965,11 +3965,11 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 		flagDecoder,
 		args,
 		impl.eg,
-		impl.e1,
-		impl.eW,
+		impl.e2,
+		impl.eX,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.cf && impl.cf(sendToApp)
-			var view = impl.e3;
+			var divertHrefToApp = impl.cg && impl.cg(sendToApp)
+			var view = impl.e4;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -4038,12 +4038,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.eD;
-	var onUrlRequest = impl.eE;
+	var onUrlChange = impl.eE;
+	var onUrlRequest = impl.eF;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		cf: function(sendToApp)
+		cg: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4060,7 +4060,7 @@ function _Browser_application(impl)
 					sendToApp(onUrlRequest(
 						(next
 							&& curr.dh === next.dh
-							&& curr.cP === next.cP
+							&& curr.cQ === next.cQ
 							&& curr.dd.a === next.dd.a
 						)
 							? $elm$browser$Browser$Internal(next)
@@ -4073,9 +4073,9 @@ function _Browser_application(impl)
 		{
 			return A3(impl.eg, flags, _Browser_getUrl(), key);
 		},
-		e3: impl.e3,
-		e1: impl.e1,
-		eW: impl.eW
+		e4: impl.e4,
+		e2: impl.e2,
+		eX: impl.eX
 	});
 }
 
@@ -4237,7 +4237,7 @@ function _Browser_getViewport()
 			v: _Browser_window.pageXOffset,
 			br: _Browser_window.pageYOffset,
 			bq: _Browser_doc.documentElement.clientWidth,
-			cO: _Browser_doc.documentElement.clientHeight
+			cP: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4248,7 +4248,7 @@ function _Browser_getScene()
 	var elem = _Browser_doc.documentElement;
 	return {
 		bq: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		cO: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		cP: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4273,13 +4273,13 @@ function _Browser_getViewportOf(id)
 		return {
 			dr: {
 				bq: node.scrollWidth,
-				cO: node.scrollHeight
+				cP: node.scrollHeight
 			},
 			dD: {
 				v: node.scrollLeft,
 				br: node.scrollTop,
 				bq: node.clientWidth,
-				cO: node.clientHeight
+				cP: node.clientHeight
 			}
 		};
 	});
@@ -4314,13 +4314,13 @@ function _Browser_getElement(id)
 				v: x,
 				br: y,
 				bq: _Browser_doc.documentElement.clientWidth,
-				cO: _Browser_doc.documentElement.clientHeight
+				cP: _Browser_doc.documentElement.clientHeight
 			},
-			cF: {
+			cG: {
 				v: x + rect.left,
 				br: y + rect.top,
 				bq: rect.width,
-				cO: rect.height
+				cP: rect.height
 			}
 		};
 	});
@@ -5026,7 +5026,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {cL: fragment, cP: host, db: path, dd: port_, dh: protocol, di: query};
+		return {cM: fragment, cQ: host, db: path, dd: port_, dh: protocol, di: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5314,21 +5314,23 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$FloatFilter = function (a)
 	return {$: 2, a: a};
 };
 var $Orange_OpenSource$elm_advanced_grid$Grid$Unsorted = 0;
-var $Orange_OpenSource$elm_advanced_grid$Grid$columnConfigProperties = function (_v0) {
-	var id = _v0.R;
-	var title = _v0.bh;
-	var tooltip = _v0.bi;
-	var width = _v0.bq;
-	var localize = _v0.a7;
-	return {
-		R: id,
-		V: 0,
-		bh: localize(title),
-		bi: localize(tooltip),
-		ay: true,
-		bq: width
-	};
-};
+var $Orange_OpenSource$elm_advanced_grid$Grid$columnConfigProperties = F2(
+	function (_v0, mayBeEmpty) {
+		var id = _v0.R;
+		var title = _v0.bh;
+		var tooltip = _v0.bi;
+		var width = _v0.bq;
+		var localize = _v0.a7;
+		return {
+			R: id,
+			bK: mayBeEmpty,
+			V: 0,
+			bh: localize(title),
+			bi: localize(tooltip),
+			ay: true,
+			bq: width
+		};
+	});
 var $elm$core$Basics$compare = _Utils_compare;
 var $Orange_OpenSource$elm_advanced_grid$Grid$compareFields = F3(
 	function (dataValue, item1, item2) {
@@ -5351,7 +5353,7 @@ var $elm$parser$Parser$Advanced$Good = F3(
 	});
 var $elm$parser$Parser$Advanced$bumpOffset = F2(
 	function (newOffset, s) {
-		return {cA: s.cA + (newOffset - s.a9), f: s.f, h: s.h, a9: newOffset, dn: s.dn, a: s.a};
+		return {cB: s.cB + (newOffset - s.a9), f: s.f, h: s.h, a9: newOffset, dn: s.dn, a: s.a};
 	});
 var $elm$parser$Parser$Advanced$chompBase10 = _Parser_chompBase10;
 var $elm$parser$Parser$Advanced$isAsciiCode = _Parser_isAsciiCode;
@@ -5382,7 +5384,7 @@ var $elm$parser$Parser$Advanced$AddRight = F2(
 	});
 var $elm$parser$Parser$Advanced$DeadEnd = F4(
 	function (row, col, problem, contextStack) {
-		return {cA: col, dW: contextStack, de: problem, dn: row};
+		return {cB: col, dW: contextStack, de: problem, dn: row};
 	});
 var $elm$parser$Parser$Advanced$Empty = {$: 0};
 var $elm$parser$Parser$Advanced$fromState = F2(
@@ -5390,7 +5392,7 @@ var $elm$parser$Parser$Advanced$fromState = F2(
 		return A2(
 			$elm$parser$Parser$Advanced$AddRight,
 			$elm$parser$Parser$Advanced$Empty,
-			A4($elm$parser$Parser$Advanced$DeadEnd, s.dn, s.cA, x, s.f));
+			A4($elm$parser$Parser$Advanced$DeadEnd, s.dn, s.cB, x, s.f));
 	});
 var $elm$parser$Parser$Advanced$finalizeInt = F5(
 	function (invalid, handler, startOffset, _v0, s) {
@@ -5430,7 +5432,7 @@ var $elm$parser$Parser$Advanced$finalizeFloat = F6(
 			return A2(
 				$elm$parser$Parser$Advanced$Bad,
 				true,
-				A4($elm$parser$Parser$Advanced$fromInfo, s.dn, s.cA - (floatOffset + s.a9), invalid, s.f));
+				A4($elm$parser$Parser$Advanced$fromInfo, s.dn, s.cB - (floatOffset + s.a9), invalid, s.f));
 		} else {
 			if (_Utils_eq(s.a9, floatOffset)) {
 				return A2(
@@ -5489,24 +5491,24 @@ var $elm$parser$Parser$Advanced$number = function (c) {
 				s) : (A3($elm$parser$Parser$Advanced$isAsciiCode, 98, zeroOffset, s.a) ? A5(
 				$elm$parser$Parser$Advanced$finalizeInt,
 				c.eh,
-				c.cr,
+				c.cs,
 				baseOffset,
 				A3($elm$parser$Parser$Advanced$consumeBase, 2, baseOffset, s.a),
 				s) : A6(
 				$elm$parser$Parser$Advanced$finalizeFloat,
 				c.eh,
-				c.cI,
-				c.cX,
-				c.cK,
+				c.cJ,
+				c.cY,
+				c.cL,
 				_Utils_Tuple2(zeroOffset, 0),
 				s)));
 		} else {
 			return A6(
 				$elm$parser$Parser$Advanced$finalizeFloat,
 				c.eh,
-				c.cI,
-				c.cX,
-				c.cK,
+				c.cJ,
+				c.cY,
+				c.cL,
 				A3($elm$parser$Parser$Advanced$consumeBase, 10, s.a9, s.a),
 				s);
 		}
@@ -5516,11 +5518,11 @@ var $elm$parser$Parser$Advanced$float = F2(
 	function (expecting, invalid) {
 		return $elm$parser$Parser$Advanced$number(
 			{
-				cr: $elm$core$Result$Err(invalid),
-				cI: expecting,
-				cK: $elm$core$Result$Ok($elm$core$Basics$identity),
+				cs: $elm$core$Result$Err(invalid),
+				cJ: expecting,
+				cL: $elm$core$Result$Ok($elm$core$Basics$identity),
 				eb: $elm$core$Result$Err(invalid),
-				cX: $elm$core$Result$Ok($elm$core$Basics$toFloat),
+				cY: $elm$core$Result$Ok($elm$core$Basics$toFloat),
 				eh: invalid,
 				c7: $elm$core$Result$Err(invalid)
 			});
@@ -5586,7 +5588,7 @@ var $elm$parser$Parser$Advanced$chompWhileHelp = F5(
 					$elm$parser$Parser$Advanced$Good,
 					_Utils_cmp(s0.a9, offset) < 0,
 					0,
-					{cA: col, f: s0.f, h: s0.h, a9: offset, dn: row, a: s0.a});
+					{cB: col, f: s0.f, h: s0.h, a9: offset, dn: row, a: s0.a});
 			} else {
 				if (_Utils_eq(newOffset, -2)) {
 					var $temp$isGood = isGood,
@@ -5618,7 +5620,7 @@ var $elm$parser$Parser$Advanced$chompWhileHelp = F5(
 	});
 var $elm$parser$Parser$Advanced$chompWhile = function (isGood) {
 	return function (s) {
-		return A5($elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.a9, s.dn, s.cA, s);
+		return A5($elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.a9, s.dn, s.cB, s);
 	};
 };
 var $elm$parser$Parser$Advanced$spaces = $elm$parser$Parser$Advanced$chompWhile(
@@ -5640,7 +5642,7 @@ var $elm$parser$Parser$Advanced$token = function (_v0) {
 	var expecting = _v0.b;
 	var progress = !$elm$core$String$isEmpty(str);
 	return function (s) {
-		var _v1 = A5($elm$parser$Parser$Advanced$isSubString, str, s.a9, s.dn, s.cA, s.a);
+		var _v1 = A5($elm$parser$Parser$Advanced$isSubString, str, s.a9, s.dn, s.cB, s.a);
 		var newOffset = _v1.a;
 		var newRow = _v1.b;
 		var newCol = _v1.c;
@@ -5651,7 +5653,7 @@ var $elm$parser$Parser$Advanced$token = function (_v0) {
 			$elm$parser$Parser$Advanced$Good,
 			progress,
 			0,
-			{cA: newCol, f: s.f, h: s.h, a9: newOffset, dn: newRow, a: s.a});
+			{cB: newCol, f: s.f, h: s.h, a9: newOffset, dn: newRow, a: s.a});
 	};
 };
 var $elm$parser$Parser$Advanced$symbol = $elm$parser$Parser$Advanced$token;
@@ -5859,8 +5861,8 @@ var $rtfeldman$elm_css$Css$Structure$Compatible = 0;
 var $rtfeldman$elm_css$Css$Internal$lengthConverter = F3(
 	function (units, unitLabel, numericValue) {
 		return {
-			cl: 0,
-			cw: 0,
+			cm: 0,
+			cx: 0,
 			aJ: 0,
 			x: 0,
 			a5: 0,
@@ -5923,14 +5925,15 @@ var $rtfeldman$elm_css$Css$prop3 = F4(
 				_List_fromArray(
 					[argA.bo, argB.bo, argC.bo])));
 	});
-var $rtfeldman$elm_css$Css$border3 = $rtfeldman$elm_css$Css$prop3('border');
+var $rtfeldman$elm_css$Css$borderLeft3 = $rtfeldman$elm_css$Css$prop3('border-left');
+var $rtfeldman$elm_css$Css$borderRight3 = $rtfeldman$elm_css$Css$prop3('border-right');
 var $rtfeldman$elm_css$Css$prop1 = F2(
 	function (key, arg) {
 		return A2($rtfeldman$elm_css$Css$property, key, arg.bo);
 	});
 var $rtfeldman$elm_css$Css$boxSizing = $rtfeldman$elm_css$Css$prop1('box-sizing');
 var $rtfeldman$elm_css$Css$center = $rtfeldman$elm_css$Css$prop1('center');
-var $rtfeldman$elm_css$Css$contentBox = {b$: 0, bt: 0, bo: 'content-box'};
+var $rtfeldman$elm_css$Css$contentBox = {b0: 0, bt: 0, bo: 'content-box'};
 var $rtfeldman$elm_css$Css$Structure$UniversalSelectorSequence = function (a) {
 	return {$: 1, a: a};
 };
@@ -6127,7 +6130,7 @@ var $rtfeldman$elm_css$Css$Structure$compactHelp = F2(
 			case 6:
 				var record = declaration.a;
 				return $elm$core$String$isEmpty(record.dZ) ? _Utils_Tuple2(keyframesByName, declarations) : _Utils_Tuple2(
-					A3($elm$core$Dict$insert, record.bK, record.dZ, keyframesByName),
+					A3($elm$core$Dict$insert, record.bL, record.dZ, keyframesByName),
 					declarations);
 			case 7:
 				var properties = declaration.a;
@@ -6174,14 +6177,14 @@ var $rtfeldman$elm_css$Css$Structure$withKeyframeDeclarations = F2(
 					var name = _v0.a;
 					var decl = _v0.b;
 					return $rtfeldman$elm_css$Css$Structure$Keyframes(
-						{dZ: decl, bK: name});
+						{dZ: decl, bL: name});
 				},
 				$elm$core$Dict$toList(keyframesByName)),
 			compactedDeclarations);
 	});
 var $rtfeldman$elm_css$Css$Structure$compactStylesheet = function (_v0) {
-	var charset = _v0.cy;
-	var imports = _v0.cS;
+	var charset = _v0.cz;
+	var imports = _v0.cT;
 	var namespaces = _v0.c5;
 	var declarations = _v0.d_;
 	var _v1 = A3(
@@ -6192,7 +6195,7 @@ var $rtfeldman$elm_css$Css$Structure$compactStylesheet = function (_v0) {
 	var keyframesByName = _v1.a;
 	var compactedDeclarations = _v1.b;
 	var finalDeclarations = A2($rtfeldman$elm_css$Css$Structure$withKeyframeDeclarations, keyframesByName, compactedDeclarations);
-	return {cy: charset, d_: finalDeclarations, cS: imports, c5: namespaces};
+	return {cz: charset, d_: finalDeclarations, cT: imports, c5: namespaces};
 };
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
@@ -6227,7 +6230,7 @@ var $elm$core$List$filter = F2(
 			list);
 	});
 var $rtfeldman$elm_css$Css$Structure$Output$mediaExpressionToString = function (expression) {
-	return '(' + (expression.cJ + (A2(
+	return '(' + (expression.cK + (A2(
 		$elm$core$Maybe$withDefault,
 		'',
 		A2(
@@ -6475,7 +6478,7 @@ var $rtfeldman$elm_css$Css$Structure$Output$prettyPrintDeclaration = function (d
 		case 5:
 			return 'TODO';
 		case 6:
-			var name = decl.a.bK;
+			var name = decl.a.bL;
 			var declaration = decl.a.dZ;
 			return '@keyframes ' + (name + (' {\n' + (declaration + '\n}')));
 		case 7:
@@ -6487,8 +6490,8 @@ var $rtfeldman$elm_css$Css$Structure$Output$prettyPrintDeclaration = function (d
 	}
 };
 var $rtfeldman$elm_css$Css$Structure$Output$prettyPrint = function (_v0) {
-	var charset = _v0.cy;
-	var imports = _v0.cS;
+	var charset = _v0.cz;
+	var imports = _v0.cT;
 	var namespaces = _v0.c5;
 	var declarations = _v0.d_;
 	return A2(
@@ -7573,7 +7576,7 @@ var $rtfeldman$elm_css$Css$Preprocess$Resolve$applyStyles = F2(
 						_List_fromArray(
 							[
 								$rtfeldman$elm_css$Css$Structure$Keyframes(
-								{dZ: str, bK: name})
+								{dZ: str, bL: name})
 							]));
 				case 4:
 					var _v12 = styles.a;
@@ -7708,13 +7711,13 @@ var $rtfeldman$elm_css$Css$Preprocess$Resolve$toDeclarations = function (snippet
 	}
 };
 var $rtfeldman$elm_css$Css$Preprocess$Resolve$toStructure = function (_v0) {
-	var charset = _v0.cy;
-	var imports = _v0.cS;
+	var charset = _v0.cz;
+	var imports = _v0.cT;
 	var namespaces = _v0.c5;
 	var snippets = _v0.du;
 	var declarations = $rtfeldman$elm_css$Css$Preprocess$Resolve$extract(
 		A2($elm$core$List$concatMap, $rtfeldman$elm_css$Css$Preprocess$unwrapSnippet, snippets));
-	return {cy: charset, d_: declarations, cS: imports, c5: namespaces};
+	return {cz: charset, d_: declarations, cT: imports, c5: namespaces};
 };
 var $rtfeldman$elm_css$Css$Preprocess$Resolve$compileHelp = function (sheet) {
 	return $rtfeldman$elm_css$Css$Structure$Output$prettyPrint(
@@ -7746,7 +7749,7 @@ var $rtfeldman$elm_css$VirtualDom$Styled$makeSnippet = F2(
 	});
 var $rtfeldman$elm_css$VirtualDom$Styled$murmurSeed = 15739;
 var $rtfeldman$elm_css$Css$Preprocess$stylesheet = function (snippets) {
-	return {cy: $elm$core$Maybe$Nothing, cS: _List_Nil, c5: _List_Nil, du: snippets};
+	return {cz: $elm$core$Maybe$Nothing, cT: _List_Nil, c5: _List_Nil, du: snippets};
 };
 var $rtfeldman$elm_css$VirtualDom$Styled$getClassname = function (styles) {
 	return $elm$core$List$isEmpty(styles) ? 'unstyled' : A2(
@@ -7784,18 +7787,38 @@ var $rtfeldman$elm_css$Html$Styled$Internal$css = function (styles) {
 var $rtfeldman$elm_css$Html$Styled$Attributes$css = $rtfeldman$elm_css$Html$Styled$Internal$css;
 var $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth = 6;
 var $rtfeldman$elm_css$Css$display = $rtfeldman$elm_css$Css$prop1('display');
+var $rtfeldman$elm_css$Css$Preprocess$ExtendSelector = F2(
+	function (a, b) {
+		return {$: 1, a: a, b: b};
+	});
+var $rtfeldman$elm_css$Css$Structure$PseudoClassSelector = function (a) {
+	return {$: 2, a: a};
+};
+var $rtfeldman$elm_css$Css$pseudoClass = function (_class) {
+	return $rtfeldman$elm_css$Css$Preprocess$ExtendSelector(
+		$rtfeldman$elm_css$Css$Structure$PseudoClassSelector(_class));
+};
+var $rtfeldman$elm_css$Css$firstOfType = $rtfeldman$elm_css$Css$pseudoClass('first-of-type');
+var $rtfeldman$elm_css$Css$flexEnd = $rtfeldman$elm_css$Css$prop1('flex-end');
 var $rtfeldman$elm_css$Css$hidden = {A: 0, aQ: 0, bo: 'hidden', bp: 0};
 var $rtfeldman$elm_css$Css$inlineFlex = {n: 0, bo: 'inline-flex'};
+var $rtfeldman$elm_css$Css$justifyContent = function (fn) {
+	return A3(
+		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
+		'justifyContent',
+		'justify-content',
+		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
+};
 var $rtfeldman$elm_css$Css$withPrecedingHash = function (str) {
 	return A2($elm$core$String$startsWith, '#', str) ? str : A2($elm$core$String$cons, '#', str);
 };
 var $rtfeldman$elm_css$Css$erroneousHex = function (str) {
 	return {
 		aA: 1,
-		b0: 0,
+		b1: 0,
 		N: 0,
-		b6: 0,
-		ce: 0,
+		b7: 0,
+		cf: 0,
 		bo: $rtfeldman$elm_css$Css$withPrecedingHash(str)
 	};
 };
@@ -8051,10 +8074,10 @@ var $rtfeldman$elm_css$Css$validHex = F5(
 			var alpha = _v6.b.a;
 			return {
 				aA: alpha / 255,
-				b0: blue,
+				b1: blue,
 				N: 0,
-				b6: green,
-				ce: red,
+				b7: green,
+				cf: red,
 				bo: $rtfeldman$elm_css$Css$withPrecedingHash(str)
 			};
 		} else {
@@ -8158,6 +8181,22 @@ var $rtfeldman$elm_css$Css$hex = function (str) {
 };
 var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey = $rtfeldman$elm_css$Css$hex('CCC');
 var $rtfeldman$elm_css$Css$minHeight = $rtfeldman$elm_css$Css$prop1('min-height');
+var $rtfeldman$elm_css$Css$flexShrink = $rtfeldman$elm_css$Css$prop1('flex-shrink');
+var $rtfeldman$elm_css$Css$UnitlessFloat = 0;
+var $rtfeldman$elm_css$Css$num = function (val) {
+	return {
+		aq: 0,
+		S: 0,
+		a8: 0,
+		bM: 0,
+		af: val,
+		aW: '',
+		bn: 0,
+		bo: $elm$core$String$fromFloat(val)
+	};
+};
+var $Orange_OpenSource$elm_advanced_grid$Grid$noShrink = $rtfeldman$elm_css$Css$flexShrink(
+	$rtfeldman$elm_css$Css$num(0));
 var $rtfeldman$elm_css$Css$noWrap = {a2: 0, bC: 0, bo: 'nowrap', al: 0};
 var $rtfeldman$elm_css$Css$overflow = $rtfeldman$elm_css$Css$prop1('overflow');
 var $rtfeldman$elm_css$Css$paddingLeft = $rtfeldman$elm_css$Css$prop1('padding-left');
@@ -8178,11 +8217,22 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes = function (propert
 				[
 					$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
 					$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineFlex),
+					$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
 					A3(
-					$rtfeldman$elm_css$Css$border3,
+					$rtfeldman$elm_css$Css$borderLeft3,
 					$rtfeldman$elm_css$Css$px(1),
 					$rtfeldman$elm_css$Css$solid,
 					$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
+					A3(
+					$rtfeldman$elm_css$Css$borderRight3,
+					$rtfeldman$elm_css$Css$px(1),
+					$rtfeldman$elm_css$Css$solid,
+					$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
+					$rtfeldman$elm_css$Css$firstOfType(
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$flexEnd)
+						])),
 					$rtfeldman$elm_css$Css$boxSizing($rtfeldman$elm_css$Css$contentBox),
 					$rtfeldman$elm_css$Css$minHeight(
 					$rtfeldman$elm_css$Css$pct(100)),
@@ -8235,7 +8285,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$floatColumnConfig = function (prop
 	var nestedDataGetter = A2(
 		$elm$core$Basics$composeR,
 		function ($) {
-			return $.b1;
+			return $.b2;
 		},
 		getter);
 	return {
@@ -8244,8 +8294,8 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$floatColumnConfig = function (prop
 		am: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$FloatFilter(
 			$Orange_OpenSource$elm_advanced_grid$Grid$Filters$floatFilter(getter)),
 		ac: true,
-		b: $Orange_OpenSource$elm_advanced_grid$Grid$columnConfigProperties(properties),
-		eP: $Orange_OpenSource$elm_advanced_grid$Grid$viewFloat(nestedDataGetter),
+		b: A2($Orange_OpenSource$elm_advanced_grid$Grid$columnConfigProperties, properties, false),
+		eQ: $Orange_OpenSource$elm_advanced_grid$Grid$viewFloat(nestedDataGetter),
 		ax: A2($elm$core$Basics$composeR, nestedDataGetter, $elm$core$String$fromFloat)
 	};
 };
@@ -8257,11 +8307,11 @@ var $elm$parser$Parser$Advanced$int = F2(
 	function (expecting, invalid) {
 		return $elm$parser$Parser$Advanced$number(
 			{
-				cr: $elm$core$Result$Err(invalid),
-				cI: expecting,
-				cK: $elm$core$Result$Err(invalid),
+				cs: $elm$core$Result$Err(invalid),
+				cJ: expecting,
+				cL: $elm$core$Result$Err(invalid),
 				eb: $elm$core$Result$Err(invalid),
-				cX: $elm$core$Result$Ok($elm$core$Basics$identity),
+				cY: $elm$core$Result$Ok($elm$core$Basics$identity),
 				eh: invalid,
 				c7: $elm$core$Result$Err(invalid)
 			});
@@ -8312,7 +8362,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$intColumnConfig = function (proper
 	var nestedDataGetter = A2(
 		$elm$core$Basics$composeR,
 		function ($) {
-			return $.b1;
+			return $.b2;
 		},
 		getter);
 	return {
@@ -8321,8 +8371,8 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$intColumnConfig = function (proper
 		am: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$IntFilter(
 			$Orange_OpenSource$elm_advanced_grid$Grid$Filters$intFilter(getter)),
 		ac: true,
-		b: $Orange_OpenSource$elm_advanced_grid$Grid$columnConfigProperties(properties),
-		eP: $Orange_OpenSource$elm_advanced_grid$Grid$viewInt(nestedDataGetter),
+		b: A2($Orange_OpenSource$elm_advanced_grid$Grid$columnConfigProperties, properties, false),
+		eQ: $Orange_OpenSource$elm_advanced_grid$Grid$viewInt(nestedDataGetter),
 		ax: A2($elm$core$Basics$composeR, nestedDataGetter, $elm$core$String$fromInt)
 	};
 };
@@ -8391,9 +8441,10 @@ var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$localize = function (key
 var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$StringFilter = function (a) {
 	return {$: 0, a: a};
 };
+var $Orange_OpenSource$elm_advanced_grid$Grid$Labels$empty = 'Empty';
 var $elm$parser$Parser$Advanced$chompUntilEndOr = function (str) {
 	return function (s) {
-		var _v0 = A5(_Parser_findSubString, str, s.a9, s.dn, s.cA, s.a);
+		var _v0 = A5(_Parser_findSubString, str, s.a9, s.dn, s.cB, s.a);
 		var newOffset = _v0.a;
 		var newRow = _v0.b;
 		var newCol = _v0.c;
@@ -8402,7 +8453,7 @@ var $elm$parser$Parser$Advanced$chompUntilEndOr = function (str) {
 			$elm$parser$Parser$Advanced$Good,
 			_Utils_cmp(s.a9, adjustedOffset) < 0,
 			0,
-			{cA: newCol, f: s.f, h: s.h, a9: adjustedOffset, dn: newRow, a: s.a});
+			{cB: newCol, f: s.f, h: s.h, a9: adjustedOffset, dn: newRow, a: s.a});
 	};
 };
 var $elm$parser$Parser$chompUntilEndOr = $elm$parser$Parser$Advanced$chompUntilEndOr;
@@ -8450,7 +8501,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$stringFilter = function (g
 				function (a, b) {
 					return _Utils_eq(
 						$elm$core$String$toLower(a),
-						$elm$core$String$toLower(b));
+						$elm$core$String$toLower(b)) || ((a === '') && _Utils_eq(b, $Orange_OpenSource$elm_advanced_grid$Grid$Labels$empty));
 				}),
 			a3: getter,
 			Q: F2(
@@ -8489,7 +8540,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$stringColumnConfig = function (pro
 	var nestedDataGetter = A2(
 		$elm$core$Basics$composeR,
 		function ($) {
-			return $.b1;
+			return $.b2;
 		},
 		getter);
 	return {
@@ -8498,8 +8549,8 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$stringColumnConfig = function (pro
 		am: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$StringFilter(
 			$Orange_OpenSource$elm_advanced_grid$Grid$Filters$stringFilter(getter)),
 		ac: true,
-		b: $Orange_OpenSource$elm_advanced_grid$Grid$columnConfigProperties(properties),
-		eP: $Orange_OpenSource$elm_advanced_grid$Grid$viewString(nestedDataGetter),
+		b: A2($Orange_OpenSource$elm_advanced_grid$Grid$columnConfigProperties, properties, true),
+		eQ: $Orange_OpenSource$elm_advanced_grid$Grid$viewString(nestedDataGetter),
 		ax: nestedDataGetter
 	};
 };
@@ -8519,6 +8570,7 @@ var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$truncateDecimals = funct
 var $rtfeldman$elm_css$Css$backgroundColor = function (c) {
 	return A2($rtfeldman$elm_css$Css$property, 'background-color', c.bo);
 };
+var $rtfeldman$elm_css$Css$border3 = $rtfeldman$elm_css$Css$prop3('border');
 var $rtfeldman$elm_css$Css$borderRadius = $rtfeldman$elm_css$Css$prop1('border-radius');
 var $rtfeldman$elm_css$Css$displayFlex = A2($rtfeldman$elm_css$Css$property, 'display', 'flex');
 var $rtfeldman$elm_css$Css$height = $rtfeldman$elm_css$Css$prop1('height');
@@ -8530,7 +8582,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewProgressBar = F4(
 		var nestedDataGetter = A2(
 			$elm$core$Basics$composeR,
 			function ($) {
-				return $.b1;
+				return $.b2;
 			},
 			getter);
 		var maxWidth = (properties.bq - 8) - $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth;
@@ -8619,7 +8671,7 @@ var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$columns = _List_fromArra
 		$Orange_OpenSource$elm_advanced_grid$Grid$stringColumnConfig(
 		{
 			a3: function ($) {
-				return $.bK;
+				return $.bL;
 			},
 			R: 'Name',
 			a7: $Orange_OpenSource$elm_advanced_grid$Examples$Basic$localize,
@@ -8642,7 +8694,7 @@ var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$columns = _List_fromArra
 		return _Utils_update(
 			progressColumnConfig,
 			{
-				eP: A2(
+				eQ: A2(
 					$Orange_OpenSource$elm_advanced_grid$Grid$viewProgressBar,
 					8,
 					function ($) {
@@ -8677,10 +8729,10 @@ var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$columns = _List_fromArra
 		})
 	]);
 var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$rowClass = function (item) {
-	var even = _Utils_eq(item.cT / 2, (item.cT / 2) | 0);
-	return item.eV ? 'selected-row' : (even ? 'even-row' : '');
+	var even = _Utils_eq(item.cU / 2, (item.cU / 2) | 0);
+	return item.eW ? 'selected-row' : (even ? 'even-row' : '');
 };
-var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$gridConfig = {dN: true, dR: $Orange_OpenSource$elm_advanced_grid$Examples$Basic$columns, dU: 500, dV: 676, d9: true, ea: 60, ep: 25, eR: $Orange_OpenSource$elm_advanced_grid$Examples$Basic$rowClass};
+var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$gridConfig = {dN: true, dR: $Orange_OpenSource$elm_advanced_grid$Examples$Basic$columns, dU: 500, dV: 676, d9: true, ea: 60, ep: $elm$core$Maybe$Nothing, eq: 25, eS: $Orange_OpenSource$elm_advanced_grid$Examples$Basic$rowClass};
 var $Orange_OpenSource$elm_advanced_grid$Grid$Model = $elm$core$Basics$identity;
 var $elm_community$list_extra$List$Extra$scanl = F3(
 	function (f, b, xs) {
@@ -8725,7 +8777,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$columnsX = function (model) {
 };
 var $Orange_OpenSource$elm_advanced_grid$Grid$Item$create = F2(
 	function (data, index) {
-		return {b1: data, cT: index, eV: false};
+		return {b2: data, cU: index, eW: false};
 	});
 var $FabienHenon$elm_infinite_list_view$InfiniteList$Model = $elm$core$Basics$identity;
 var $FabienHenon$elm_infinite_list_view$InfiniteList$init = 0;
@@ -8772,15 +8824,7 @@ var $rtfeldman$elm_css$Html$Styled$Attributes$boolProperty = F2(
 			$elm$json$Json$Encode$bool(bool));
 	});
 var $rtfeldman$elm_css$Html$Styled$Attributes$checked = $rtfeldman$elm_css$Html$Styled$Attributes$boolProperty('checked');
-var $rtfeldman$elm_css$Css$flexEnd = $rtfeldman$elm_css$Css$prop1('flex-end');
 var $rtfeldman$elm_css$Html$Styled$input = $rtfeldman$elm_css$Html$Styled$node('input');
-var $rtfeldman$elm_css$Css$justifyContent = function (fn) {
-	return A3(
-		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
-		'justifyContent',
-		'justify-content',
-		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
-};
 var $Orange_OpenSource$elm_advanced_grid$Grid$alwaysPreventDefault = function (msg) {
 	return _Utils_Tuple2(msg, true);
 };
@@ -8824,16 +8868,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewBool = F3(
 	function (field, properties, item) {
 		return A2(
 			$rtfeldman$elm_css$Html$Styled$div,
-			_Utils_ap(
-				$Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes(properties),
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$Attributes$css(
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$flexEnd)
-							]))
-					])),
+			$Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes(properties),
 			_List_fromArray(
 				[
 					A2(
@@ -8852,7 +8887,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewBool = F3(
 var $Orange_OpenSource$elm_advanced_grid$Grid$selectionColumn = function () {
 	var properties = {
 		a3: function ($) {
-			return $.eV;
+			return $.eW;
 		},
 		R: '_MultipleSelection_',
 		a7: function (_v0) {
@@ -8865,20 +8900,20 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$selectionColumn = function () {
 	return {
 		G: $Orange_OpenSource$elm_advanced_grid$Grid$compareBoolField(
 			function ($) {
-				return $.eV;
+				return $.eW;
 			}),
 		w: $elm$core$Maybe$Nothing,
 		am: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$NoFilter,
 		ac: false,
-		b: $Orange_OpenSource$elm_advanced_grid$Grid$columnConfigProperties(properties),
-		eP: $Orange_OpenSource$elm_advanced_grid$Grid$viewBool(
+		b: A2($Orange_OpenSource$elm_advanced_grid$Grid$columnConfigProperties, properties, false),
+		eQ: $Orange_OpenSource$elm_advanced_grid$Grid$viewBool(
 			function ($) {
-				return $.eV;
+				return $.eW;
 			}),
 		ax: A2(
 			$elm$core$Basics$composeR,
 			function ($) {
-				return $.eV;
+				return $.eW;
 			},
 			$Orange_OpenSource$elm_advanced_grid$Grid$boolToString)
 	};
@@ -8889,6 +8924,17 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$isSelectionColumnProperties = func
 var $Orange_OpenSource$elm_advanced_grid$Grid$isSelectionColumn = function (columnConfig) {
 	return $Orange_OpenSource$elm_advanced_grid$Grid$isSelectionColumnProperties(columnConfig.b);
 };
+var $Orange_OpenSource$elm_advanced_grid$Grid$Labels$clear = 'Effacer';
+var $Orange_OpenSource$elm_advanced_grid$Grid$Labels$openQuickFilter = 'Open quick filter';
+var $Orange_OpenSource$elm_advanced_grid$Grid$Labels$keys = _List_fromArray(
+	[$Orange_OpenSource$elm_advanced_grid$Grid$Labels$clear, $Orange_OpenSource$elm_advanced_grid$Grid$Labels$empty, $Orange_OpenSource$elm_advanced_grid$Grid$Labels$openQuickFilter]);
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $elm_community$list_extra$List$Extra$zip = $elm$core$List$map2($elm$core$Tuple$pair);
+var $Orange_OpenSource$elm_advanced_grid$Grid$Labels$labels = $elm$core$Dict$fromList(
+	A2($elm_community$list_extra$List$Extra$zip, $Orange_OpenSource$elm_advanced_grid$Grid$Labels$keys, $Orange_OpenSource$elm_advanced_grid$Grid$Labels$keys));
 var $elm_community$list_extra$List$Extra$updateIf = F3(
 	function (predicate, update, list) {
 		return A2(
@@ -8921,6 +8967,15 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$sanitizedColumns = function (colum
 };
 var $Orange_OpenSource$elm_advanced_grid$Grid$init = F2(
 	function (config, data) {
+		var labels = function () {
+			var _v1 = config.ep;
+			if (!_v1.$) {
+				var dict = _v1.a;
+				return dict;
+			} else {
+				return $Orange_OpenSource$elm_advanced_grid$Grid$Labels$labels;
+			}
+		}();
 		var indexedItems = A2(
 			$elm$core$List$indexedMap,
 			F2(
@@ -8957,9 +9012,10 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$init = F2(
 			I: $elm$core$Maybe$Nothing,
 			Z: false,
 			bD: {v: 0, br: 0},
-			cQ: $elm$core$Maybe$Nothing,
+			cR: $elm$core$Maybe$Nothing,
 			bE: $FabienHenon$elm_infinite_list_view$InfiniteList$init,
 			bG: false,
+			ep: labels,
 			ba: $elm$core$Maybe$Nothing,
 			V: 0,
 			ai: $elm$core$Maybe$Nothing,
@@ -9017,7 +9073,7 @@ var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$items = A2(
 						i),
 					$Orange_OpenSource$elm_advanced_grid$Examples$Basic$cities)),
 			R: i,
-			bK: 'name' + $elm$core$String$fromInt(i),
+			bL: 'name' + $elm$core$String$fromInt(i),
 			bo: (i / $Orange_OpenSource$elm_advanced_grid$Examples$Basic$itemCount) * 100
 		};
 	},
@@ -9134,8 +9190,9 @@ var $FabienHenon$elm_infinite_list_view$InfiniteList$defaultContainer = F2(
 			elements);
 	});
 var $FabienHenon$elm_infinite_list_view$InfiniteList$config = function (conf) {
-	return {bv: $elm$core$Maybe$Nothing, dU: conf.dU, a1: $FabienHenon$elm_infinite_list_view$InfiniteList$defaultContainer, R: $elm$core$Maybe$Nothing, ej: conf.ej, el: conf.el, a9: 200, bY: _List_Nil};
+	return {bv: $elm$core$Maybe$Nothing, dU: conf.dU, a1: $FabienHenon$elm_infinite_list_view$InfiniteList$defaultContainer, R: $elm$core$Maybe$Nothing, ej: conf.ej, el: conf.el, a9: 200, bZ: _List_Nil};
 };
+var $rtfeldman$elm_css$Css$borderBottom3 = $rtfeldman$elm_css$Css$prop3('border-bottom');
 var $rtfeldman$elm_css$Html$Styled$Attributes$class = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('className');
 var $Orange_OpenSource$elm_advanced_grid$Grid$gridWidth = function (state) {
 	return A3(
@@ -9643,9 +9700,9 @@ var $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled = function (vdom) {
 	}
 };
 var $rtfeldman$elm_css$Html$Styled$toUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled;
-var $Orange_OpenSource$elm_advanced_grid$Grid$viewColumn = F2(
+var $Orange_OpenSource$elm_advanced_grid$Grid$viewCell = F2(
 	function (config, item) {
-		return A2(config.eP, config.b, item);
+		return A2(config.eQ, config.b, item);
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewRow = F4(
 	function (state, idx, listIdx, item) {
@@ -9657,16 +9714,21 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewRow = F4(
 					[
 						A2($rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', 'row'),
 						$rtfeldman$elm_css$Html$Styled$Attributes$class(
-						state.i.eR(item)),
+						state.i.eS(item)),
 						$rtfeldman$elm_css$Html$Styled$Attributes$css(
 						_List_fromArray(
 							[
 								$rtfeldman$elm_css$Css$displayFlex,
 								$rtfeldman$elm_css$Css$height(
-								$rtfeldman$elm_css$Css$px(state.i.ep)),
+								$rtfeldman$elm_css$Css$px(state.i.eq)),
 								$rtfeldman$elm_css$Css$width(
 								$rtfeldman$elm_css$Css$px(
 									$Orange_OpenSource$elm_advanced_grid$Grid$gridWidth(state))),
+								A3(
+								$rtfeldman$elm_css$Css$borderBottom3,
+								$rtfeldman$elm_css$Css$px(1),
+								$rtfeldman$elm_css$Css$solid,
+								$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
 								A2($rtfeldman$elm_css$Css$property, 'direction', 'ltr')
 							])),
 						$rtfeldman$elm_css$Html$Styled$Events$onClick(
@@ -9675,7 +9737,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewRow = F4(
 			A2(
 				$elm$core$List$map,
 				function (columnConfig) {
-					return A2($Orange_OpenSource$elm_advanced_grid$Grid$viewColumn, columnConfig, item);
+					return A2($Orange_OpenSource$elm_advanced_grid$Grid$viewCell, columnConfig, item);
 				},
 				$Orange_OpenSource$elm_advanced_grid$Grid$visibleColumns(state)));
 	});
@@ -9699,7 +9761,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$infiniteListConfig = function (sta
 		$FabienHenon$elm_infinite_list_view$InfiniteList$config(
 			{
 				dU: state.i.dU,
-				ej: $FabienHenon$elm_infinite_list_view$InfiniteList$withConstantHeight(state.i.ep),
+				ej: $FabienHenon$elm_infinite_list_view$InfiniteList$withConstantHeight(state.i.eq),
 				el: $Orange_OpenSource$elm_advanced_grid$Grid$viewRow(state)
 			}));
 };
@@ -9738,7 +9800,7 @@ var $FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizesForM
 		var computedValues = A3($elm$core$List$foldl, updateComputations, initialValue, items);
 		return {
 			bz: $elm$core$List$reverse(computedValues.bB),
-			bX: computedValues.bA,
+			bY: computedValues.bA,
 			aj: computedValues.aj,
 			bj: computedValues.aG
 		};
@@ -9758,7 +9820,7 @@ var $FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizesForS
 			$elm$core$Basics$composeR,
 			$elm$core$List$drop(elementsCountToSkip),
 			$elm$core$List$take(elementsCountToShow))(items);
-		return {bz: elementsToShow, bX: elementsCountToSkip, aj: topMargin, bj: totalHeight};
+		return {bz: elementsToShow, bY: elementsCountToSkip, aj: topMargin, bj: totalHeight};
 	});
 var $FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizes = F3(
 	function (configValue, scrollTop, items) {
@@ -9785,8 +9847,8 @@ var $FabienHenon$elm_infinite_list_view$InfiniteList$firstNItemsHeight = F3(
 	});
 var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
 var $FabienHenon$elm_infinite_list_view$InfiniteList$scrollToNthItem = function (_v0) {
-	var postScrollMessage = _v0.eM;
-	var listHtmlId = _v0.eq;
+	var postScrollMessage = _v0.eN;
+	var listHtmlId = _v0.er;
 	var itemIndex = _v0.ek;
 	var configValue = _v0.dS;
 	var items = _v0.em;
@@ -10400,7 +10462,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$updateIndexes = function (items) {
 			function (i, item) {
 				return _Utils_update(
 					item,
-					{cT: i});
+					{cU: i});
 			}),
 		items);
 };
@@ -10434,7 +10496,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$toggleOrder = F3(
 var $Orange_OpenSource$elm_advanced_grid$Grid$toggleSelection = function (item) {
 	return _Utils_update(
 		item,
-		{eV: !item.eV});
+		{eW: !item.eW});
 };
 var $elm_community$list_extra$List$Extra$updateAt = F3(
 	function (index, fn, list) {
@@ -10495,10 +10557,10 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$findFirstOK = function (re
 };
 var $elm$parser$Parser$DeadEnd = F3(
 	function (row, col, problem) {
-		return {cA: col, de: problem, dn: row};
+		return {cB: col, de: problem, dn: row};
 	});
 var $elm$parser$Parser$problemToDeadEnd = function (p) {
-	return A3($elm$parser$Parser$DeadEnd, p.dn, p.cA, p.de);
+	return A3($elm$parser$Parser$DeadEnd, p.dn, p.cB, p.de);
 };
 var $elm$parser$Parser$Advanced$bagToList = F2(
 	function (bag, list) {
@@ -10530,7 +10592,7 @@ var $elm$parser$Parser$Advanced$run = F2(
 	function (_v0, src) {
 		var parse = _v0;
 		var _v1 = parse(
-			{cA: 1, f: _List_Nil, h: 1, a9: 0, dn: 1, a: src});
+			{cB: 1, f: _List_Nil, h: 1, a9: 0, dn: 1, a: src});
 		if (!_v1.$) {
 			var value = _v1.b;
 			return $elm$core$Result$Ok(value);
@@ -10702,7 +10764,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$stateUpdate = F2(
 					return _Utils_update(
 						state,
 						{
-							bD: {v: info.cF.v, br: info.cF.br}
+							bD: {v: info.cG.v, br: info.cG.br}
 						});
 				} else {
 					return state;
@@ -10753,7 +10815,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$stateUpdate = F2(
 					return _Utils_update(
 						item,
 						{
-							b1: updateContent(item.b1)
+							b2: updateContent(item.b2)
 						});
 				};
 				var updatedVisibleItems = A2($elm$core$List$map, updateVisibleItem, state.m);
@@ -10773,6 +10835,8 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$stateUpdate = F2(
 				return _Utils_update(
 					state,
 					{Z: true});
+			case 13:
+				return state;
 			case 12:
 				var columnConfig = msg.a;
 				return state.Z ? state : A4($Orange_OpenSource$elm_advanced_grid$Grid$sort, columnConfig, state.V, $Orange_OpenSource$elm_advanced_grid$Grid$toggleOrder, state);
@@ -10787,8 +10851,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$stateUpdate = F2(
 				return _Utils_update(
 					state,
 					{be: false});
-			case 13:
-				return state;
 			case 19:
 				var columnConfig = msg.a;
 				var position = msg.b;
@@ -10850,7 +10912,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$stateUpdate = F2(
 				var setSelectionStatus = function (item) {
 					return _Utils_update(
 						item,
-						{eV: newStatus});
+						{eW: newStatus});
 				};
 				var updatedVisibleItems = A2($elm$core$List$map, setSelectionStatus, state.m);
 				return _Utils_update(
@@ -10878,7 +10940,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$stateUpdate = F2(
 				var item = msg.a;
 				var newItems = A3(
 					$elm_community$list_extra$List$Extra$updateAt,
-					item.cT,
+					item.cU,
 					function (it) {
 						return $Orange_OpenSource$elm_advanced_grid$Grid$toggleSelection(it);
 					},
@@ -10912,8 +10974,8 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$update = F2(
 							dS: $Orange_OpenSource$elm_advanced_grid$Grid$infiniteListConfig(state),
 							ek: targetItemIndex,
 							em: state.m,
-							eq: $Orange_OpenSource$elm_advanced_grid$Grid$gridHtmlId,
-							eM: $Orange_OpenSource$elm_advanced_grid$Grid$NoOp
+							er: $Orange_OpenSource$elm_advanced_grid$Grid$gridHtmlId,
+							eN: $Orange_OpenSource$elm_advanced_grid$Grid$NoOp
 						}));
 			case 13:
 				var columnConfig = msg.a;
@@ -11056,7 +11118,7 @@ var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$update = F2(
 						return A2(
 							$elm$core$String$startsWith,
 							$elm$core$String$toLower(city),
-							$elm$core$String$toLower(item.b1.bu));
+							$elm$core$String$toLower(item.b2.bu));
 					});
 				var _v12 = A2($Orange_OpenSource$elm_advanced_grid$Grid$update, message, model.g);
 				var newGridModel = _v12.a;
@@ -11071,16 +11133,13 @@ var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$update = F2(
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
 var $Orange_OpenSource$elm_advanced_grid$Grid$UserEndedMouseInteraction = {$: 21};
-var $rtfeldman$elm_css$Css$auto = {dG: 0, c: 0, aJ: 0, bF: 0, en: 0, aN: 0, ad: 0, S: 0, aQ: 0, L: 0, bZ: 0, aV: 0, F: 0, bo: 'auto'};
-var $rtfeldman$elm_css$Css$borderLeft3 = $rtfeldman$elm_css$Css$prop3('border-left');
-var $rtfeldman$elm_css$Css$borderRight3 = $rtfeldman$elm_css$Css$prop3('border-right');
+var $rtfeldman$elm_css$Css$auto = {dG: 0, c: 0, aJ: 0, bF: 0, en: 0, aN: 0, ad: 0, S: 0, aQ: 0, L: 0, b_: 0, aV: 0, F: 0, bo: 'auto'};
 var $rtfeldman$elm_css$VirtualDom$Styled$unstyledAttribute = function (prop) {
 	return A3($rtfeldman$elm_css$VirtualDom$Styled$Attribute, prop, _List_Nil, '');
 };
 var $rtfeldman$elm_css$Html$Styled$Attributes$fromUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$unstyledAttribute;
-var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey2 = $rtfeldman$elm_css$Css$hex('BBB');
 var $rtfeldman$elm_css$Css$margin = $rtfeldman$elm_css$Css$prop1('margin');
-var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions = {cd: true, ch: false};
+var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions = {ce: true, ci: false};
 var $elm$virtual_dom$VirtualDom$Custom = function (a) {
 	return {$: 3, a: a};
 };
@@ -11093,7 +11152,7 @@ var $elm$html$Html$Events$custom = F2(
 	});
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$Event = F6(
 	function (keys, button, clientPos, offsetPos, pagePos, screenPos) {
-		return {dM: button, cz: clientPos, eo: keys, eC: offsetPos, eH: pagePos, eS: screenPos};
+		return {dM: button, cA: clientPos, eo: keys, eD: offsetPos, eI: pagePos, eT: screenPos};
 	});
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$BackButton = 4;
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$ErrorButton = 0;
@@ -11180,8 +11239,8 @@ var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions = F3(
 				function (ev) {
 					return {
 						ae: tag(ev),
-						cd: options.cd,
-						ch: options.ch
+						ce: options.ce,
+						ci: options.ci
 					};
 				},
 				$mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$eventDecoder));
@@ -11204,18 +11263,8 @@ var $rtfeldman$elm_css$Css$Preprocess$NestSnippet = F2(
 	});
 var $rtfeldman$elm_css$Css$Global$descendants = $rtfeldman$elm_css$Css$Preprocess$NestSnippet(3);
 var $rtfeldman$elm_css$Css$flexDirection = $rtfeldman$elm_css$Css$prop1('flex-direction');
-var $rtfeldman$elm_css$Css$Preprocess$ExtendSelector = F2(
-	function (a, b) {
-		return {$: 1, a: a, b: b};
-	});
-var $rtfeldman$elm_css$Css$Structure$PseudoClassSelector = function (a) {
-	return {$: 2, a: a};
-};
-var $rtfeldman$elm_css$Css$pseudoClass = function (_class) {
-	return $rtfeldman$elm_css$Css$Preprocess$ExtendSelector(
-		$rtfeldman$elm_css$Css$Structure$PseudoClassSelector(_class));
-};
 var $rtfeldman$elm_css$Css$hover = $rtfeldman$elm_css$Css$pseudoClass('hover');
+var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey2 = $rtfeldman$elm_css$Css$hex('BBB');
 var $rtfeldman$elm_css$Css$collectStops = $elm$core$List$map(
 	function (_v0) {
 		var c = _v0.a;
@@ -11256,7 +11305,7 @@ var $rtfeldman$elm_css$Css$linearGradient = F3(
 		};
 	});
 var $rtfeldman$elm_css$Css$padding = $rtfeldman$elm_css$Css$prop1('padding');
-var $rtfeldman$elm_css$Css$row = {b5: 0, a2: 0, bo: 'row'};
+var $rtfeldman$elm_css$Css$row = {b6: 0, a2: 0, bo: 'row'};
 var $rtfeldman$elm_css$Css$stop = function (c) {
 	return _Utils_Tuple2(c, $elm$core$Maybe$Nothing);
 };
@@ -11284,6 +11333,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$headerStyles = function (state) {
 					$rtfeldman$elm_css$Css$stop($Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
 					_List_Nil)),
 				$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineFlex),
+				$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
 				$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row),
 				A3(
 				$rtfeldman$elm_css$Css$border3,
@@ -11314,7 +11364,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$headerStyles = function (state) {
 };
 var $rtfeldman$elm_css$Css$left = $rtfeldman$elm_css$Css$prop1('left');
 var $Orange_OpenSource$elm_advanced_grid$Grid$noContent = $rtfeldman$elm_css$Html$Styled$text('');
-var $rtfeldman$elm_css$Css$none = {aB: 0, ct: 0, A: 0, c: 0, n: 0, ed: 0, cV: 0, b7: 0, aP: 0, ap: 0, S: 0, e: 0, d: 0, ca: 0, bR: 0, eJ: 0, L: 0, bT: 0, eT: 0, aT: 0, aw: 0, F: 0, k: 0, e2: 0, bo: 'none'};
+var $rtfeldman$elm_css$Css$none = {aB: 0, cu: 0, A: 0, c: 0, n: 0, ed: 0, cW: 0, b8: 0, aP: 0, ap: 0, S: 0, e: 0, d: 0, cb: 0, bS: 0, eK: 0, L: 0, bU: 0, eU: 0, aT: 0, aw: 0, F: 0, k: 0, e3: 0, bo: 'none'};
 var $rtfeldman$elm_css$Css$pointerEvents = $rtfeldman$elm_css$Css$prop1('pointer-events');
 var $rtfeldman$elm_css$Css$top = $rtfeldman$elm_css$Css$prop1('top');
 var $rtfeldman$elm_css$Css$column = _Utils_update(
@@ -11322,19 +11372,6 @@ var $rtfeldman$elm_css$Css$column = _Utils_update(
 	{bo: 'column'});
 var $rtfeldman$elm_css$Css$flexGrow = $rtfeldman$elm_css$Css$prop1('flex-grow');
 var $rtfeldman$elm_css$Css$flexStart = $rtfeldman$elm_css$Css$prop1('flex-start');
-var $rtfeldman$elm_css$Css$UnitlessFloat = 0;
-var $rtfeldman$elm_css$Css$num = function (val) {
-	return {
-		aq: 0,
-		S: 0,
-		a8: 0,
-		bL: 0,
-		af: val,
-		aW: '',
-		bn: 0,
-		bo: $elm$core$String$fromFloat(val)
-	};
-};
 var $Orange_OpenSource$elm_advanced_grid$Grid$resizingHandleWidth = 5;
 var $Orange_OpenSource$elm_advanced_grid$Grid$UserClickedDragHandle = F2(
 	function (a, b) {
@@ -11352,7 +11389,7 @@ var $rtfeldman$elm_css$Css$int = function (val) {
 		aq: 0,
 		S: 0,
 		a8: 0,
-		bL: 0,
+		bM: 0,
 		af: val,
 		aW: '',
 		bn: 0,
@@ -11391,7 +11428,7 @@ var $elm$core$Tuple$second = function (_v0) {
 	return y;
 };
 var $Orange_OpenSource$elm_advanced_grid$Grid$toPosition = function (event) {
-	return {v: event.cz.a, br: event.cz.b};
+	return {v: event.cA.a, br: event.cA.b};
 };
 var $rtfeldman$elm_css$Css$zIndex = $rtfeldman$elm_css$Css$prop1('z-index');
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewDragHandle = function (columnConfig) {
@@ -11702,6 +11739,13 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$Icons$drawSvg = F3(
 					])));
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$Icons$filterIcon = 'M 0 0 L 15 0 L 9 6 L 9 12 L 6 12 L 6 6 Z';
+var $Orange_OpenSource$elm_advanced_grid$Grid$Labels$localize = F2(
+	function (key, translations) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			key,
+			A2($elm$core$Dict$get, key, translations));
+	});
 var $rtfeldman$elm_css$Css$paddingTop = $rtfeldman$elm_css$Css$prop1('padding-top');
 var $rtfeldman$elm_css$Css$pointer = {c: 0, bo: 'pointer'};
 var $elm$core$Set$Set_elm_builtin = $elm$core$Basics$identity;
@@ -11770,15 +11814,48 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$columnVisibleValues = F2(
 				columnConfig.ax,
 				A2($elm$core$List$sortWith, columnConfig.G, state.m)));
 	});
+var $rtfeldman$elm_css$Html$Styled$Attributes$id = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('id');
 var $Orange_OpenSource$elm_advanced_grid$Grid$Icons$width = 15;
 var $Orange_OpenSource$elm_advanced_grid$Grid$contextualMenuPosition = function (columnConfig) {
 	return ((columnConfig.b.bq - $Orange_OpenSource$elm_advanced_grid$Grid$Icons$width) - $Orange_OpenSource$elm_advanced_grid$Grid$resizingHandleWidth) - 10;
 };
-var $rtfeldman$elm_css$Html$Styled$Attributes$id = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('id');
 var $rtfeldman$elm_css$Css$maxHeight = $rtfeldman$elm_css$Css$prop1('max-height');
 var $rtfeldman$elm_css$Css$opacity = $rtfeldman$elm_css$Css$prop1('opacity');
 var $rtfeldman$elm_css$Css$overflowX = $rtfeldman$elm_css$Css$prop1('overflow-x');
 var $rtfeldman$elm_css$Css$overflowY = $rtfeldman$elm_css$Css$prop1('overflow-y');
+var $Orange_OpenSource$elm_advanced_grid$Grid$quickFilterPopupStyles = function (columnConfig) {
+	return $rtfeldman$elm_css$Html$Styled$Attributes$css(
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$absolute),
+				$rtfeldman$elm_css$Css$left(
+				$rtfeldman$elm_css$Css$px(
+					$Orange_OpenSource$elm_advanced_grid$Grid$contextualMenuPosition(columnConfig))),
+				$rtfeldman$elm_css$Css$top(
+				$rtfeldman$elm_css$Css$px(-10)),
+				$rtfeldman$elm_css$Css$zIndex(
+				$rtfeldman$elm_css$Css$int(1000)),
+				A3(
+				$rtfeldman$elm_css$Css$border3,
+				$rtfeldman$elm_css$Css$px(1),
+				$rtfeldman$elm_css$Css$solid,
+				$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey2),
+				$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
+				$rtfeldman$elm_css$Css$padding(
+				$rtfeldman$elm_css$Css$px(5)),
+				$rtfeldman$elm_css$Css$opacity(
+				$rtfeldman$elm_css$Css$int(1)),
+				$rtfeldman$elm_css$Css$width(
+				$rtfeldman$elm_css$Css$px(
+					A2($elm$core$Basics$max, columnConfig.b.bq, 100))),
+				$rtfeldman$elm_css$Css$maxHeight(
+				$rtfeldman$elm_css$Css$px(400)),
+				$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$white),
+				$rtfeldman$elm_css$Css$overflowX($rtfeldman$elm_css$Css$hidden),
+				$rtfeldman$elm_css$Css$overflowY($rtfeldman$elm_css$Css$auto),
+				$rtfeldman$elm_css$Css$whiteSpace($rtfeldman$elm_css$Css$noWrap)
+			]));
+};
 var $rtfeldman$elm_css$Html$Styled$Attributes$tabindex = function (n) {
 	return A2(
 		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
@@ -11806,9 +11883,17 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewEllipsis = F2(
 					]))
 			]) : _List_Nil;
 	});
+var $rtfeldman$elm_css$Css$fontStyle = $rtfeldman$elm_css$Css$prop1('font-style');
+var $rtfeldman$elm_css$Css$italic = {aK: 0, bo: 'italic'};
 var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey3 = $rtfeldman$elm_css$Css$hex('DDD');
+var $rtfeldman$elm_css$Css$normal = {b5: 0, aK: 0, ab: 0, cd: 0, bo: 'normal', al: 0};
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewQuickFilterSelector = F3(
 	function (columnConfig, label, filterString) {
+		var style = columnConfig.b.bK ? $rtfeldman$elm_css$Css$firstOfType(
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Css$fontStyle($rtfeldman$elm_css$Css$italic)
+				])) : $rtfeldman$elm_css$Css$fontStyle($rtfeldman$elm_css$Css$normal);
 		return A2(
 			$rtfeldman$elm_css$Html$Styled$div,
 			_List_fromArray(
@@ -11819,6 +11904,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewQuickFilterSelector = F3(
 					_List_fromArray(
 						[
 							$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$pointer),
+							style,
 							$rtfeldman$elm_css$Css$hover(
 							_List_fromArray(
 								[
@@ -11832,84 +11918,58 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewQuickFilterSelector = F3(
 var $rtfeldman$elm_css$Css$color = function (c) {
 	return A2($rtfeldman$elm_css$Css$property, 'color', c.bo);
 };
-var $rtfeldman$elm_css$Css$fontStyle = $rtfeldman$elm_css$Css$prop1('font-style');
 var $rtfeldman$elm_css$Html$Styled$hr = $rtfeldman$elm_css$Html$Styled$node('hr');
-var $rtfeldman$elm_css$Css$italic = {aK: 0, bo: 'italic'};
-var $Orange_OpenSource$elm_advanced_grid$Grid$viewResetSelector = function (columnConfig) {
-	return _Utils_eq(columnConfig.w, $elm$core$Maybe$Nothing) ? _List_Nil : _List_fromArray(
-		[
-			A2(
-			$rtfeldman$elm_css$Html$Styled$hr,
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$Attributes$css(
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$color($Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey2)
-						]))
-				]),
-			_List_Nil),
-			A3(
-			$Orange_OpenSource$elm_advanced_grid$Grid$viewQuickFilterSelector,
-			columnConfig,
-			A2(
-				$rtfeldman$elm_css$Html$Styled$span,
+var $Orange_OpenSource$elm_advanced_grid$Grid$viewResetSelector = F2(
+	function (columnConfig, label) {
+		return _Utils_eq(columnConfig.w, $elm$core$Maybe$Nothing) ? _List_Nil : _List_fromArray(
+			[
+				A2(
+				$rtfeldman$elm_css$Html$Styled$hr,
 				_List_fromArray(
 					[
 						$rtfeldman$elm_css$Html$Styled$Attributes$css(
 						_List_fromArray(
 							[
-								$rtfeldman$elm_css$Css$fontStyle($rtfeldman$elm_css$Css$italic)
+								$rtfeldman$elm_css$Css$color($Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey2)
 							]))
 					]),
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$text('Effacer')
-					])),
-			$elm$core$Maybe$Nothing)
-		]);
-};
+				_List_Nil),
+				A3(
+				$Orange_OpenSource$elm_advanced_grid$Grid$viewQuickFilterSelector,
+				columnConfig,
+				A2(
+					$rtfeldman$elm_css$Html$Styled$span,
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$Attributes$css(
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Css$fontStyle($rtfeldman$elm_css$Css$italic)
+								]))
+						]),
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$text(label)
+						])),
+				$elm$core$Maybe$Nothing)
+			]);
+	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewOpenedQuickFilter = F2(
 	function (state, columnConfig) {
-		var maxQuickFilterPropositions = 5000;
-		var filterPropositions = A2($Orange_OpenSource$elm_advanced_grid$Grid$columnVisibleValues, columnConfig, state);
-		var limitedPropositions = A2($elm$core$List$take, maxQuickFilterPropositions, filterPropositions);
+		var maxQuickFilterPropositions = 100;
+		var values = A2(
+			$elm$core$List$take,
+			maxQuickFilterPropositions,
+			A2($Orange_OpenSource$elm_advanced_grid$Grid$columnVisibleValues, columnConfig, state));
+		var filterPropositions = columnConfig.b.bK ? A2(
+			$elm$core$List$cons,
+			A2($Orange_OpenSource$elm_advanced_grid$Grid$Labels$localize, $Orange_OpenSource$elm_advanced_grid$Grid$Labels$empty, state.ep),
+			values) : values;
 		return A2(
 			$rtfeldman$elm_css$Html$Styled$div,
 			_List_fromArray(
 				[
-					$rtfeldman$elm_css$Html$Styled$Attributes$css(
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$absolute),
-							$rtfeldman$elm_css$Css$left(
-							$rtfeldman$elm_css$Css$px(
-								$Orange_OpenSource$elm_advanced_grid$Grid$contextualMenuPosition(columnConfig))),
-							$rtfeldman$elm_css$Css$top(
-							$rtfeldman$elm_css$Css$px(-10)),
-							$rtfeldman$elm_css$Css$zIndex(
-							$rtfeldman$elm_css$Css$int(1000)),
-							A3(
-							$rtfeldman$elm_css$Css$border3,
-							$rtfeldman$elm_css$Css$px(1),
-							$rtfeldman$elm_css$Css$solid,
-							$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey2),
-							$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
-							$rtfeldman$elm_css$Css$padding(
-							$rtfeldman$elm_css$Css$px(5)),
-							$rtfeldman$elm_css$Css$opacity(
-							$rtfeldman$elm_css$Css$int(1)),
-							$rtfeldman$elm_css$Css$width(
-							$rtfeldman$elm_css$Css$px(
-								A2($elm$core$Basics$max, columnConfig.b.bq, 100))),
-							$rtfeldman$elm_css$Css$maxHeight(
-							$rtfeldman$elm_css$Css$px(400)),
-							$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$white),
-							$rtfeldman$elm_css$Css$overflowX($rtfeldman$elm_css$Css$hidden),
-							$rtfeldman$elm_css$Css$overflowY($rtfeldman$elm_css$Css$auto),
-							$rtfeldman$elm_css$Css$whiteSpace($rtfeldman$elm_css$Css$noWrap)
-						])),
-					$rtfeldman$elm_css$Html$Styled$Attributes$title(''),
+					$Orange_OpenSource$elm_advanced_grid$Grid$quickFilterPopupStyles(columnConfig),
 					$rtfeldman$elm_css$Html$Styled$Attributes$tabindex(0),
 					$rtfeldman$elm_css$Html$Styled$Events$onBlur($Orange_OpenSource$elm_advanced_grid$Grid$FilterLostFocus),
 					$rtfeldman$elm_css$Html$Styled$Attributes$id($Orange_OpenSource$elm_advanced_grid$Grid$openedQuickFilterHtmlId)
@@ -11924,13 +11984,16 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewOpenedQuickFilter = F2(
 							$rtfeldman$elm_css$Html$Styled$text(value),
 							$elm$core$Maybe$Just('=' + value));
 					},
-					limitedPropositions),
+					filterPropositions),
 				_Utils_ap(
 					A2(
 						$Orange_OpenSource$elm_advanced_grid$Grid$viewEllipsis,
 						$elm$core$List$length(filterPropositions),
 						maxQuickFilterPropositions),
-					$Orange_OpenSource$elm_advanced_grid$Grid$viewResetSelector(columnConfig))));
+					A2(
+						$Orange_OpenSource$elm_advanced_grid$Grid$viewResetSelector,
+						columnConfig,
+						A2($Orange_OpenSource$elm_advanced_grid$Grid$Labels$localize, $Orange_OpenSource$elm_advanced_grid$Grid$Labels$clear, state.ep)))));
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewQuickFilter = F2(
 	function (state, columnConfig) {
@@ -11979,7 +12042,8 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewQuickFilter = F2(
 								])),
 							A2($rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', 'quickFilter-' + columnConfig.b.R),
 							$rtfeldman$elm_css$Html$Styled$Events$onClick($Orange_OpenSource$elm_advanced_grid$Grid$UserClickedFilter),
-							$rtfeldman$elm_css$Html$Styled$Attributes$title('')
+							$rtfeldman$elm_css$Html$Styled$Attributes$title(
+							A2($Orange_OpenSource$elm_advanced_grid$Grid$Labels$localize, $Orange_OpenSource$elm_advanced_grid$Grid$Labels$openQuickFilter, state.ep))
 						]),
 					_List_fromArray(
 						[
@@ -12025,7 +12089,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewFilter = F2(
 									$rtfeldman$elm_css$Css$border(
 									$rtfeldman$elm_css$Css$px(0)),
 									$rtfeldman$elm_css$Css$height(
-									$rtfeldman$elm_css$Css$px(state.i.ep)),
+									$rtfeldman$elm_css$Css$px(state.i.eq)),
 									$rtfeldman$elm_css$Css$paddingLeft(
 									$rtfeldman$elm_css$Css$px(2)),
 									$rtfeldman$elm_css$Css$paddingRight(
@@ -12139,7 +12203,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewArrow = function (horizontalBo
 		_List_Nil);
 };
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewArrowDown = $Orange_OpenSource$elm_advanced_grid$Grid$viewArrow($rtfeldman$elm_css$Css$borderTop3);
-var $rtfeldman$elm_css$Css$borderBottom3 = $rtfeldman$elm_css$Css$prop3('border-bottom');
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewArrowUp = $Orange_OpenSource$elm_advanced_grid$Grid$viewArrow($rtfeldman$elm_css$Css$borderBottom3);
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewSortingSymbol = F2(
 	function (state, columnConfig) {
@@ -12152,7 +12215,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewSortingSymbol = F2(
 		}
 	});
 var $rtfeldman$elm_css$Css$lineHeight = $rtfeldman$elm_css$Css$prop1('line-height');
-var $rtfeldman$elm_css$Css$normal = {b4: 0, aK: 0, ab: 0, cc: 0, bo: 'normal', al: 0};
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewTitle = F2(
 	function (state, columnConfig) {
 		var titleFontStyle = function () {
@@ -12189,6 +12251,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewDataHeader = F3(
 				_List_fromArray(
 					[
 						$rtfeldman$elm_css$Css$displayFlex,
+						$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
 						$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row)
 					]))
 			]);
@@ -12206,6 +12269,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewDataHeader = F3(
 								_List_fromArray(
 									[
 										$rtfeldman$elm_css$Css$displayFlex,
+										$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
 										$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$column),
 										$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$flexStart),
 										$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$hidden),
@@ -12224,6 +12288,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewDataHeader = F3(
 									_List_fromArray(
 										[
 											$rtfeldman$elm_css$Css$displayFlex,
+											$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
 											$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row),
 											$rtfeldman$elm_css$Css$flexGrow(
 											$rtfeldman$elm_css$Css$num(1)),
@@ -12327,7 +12392,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewSelectionHeader = F2(
 		var areAllItemsChecked = A2(
 			$elm$core$List$all,
 			function ($) {
-				return $.eV;
+				return $.eW;
 			},
 			state.m);
 		return A2(
@@ -12340,6 +12405,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewSelectionHeader = F2(
 							$rtfeldman$elm_css$Css$width(
 							$rtfeldman$elm_css$Css$px($Orange_OpenSource$elm_advanced_grid$Grid$selectionColumn.b.bq - $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth)),
 							$rtfeldman$elm_css$Css$displayFlex,
+							$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
 							$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
 							$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center)
 						]))
@@ -12411,6 +12477,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewHeaderContainer = function (st
 				[
 					$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey),
 					$rtfeldman$elm_css$Css$displayFlex,
+					$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
 					$rtfeldman$elm_css$Css$height(
 					$rtfeldman$elm_css$Css$px(state.i.ea))
 				])),
@@ -12479,7 +12546,7 @@ var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $FabienHenon$elm_infinite_list_view$InfiniteList$attributes = F2(
 	function (totalHeight, _v0) {
-		var styles = _v0.bY;
+		var styles = _v0.bZ;
 		var id = _v0.R;
 		var _class = _v0.bv;
 		return A3(
@@ -12516,7 +12583,7 @@ var $FabienHenon$elm_infinite_list_view$InfiniteList$lazyView = F3(
 		var customContainer = configValue.a1;
 		var scrollTop = _v0;
 		var _v1 = A3($FabienHenon$elm_infinite_list_view$InfiniteList$computeElementsAndSizes, configValue, scrollTop, items);
-		var skipCount = _v1.bX;
+		var skipCount = _v1.bY;
 		var elements = _v1.bz;
 		var topMargin = _v1.aj;
 		var totalHeight = _v1.bj;
@@ -12555,43 +12622,32 @@ var $FabienHenon$elm_infinite_list_view$InfiniteList$view = F3(
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewRows = function (state) {
 	return A2(
 		$rtfeldman$elm_css$Html$Styled$div,
-		_List_Nil,
 		_List_fromArray(
 			[
-				A2(
-				$rtfeldman$elm_css$Html$Styled$div,
+				$rtfeldman$elm_css$Html$Styled$Attributes$css(
 				_List_fromArray(
 					[
-						$rtfeldman$elm_css$Html$Styled$Attributes$css(
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Css$height(
-								$rtfeldman$elm_css$Css$px(state.i.dU)),
-								$rtfeldman$elm_css$Css$width(
-								$rtfeldman$elm_css$Css$px(
-									$Orange_OpenSource$elm_advanced_grid$Grid$gridWidth(state))),
-								$rtfeldman$elm_css$Css$overflowX($rtfeldman$elm_css$Css$hidden),
-								$rtfeldman$elm_css$Css$overflowY($rtfeldman$elm_css$Css$auto),
-								A3(
-								$rtfeldman$elm_css$Css$border3,
-								$rtfeldman$elm_css$Css$px(1),
-								$rtfeldman$elm_css$Css$solid,
-								$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
-								A2($rtfeldman$elm_css$Css$property, 'direction', 'rtl')
-							])),
-						$rtfeldman$elm_css$Html$Styled$Attributes$fromUnstyled(
-						$FabienHenon$elm_infinite_list_view$InfiniteList$onScroll($Orange_OpenSource$elm_advanced_grid$Grid$InfiniteListMsg)),
-						$rtfeldman$elm_css$Html$Styled$Attributes$id($Orange_OpenSource$elm_advanced_grid$Grid$gridHtmlId)
-					]),
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$fromUnstyled(
-						A3(
-							$FabienHenon$elm_infinite_list_view$InfiniteList$view,
-							$Orange_OpenSource$elm_advanced_grid$Grid$infiniteListConfig(state),
-							state.bE,
-							state.m))
-					]))
+						$rtfeldman$elm_css$Css$height(
+						$rtfeldman$elm_css$Css$px(state.i.dU)),
+						$rtfeldman$elm_css$Css$width(
+						$rtfeldman$elm_css$Css$px(
+							$Orange_OpenSource$elm_advanced_grid$Grid$gridWidth(state))),
+						$rtfeldman$elm_css$Css$overflowX($rtfeldman$elm_css$Css$hidden),
+						$rtfeldman$elm_css$Css$overflowY($rtfeldman$elm_css$Css$auto),
+						A2($rtfeldman$elm_css$Css$property, 'direction', 'rtl')
+					])),
+				$rtfeldman$elm_css$Html$Styled$Attributes$fromUnstyled(
+				$FabienHenon$elm_infinite_list_view$InfiniteList$onScroll($Orange_OpenSource$elm_advanced_grid$Grid$InfiniteListMsg)),
+				$rtfeldman$elm_css$Html$Styled$Attributes$id($Orange_OpenSource$elm_advanced_grid$Grid$gridHtmlId)
+			]),
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Html$Styled$fromUnstyled(
+				A3(
+					$FabienHenon$elm_infinite_list_view$InfiniteList$view,
+					$Orange_OpenSource$elm_advanced_grid$Grid$infiniteListConfig(state),
+					state.bE,
+					state.m))
 			]));
 };
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewGrid = function (state) {
@@ -12628,16 +12684,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewGrid = function (state) {
 						$rtfeldman$elm_css$Html$Styled$Attributes$css(
 						_List_fromArray(
 							[
-								A3(
-								$rtfeldman$elm_css$Css$borderLeft3,
-								$rtfeldman$elm_css$Css$px(1),
-								$rtfeldman$elm_css$Css$solid,
-								$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey2),
-								A3(
-								$rtfeldman$elm_css$Css$borderRight3,
-								$rtfeldman$elm_css$Css$px(1),
-								$rtfeldman$elm_css$Css$solid,
-								$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey2),
 								$rtfeldman$elm_css$Css$width(
 								$rtfeldman$elm_css$Css$px(
 									$Orange_OpenSource$elm_advanced_grid$Grid$gridWidth(state)))
@@ -12915,7 +12961,7 @@ var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$menuItemAttributes = fun
 };
 var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$viewItem = function (item) {
 	return $elm$html$Html$text(
-		'id:' + ($elm$core$String$fromInt(item.b1.R) + (' - name: ' + (item.b1.bK + ''))));
+		'id:' + ($elm$core$String$fromInt(item.b2.R) + (' - name: ' + (item.b2.bL + ''))));
 };
 var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$viewClickedItem = function (model) {
 	var selectedItem = function () {
@@ -12991,7 +13037,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$selectedAndVisibleItems = function
 	return A2(
 		$elm$core$List$filter,
 		function ($) {
-			return $.eV;
+			return $.eW;
 		},
 		state.m);
 };
@@ -13060,11 +13106,11 @@ var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$view = function (model) 
 var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$main = $elm$browser$Browser$element(
 	{
 		eg: $Orange_OpenSource$elm_advanced_grid$Examples$Basic$init,
-		eW: function (_v0) {
+		eX: function (_v0) {
 			return $elm$core$Platform$Sub$none;
 		},
-		e1: $Orange_OpenSource$elm_advanced_grid$Examples$Basic$update,
-		e3: $Orange_OpenSource$elm_advanced_grid$Examples$Basic$view
+		e2: $Orange_OpenSource$elm_advanced_grid$Examples$Basic$update,
+		e4: $Orange_OpenSource$elm_advanced_grid$Examples$Basic$view
 	});
 _Platform_export({'Examples':{'Basic':{'init':$Orange_OpenSource$elm_advanced_grid$Examples$Basic$main(
 	$elm$json$Json$Decode$succeed(0))(0)}}});}(this));

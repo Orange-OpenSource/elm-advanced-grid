@@ -369,6 +369,7 @@ gridConfig =
     , containerWidth = 950
     , hasFilters = True
     , headerHeight = 60
+    , labels = Nothing
     , lineHeight = 25
     , rowClass = rowClass
     }
