@@ -278,7 +278,8 @@ boolColumnConfig
 
 -}
 type alias ColumnProperties =
-    { id : String
+    { mayBeEmpty : Bool
+    , id : String
     , order : Sorting
     , title : String
     , tooltip : String
@@ -430,7 +431,7 @@ selectionColumn =
             }
     in
     { properties =
-        columnConfigProperties properties
+        columnConfigProperties properties False
     , filters = NoFilter
     , filteringValue = Nothing
     , toString = .selected >> boolToString
@@ -1232,7 +1233,7 @@ stringColumnConfig ({ id, title, tooltip, width, getter, localize } as propertie
             .data >> getter
     in
     { properties =
-        columnConfigProperties properties
+        columnConfigProperties properties True
     , filters = StringFilter <| stringFilter getter
     , filteringValue = Nothing
     , toString = nestedDataGetter
@@ -1257,7 +1258,7 @@ floatColumnConfig ({ id, title, tooltip, width, getter, localize } as properties
             .data >> getter
     in
     { properties =
-        columnConfigProperties properties
+        columnConfigProperties properties False
     , filters = FloatFilter <| floatFilter getter
     , filteringValue = Nothing
     , toString = nestedDataGetter >> String.fromFloat
@@ -1282,7 +1283,7 @@ intColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) 
             .data >> getter
     in
     { properties =
-        columnConfigProperties properties
+        columnConfigProperties properties False
     , filters = IntFilter <| intFilter getter
     , filteringValue = Nothing
     , toString = nestedDataGetter >> String.fromInt
@@ -1305,7 +1306,7 @@ boolColumnConfig ({ id, title, tooltip, width, getter, localize } as properties)
             .data >> getter
     in
     { properties =
-        columnConfigProperties properties
+        columnConfigProperties properties False
     , filters = BoolFilter <| boolFilter getter
     , filteringValue = Nothing
     , toString = nestedDataGetter >> boolToString
@@ -1324,9 +1325,10 @@ boolToString value =
         "false"
 
 
-columnConfigProperties : { a | id : String, title : String, tooltip : String, width : Int, localize : String -> String } -> ColumnProperties
-columnConfigProperties { id, title, tooltip, width, localize } =
-    { id = id
+columnConfigProperties : { a | id : String, title : String, tooltip : String, width : Int, localize : String -> String } -> Bool -> ColumnProperties
+columnConfigProperties { id, title, tooltip, width, localize } mayBeEmpty =
+    { mayBeEmpty = mayBeEmpty
+    , id = id
     , order = Unsorted
     , title = localize title
     , tooltip = localize tooltip
@@ -2021,30 +2023,20 @@ viewOpenedQuickFilter state columnConfig =
         maxQuickFilterPropositions =
             100
 
-        filterPropositions =
+        values =
             columnVisibleValues columnConfig state
+                |> take maxQuickFilterPropositions
 
-        limitedPropositions =
-            localize Label.empty state.labels
-                :: take maxQuickFilterPropositions filterPropositions
+        filterPropositions =
+            if columnConfig.properties.mayBeEmpty then
+                localize Label.empty state.labels
+                    :: values
+
+            else
+                values
     in
     div
-        [ css
-            [ position absolute
-            , left (px <| contextualMenuPosition columnConfig)
-            , top (px -10)
-            , zIndex (int 1000)
-            , border3 (px 1) solid lightGrey2
-            , margin auto
-            , padding (px 5)
-            , opacity (int 1)
-            , width (px <| toFloat <| max columnConfig.properties.width 100)
-            , maxHeight <| px <| toFloat 400
-            , backgroundColor white
-            , overflowX hidden
-            , overflowY auto
-            , whiteSpace noWrap
-            ]
+        [ quickFilterPopupStyles columnConfig
 
         -- allow this div to receive focus (necessary to receive blur event)
         , tabindex 0
@@ -2053,9 +2045,29 @@ viewOpenedQuickFilter state columnConfig =
         ]
     <|
         List.map (\value -> viewQuickFilterSelector columnConfig (text value) (Just ("=" ++ value)))
-            limitedPropositions
+            filterPropositions
             ++ viewEllipsis (List.length filterPropositions) maxQuickFilterPropositions
             ++ viewResetSelector columnConfig (localize Label.clear state.labels)
+
+
+quickFilterPopupStyles : ColumnConfig a -> Attribute msg
+quickFilterPopupStyles columnConfig =
+    css
+        [ position absolute
+        , left (px <| contextualMenuPosition columnConfig)
+        , top (px -10)
+        , zIndex (int 1000)
+        , border3 (px 1) solid lightGrey2
+        , margin auto
+        , padding (px 5)
+        , opacity (int 1)
+        , width (px <| toFloat <| max columnConfig.properties.width 100)
+        , maxHeight <| px <| toFloat 400
+        , backgroundColor white
+        , overflowX hidden
+        , overflowY auto
+        , whiteSpace noWrap
+        ]
 
 
 {-| The horizontal position of the quick filtering menu, relative to the column left border
@@ -2087,11 +2099,19 @@ viewResetSelector columnConfig label =
 
 viewQuickFilterSelector : ColumnConfig a -> Html (Msg a) -> Maybe String -> Html (Msg a)
 viewQuickFilterSelector columnConfig label filterString =
+    let
+        style =
+            if columnConfig.properties.mayBeEmpty then
+                firstOfType [ fontStyle italic ]
+
+            else
+                fontStyle normal
+    in
     div
         [ onClick <| FilterModified columnConfig filterString
         , css
             [ cursor pointer
-            , firstOfType [ fontStyle italic ]
+            , style
             , hover [ backgroundColor lightGrey3 ]
             ]
         ]
