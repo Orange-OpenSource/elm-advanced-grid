@@ -353,6 +353,7 @@ gridConfig =
     , containerWidth = 676
     , hasFilters = True
     , headerHeight = 60
+    , labels = Nothing -- use default texts, which are in English
     , lineHeight = 25
     , rowClass = rowClass
     }

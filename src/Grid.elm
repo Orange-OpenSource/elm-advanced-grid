@@ -70,7 +70,7 @@ import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, 
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Grid.Icons as Icons exposing (drawSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
-import Grid.Labels as Label
+import Grid.Labels as Label exposing (localize)
 import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, hr, i, input, label, span, text, toUnstyled)
@@ -116,6 +116,7 @@ type alias Config a =
     , containerWidth : Int
     , hasFilters : Bool
     , headerHeight : Int
+    , labels : Maybe (Dict String String)
     , lineHeight : Int
     , rowClass : Item a -> String
     }
@@ -314,10 +315,11 @@ type alias State a =
     , draggedColumn : Maybe (DraggedColumn a)
     , dragStartX : Float
     , filterHasFocus : Bool -- Avoids triggering a sort when clicking in an input field or a quick filter
+    , headerContainerPosition : Position
     , hoveredColumn : Maybe (ColumnConfig a)
     , infList : IL.Model
     , isAllSelected : Bool
-    , headerContainerPosition : Position
+    , labels : Dict String String
     , openedQuickFilter : Maybe (ColumnConfig a)
 
     -- TODO: order and sortedBy can have incompatible values. It would be better to join them in a single Maybe
@@ -478,20 +480,29 @@ init config data =
         indexedItems =
             List.indexedMap (\index value -> Item.create value index) data
 
+        labels =
+            case config.labels of
+                Just dict ->
+                    dict
+
+                Nothing ->
+                    Label.labels
+
         initialState =
             { clickedItem = Nothing
-            , config = sanitizedConfig
             , columnsX = []
+            , config = sanitizedConfig
             , content = data
+            , draggedColumn = Nothing
             , dragStartX = 0
             , filterHasFocus = False
+            , headerContainerPosition = { x = 0, y = 0 }
             , hoveredColumn = Nothing
             , infList = IL.init
             , isAllSelected = False
-            , draggedColumn = Nothing
+            , labels = labels
             , openedQuickFilter = Nothing
             , order = Unsorted
-            , headerContainerPosition = { x = 0, y = 0 }
             , resizedColumn = Nothing
             , showPreferences = False
             , sortedBy = Nothing
@@ -1998,9 +2009,7 @@ viewQuickFilter state columnConfig =
                     ]
                 , attribute "data-testid" <| "quickFilter-" ++ columnConfig.properties.id
                 , onClick UserClickedFilter
-
-                -- TODO add a localized text
-                , title ""
+                , title <| localize Label.openQuickFilter state.labels
                 ]
                 [ drawSvg Icons.width filterIcon (UserClickedQuickFilterButton columnConfig)
                 ]
@@ -2016,8 +2025,7 @@ viewOpenedQuickFilter state columnConfig =
             columnVisibleValues columnConfig state
 
         limitedPropositions =
-            -- TODO: i18n
-            Label.empty
+            localize Label.empty state.labels
                 :: take maxQuickFilterPropositions filterPropositions
     in
     div
@@ -2038,9 +2046,6 @@ viewOpenedQuickFilter state columnConfig =
             , whiteSpace noWrap
             ]
 
-        -- TODO add a localized text
-        , title ""
-
         -- allow this div to receive focus (necessary to receive blur event)
         , tabindex 0
         , onBlur FilterLostFocus
@@ -2050,7 +2055,7 @@ viewOpenedQuickFilter state columnConfig =
         List.map (\value -> viewQuickFilterSelector columnConfig (text value) (Just ("=" ++ value)))
             limitedPropositions
             ++ viewEllipsis (List.length filterPropositions) maxQuickFilterPropositions
-            ++ viewResetSelector columnConfig
+            ++ viewResetSelector columnConfig (localize Label.clear state.labels)
 
 
 {-| The horizontal position of the quick filtering menu, relative to the column left border
@@ -2069,15 +2074,14 @@ viewEllipsis totalNumber actualNumber =
         []
 
 
-viewResetSelector : ColumnConfig a -> List (Html (Msg a))
-viewResetSelector columnConfig =
+viewResetSelector : ColumnConfig a -> String -> List (Html (Msg a))
+viewResetSelector columnConfig label =
     if columnConfig.filteringValue == Nothing then
         []
 
     else
-        -- TODO localize the text
         [ hr [ css [ color darkGrey2 ] ] []
-        , viewQuickFilterSelector columnConfig (span [ css [ fontStyle italic ] ] [ text "Effacer" ]) Nothing
+        , viewQuickFilterSelector columnConfig (span [ css [ fontStyle italic ] ] [ text label ]) Nothing
         ]
 
 

@@ -181,6 +181,7 @@ gridConfig =
     , hasFilters = True
     , headerHeight = 60
     , lineHeight = 20
+    , labels = Nothing
     , rowClass = rowClass
     }
 
