@@ -28,8 +28,10 @@ module Grid.Filters exposing
 
 -}
 
+import Dict
 import Grid.Labels as Label
 import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, stringParser)
+import OrionisGridTranslations exposing (Labels)
 import Parser exposing ((|=), DeadEnd, Parser)
 
 
@@ -140,19 +142,31 @@ The lambda function to be provided as a parameter returns
 the value of the field to be filtered.
 
     filters =
-        StringFilter <| stringFilter (\item -> item.name)
+        StringFilter <| stringFilter (\item -> item.name) localize
+
+The localize function must return the translation in the current language for the "Empty" label displayed in the quick filter
+A default implementation, if the grid is used in English, is the "identity" function
 
 -}
-stringFilter : (a -> String) -> TypedFilter a String
-stringFilter getter =
+stringFilter : (a -> String) -> Labels -> TypedFilter a String
+stringFilter getter labels =
     makeFilter
         { getter = getter
-        , equal = \a b -> (String.toLower a == String.toLower b) || (a == "" && b == Label.empty)
+        , equal = stringEquals labels
         , lessThan = \a b -> String.toLower a < String.toLower b
         , greaterThan = \a b -> String.toLower a > String.toLower b
         , contains = \a b -> String.contains (String.toLower b) (String.toLower a)
         , typedParser = stringParser
         }
+
+
+{-| Returns true when the given string are the same
+or when the first one is empty and the second one is the quick filter label for selecting empty cells
+-}
+stringEquals : Labels -> String -> String -> Bool
+stringEquals labels valueInCell valueInFilter =
+    (String.toLower valueInCell == String.toLower valueInFilter)
+        || (valueInCell == "" && valueInFilter == Label.localize Label.empty labels)
 
 
 {-| Filters integers.

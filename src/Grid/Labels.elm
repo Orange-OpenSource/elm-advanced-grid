@@ -4,17 +4,12 @@ import Dict exposing (Dict)
 import List.Extra
 
 
-{-| a dictionary of texts to be displayed in GUI
-English being the default language, keys are the english text to be displayed
-That's why keys and values are identical in the default labels dictionary
-For other language, Just give the Grid.init a Dict <english key> <translation>
+{-| Translates a given text using the provided dictionary of translations
+If no translation is found, the text itself is returned
+
+The keys of the translation dictionary must be the ones defined in the "keys" variable
+
 -}
-labels : Dict String String
-labels =
-    List.Extra.zip keys keys
-        |> Dict.fromList
-
-
 localize : String -> Dict String String -> String
 localize key translations =
     Dict.get key translations
@@ -23,6 +18,7 @@ localize key translations =
 
 {-| The list of string used to identify the labels to be displayed
 -}
+keys : List String
 keys =
     [ clear
     , empty
@@ -37,7 +33,7 @@ empty =
 
 clear : String
 clear =
-    "Effacer"
+    "Clear"
 
 
 openQuickFilter : String

@@ -80,6 +80,7 @@ import InfiniteList as IL
 import Json.Decode
 import List exposing (take)
 import List.Extra exposing (findIndex, unique)
+import OrionisGridTranslations exposing (Labels)
 import String
 import Task
 
@@ -116,7 +117,7 @@ type alias Config a =
     , containerWidth : Int
     , hasFilters : Bool
     , headerHeight : Int
-    , labels : Maybe (Dict String String)
+    , labels : Labels
     , lineHeight : Int
     , rowClass : Item a -> String
     }
@@ -278,8 +279,7 @@ boolColumnConfig
 
 -}
 type alias ColumnProperties =
-    { mayBeEmpty : Bool
-    , id : String
+    { id : String
     , order : Sorting
     , title : String
     , tooltip : String
@@ -431,7 +431,7 @@ selectionColumn =
             }
     in
     { properties =
-        columnConfigProperties properties False
+        columnConfigProperties properties
     , filters = NoFilter
     , filteringValue = Nothing
     , toString = .selected >> boolToString
@@ -481,14 +481,6 @@ init config data =
         indexedItems =
             List.indexedMap (\index value -> Item.create value index) data
 
-        labels =
-            case config.labels of
-                Just dict ->
-                    dict
-
-                Nothing ->
-                    Label.labels
-
         initialState =
             { clickedItem = Nothing
             , columnsX = []
@@ -501,7 +493,7 @@ init config data =
             , hoveredColumn = Nothing
             , infList = IL.init
             , isAllSelected = False
-            , labels = labels
+            , labels = config.labels
             , openedQuickFilter = Nothing
             , order = Unsorted
             , resizedColumn = Nothing
@@ -1226,15 +1218,15 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-stringColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> String, localize : String -> String } -> ColumnConfig a
-stringColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+stringColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> String, localize : String -> String } -> Labels -> ColumnConfig a
+stringColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) labels =
     let
         nestedDataGetter =
             .data >> getter
     in
     { properties =
-        columnConfigProperties properties True
-    , filters = StringFilter <| stringFilter getter
+        columnConfigProperties properties
+    , filters = StringFilter <| stringFilter getter labels
     , filteringValue = Nothing
     , toString = nestedDataGetter
     , renderer = viewString nestedDataGetter
@@ -1258,7 +1250,7 @@ floatColumnConfig ({ id, title, tooltip, width, getter, localize } as properties
             .data >> getter
     in
     { properties =
-        columnConfigProperties properties False
+        columnConfigProperties properties
     , filters = FloatFilter <| floatFilter getter
     , filteringValue = Nothing
     , toString = nestedDataGetter >> String.fromFloat
@@ -1283,7 +1275,7 @@ intColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) 
             .data >> getter
     in
     { properties =
-        columnConfigProperties properties False
+        columnConfigProperties properties
     , filters = IntFilter <| intFilter getter
     , filteringValue = Nothing
     , toString = nestedDataGetter >> String.fromInt
@@ -1306,7 +1298,7 @@ boolColumnConfig ({ id, title, tooltip, width, getter, localize } as properties)
             .data >> getter
     in
     { properties =
-        columnConfigProperties properties False
+        columnConfigProperties properties
     , filters = BoolFilter <| boolFilter getter
     , filteringValue = Nothing
     , toString = nestedDataGetter >> boolToString
@@ -1325,10 +1317,9 @@ boolToString value =
         "false"
 
 
-columnConfigProperties : { a | id : String, title : String, tooltip : String, width : Int, localize : String -> String } -> Bool -> ColumnProperties
-columnConfigProperties { id, title, tooltip, width, localize } mayBeEmpty =
-    { mayBeEmpty = mayBeEmpty
-    , id = id
+columnConfigProperties : { a | id : String, title : String, tooltip : String, width : Int, localize : String -> String } -> ColumnProperties
+columnConfigProperties { id, title, tooltip, width, localize } =
+    { id = id
     , order = Unsorted
     , title = localize title
     , tooltip = localize tooltip
@@ -2027,13 +2018,29 @@ viewOpenedQuickFilter state columnConfig =
             columnVisibleValues columnConfig state
                 |> take maxQuickFilterPropositions
 
+        firstItem =
+            List.head values
+                |> Maybe.withDefault ""
+
+        emptyLabel =
+            localize Label.empty state.labels
+
         filterPropositions =
-            if columnConfig.properties.mayBeEmpty then
-                localize Label.empty state.labels
-                    :: values
+            if firstItem == "" then
+                values
+                    |> List.drop 1
+                    |> (::) emptyLabel
 
             else
                 values
+
+        params value =
+            { columnConfig = columnConfig
+            , emptyLabel = emptyLabel
+            , filterString = Just ("=" ++ value)
+            , isCommand = False
+            , label = value
+            }
     in
     div
         [ quickFilterPopupStyles columnConfig
@@ -2044,7 +2051,7 @@ viewOpenedQuickFilter state columnConfig =
         , id openedQuickFilterHtmlId
         ]
     <|
-        List.map (\value -> viewQuickFilterSelector columnConfig (text value) (Just ("=" ++ value)))
+        List.map (\value -> viewQuickFilterEntry (params value))
             filterPropositions
             ++ viewEllipsis (List.length filterPropositions) maxQuickFilterPropositions
             ++ viewResetSelector columnConfig (localize Label.clear state.labels)
@@ -2088,34 +2095,52 @@ viewEllipsis totalNumber actualNumber =
 
 viewResetSelector : ColumnConfig a -> String -> List (Html (Msg a))
 viewResetSelector columnConfig label =
+    let
+        params =
+            { columnConfig = columnConfig
+            , emptyLabel = ""
+            , filterString = Nothing
+            , isCommand = True
+            , label = label
+            }
+    in
     if columnConfig.filteringValue == Nothing then
         []
 
     else
         [ hr [ css [ color darkGrey2 ] ] []
-        , viewQuickFilterSelector columnConfig (span [ css [ fontStyle italic ] ] [ text label ]) Nothing
+        , viewQuickFilterEntry params
         ]
 
 
-viewQuickFilterSelector : ColumnConfig a -> Html (Msg a) -> Maybe String -> Html (Msg a)
-viewQuickFilterSelector columnConfig label filterString =
+type alias ViewQuickFilterEntryParams a =
+    { columnConfig : ColumnConfig a
+    , emptyLabel : String
+    , filterString : Maybe String
+    , isCommand : Bool
+    , label : String
+    }
+
+
+viewQuickFilterEntry : ViewQuickFilterEntryParams a -> Html (Msg a)
+viewQuickFilterEntry params =
     let
         style =
-            if columnConfig.properties.mayBeEmpty then
-                firstOfType [ fontStyle italic ]
+            if params.isCommand || params.label == params.emptyLabel then
+                fontStyle italic
 
             else
                 fontStyle normal
     in
     div
-        [ onClick <| FilterModified columnConfig filterString
+        [ onClick <| FilterModified params.columnConfig params.filterString
         , css
             [ cursor pointer
             , style
             , hover [ backgroundColor lightGrey3 ]
             ]
         ]
-        [ label ]
+        [ text params.label ]
 
 
 {-| Left + right cell border width, including padding, in px.
@@ -2149,6 +2174,8 @@ cellAttributes properties =
     ]
 
 
+{-| The unique values in a column
+-}
 columnVisibleValues : ColumnConfig a -> State a -> List String
 columnVisibleValues columnConfig state =
     state.visibleItems
