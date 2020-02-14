@@ -37,3 +37,8 @@ filterIcon =
 width : Float
 width =
     15
+
+
+penIcon : String
+penIcon =
+    "M 21 3 L 24 6 L 12 18 L 9 15 L 21 3 M 21.6 2.4 Q 27 0 24.6 5.4 M 8.4 15.6 L 6 21 L 11.6 18.4 L 8.4 15.6"

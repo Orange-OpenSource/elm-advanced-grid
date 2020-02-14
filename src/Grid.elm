@@ -68,7 +68,7 @@ import Css.Global exposing (descendants, typeSelector)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, lightGrey3, white, white2)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
-import Grid.Icons as Icons exposing (drawSvg, filterIcon)
+import Grid.Icons as Icons exposing (drawSvg, filterIcon, penIcon)
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
 import Html
@@ -186,6 +186,7 @@ type Msg a
     | ShowPreferences
     | UpdateContent (a -> a)
     | UpdateContentPreservingSelection (a -> a)
+    | UserClickedEdit (Item a) String
     | UserClickedHeader (ColumnConfig a)
     | UserClickedQuickFilterButton (ColumnConfig a)
     | UserClickedFilter
@@ -673,6 +674,21 @@ stateUpdate msg state =
             in
             state
                 |> withDraggedColumn (Just draggedColumn)
+
+        UserClickedEdit itemToBeEdited columnId ->
+            let
+                updatedItems =
+                    List.map setEdited state.visibleItems
+
+                setEdited : Item a -> Item a
+                setEdited item =
+                    if item.index == itemToBeEdited.index then
+                        { item | editedColumnId = Just columnId }
+
+                    else
+                        item
+            in
+            state |> withVisibleItems updatedItems
 
         UserClickedFilter ->
             { state | filterHasFocus = True }
@@ -1357,9 +1373,46 @@ returns the field to be displayed in this column.
 -}
 viewString : (Item a -> String) -> ColumnProperties -> Item a -> Html (Msg a)
 viewString field properties item =
-    div
-        (cellAttributes properties)
-        [ text <| field item ]
+    let
+        isCellEdited =
+            case item.editedColumnId of
+                Nothing ->
+                    False
+
+                Just id ->
+                    properties.id == id
+    in
+    if isCellEdited then
+        div (cellAttributes properties)
+            [ input [ value <| field item ] []
+            ]
+
+    else
+        div
+            (cellAttributes properties)
+            [ text <| field item
+            , viewEditionIcon properties item
+            ]
+
+
+viewEditionIcon : ColumnProperties -> Item a -> Html (Msg a)
+viewEditionIcon properties item =
+    if properties.isEditable then
+        div
+            [ css
+                [ alignSelf flexEnd
+                , visibility hidden
+                ]
+            ]
+            [ drawSvg 20 penIcon (UserClickedEdit item properties.id) ]
+
+    else
+        noContent
+
+
+
+--viewEditedString : ColumnProperties -> Item a -> Html (Msg a)
+--viewEditedString columnProperties item =
 
 
 {-| Renders a progress bar in a a cell containing a integer.
@@ -1622,14 +1675,19 @@ headerStyles state =
         , border3 (px 1) solid lightGrey2
         , boxSizing contentBox
         , height (px <| toFloat <| state.config.headerHeight - cumulatedBorderWidth)
-        , hover
-            [ descendants
-                [ typeSelector "div"
-                    [ visibility visible -- makes the move handle visible when hover the column
-                    ]
+        , descendantsVisibleOnHover
+        , padding (px 2)
+        ]
+
+
+descendantsVisibleOnHover : Style
+descendantsVisibleOnHover =
+    hover
+        [ descendants
+            [ typeSelector "div"
+                [ visibility visible -- makes the move handle visible when hover the column
                 ]
             ]
-        , padding (px 2)
         ]
 
 
@@ -2162,13 +2220,15 @@ cellAttributes properties =
         [ alignItems center
         , display inlineFlex
         , noShrink
+        , justifyContent spaceBetween
         , borderLeft3 (px 1) solid lightGrey
         , borderRight3 (px 1) solid lightGrey
-        , firstOfType [ justifyContent flexEnd ]
+        , firstOfType [ justifyContent flexEnd ] -- justifies on right the first column to avoid it being partially hidden by vertical scrollbar
         , boxSizing contentBox
         , minHeight (pct 100) -- 100% min height forces empty divs to be correctly rendered
         , paddingLeft (px 2)
         , paddingRight (px 2)
+        , descendantsVisibleOnHover
         , overflow hidden
         , whiteSpace noWrap
         , width (px <| toFloat (properties.width - cumulatedBorderWidth))

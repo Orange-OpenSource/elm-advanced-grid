@@ -426,7 +426,7 @@ columns labels =
         }
     , stringColumnConfig
         { id = "City"
-        , isEditable = False
+        , isEditable = True
         , getter = .city
         , localize = localize
         , title = "Ville"
