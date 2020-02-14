@@ -419,6 +419,7 @@ columns labels =
 idColumn =
     intColumnConfig
         { id = "Id"
+        , isEditable = False
         , getter = .id
         , localize = localize
         , title = "Id"
@@ -430,6 +431,7 @@ idColumn =
 nameColumn =
     stringColumnConfig
         { id = "Name"
+        , isEditable = False
         , getter = .name
         , localize = localize
         , title = "Nom"
@@ -443,6 +445,7 @@ progressColumn =
         progressColumnConfig =
             floatColumnConfig
                 { id = "Progress"
+                , isEditable = False
                 , getter = .value1
                 , localize = localize
                 , title = "Progrès"
@@ -456,6 +459,7 @@ progressColumn =
 cityColumn =
     stringColumnConfig
         { id = "City"
+        , isEditable = False
         , getter = .city
         , localize = localize
         , title = "Ville"
@@ -467,6 +471,7 @@ cityColumn =
 value1Column =
     floatColumnConfig
         { id = "Value1"
+        , isEditable = False
         , getter = .value1 >> truncateDecimals
         , localize = localize
         , title = "Valeur 1"
@@ -480,6 +485,7 @@ value1ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue1"
+                , isEditable = False
                 , getter = .value1 >> truncateDecimals
                 , localize = localize
                 , title = "Valeur 1"
@@ -493,6 +499,7 @@ value1ProgressColumn =
 value2Column =
     floatColumnConfig
         { id = "Value2"
+        , isEditable = False
         , getter = .value2 >> truncateDecimals
         , localize = localize
         , title = "Valeur 2"
@@ -506,6 +513,7 @@ value2ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue2"
+                , isEditable = False
                 , getter = .value2 >> truncateDecimals
                 , localize = localize
                 , title = "Valeur 2"
@@ -519,6 +527,7 @@ value2ProgressColumn =
 value3Column =
     floatColumnConfig
         { id = "Value3"
+        , isEditable = False
         , getter = .value3 >> truncateDecimals
         , localize = localize
         , title = "Valeur 3"
@@ -532,6 +541,7 @@ value3ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue3"
+                , isEditable = False
                 , getter = .value3 >> truncateDecimals
                 , localize = localize
                 , title = "Valeur 3"
@@ -545,6 +555,7 @@ value3ProgressColumn =
 value4Column =
     floatColumnConfig
         { id = "Value4"
+        , isEditable = False
         , getter = .value4 >> truncateDecimals
         , localize = localize
         , title = "Valeur 4"
@@ -558,6 +569,7 @@ value4ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue4"
+                , isEditable = False
                 , getter = .value4 >> truncateDecimals
                 , localize = localize
                 , title = "Valeur 4"
@@ -571,6 +583,7 @@ value4ProgressColumn =
 value5Column =
     floatColumnConfig
         { id = "Value5"
+        , isEditable = False
         , getter = .value5 >> truncateDecimals
         , localize = localize
         , title = "Valeur 5"
@@ -584,6 +597,7 @@ value5ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue5"
+                , isEditable = False
                 , getter = .value5 >> truncateDecimals
                 , localize = localize
                 , title = "Valeur 5"
@@ -597,6 +611,7 @@ value5ProgressColumn =
 value6Column =
     floatColumnConfig
         { id = "Value6"
+        , isEditable = False
         , getter = .value6 >> truncateDecimals
         , localize = localize
         , title = "Valeur 6"
@@ -610,6 +625,7 @@ value6ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue6"
+                , isEditable = False
                 , getter = .value6 >> truncateDecimals
                 , localize = localize
                 , title = "Valeur 6"

@@ -279,6 +279,7 @@ boolColumnConfig
 -}
 type alias ColumnProperties =
     { id : String
+    , isEditable : Bool
     , order : Sorting
     , title : String
     , tooltip : String
@@ -422,6 +423,7 @@ selectionColumn =
     let
         properties =
             { id = "_MultipleSelection_"
+            , isEditable = False
             , getter = .selected
             , title = ""
             , tooltip = ""
@@ -1217,8 +1219,8 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-stringColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> String, localize : String -> String } -> Dict String String -> ColumnConfig a
-stringColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) labels =
+stringColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> String, localize : String -> String } -> Dict String String -> ColumnConfig a
+stringColumnConfig ({ id, isEditable, title, tooltip, width, getter, localize } as properties) labels =
     let
         nestedDataGetter =
             .data >> getter
@@ -1242,8 +1244,8 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-floatColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Float, localize : String -> String } -> ColumnConfig a
-floatColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+floatColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> Float, localize : String -> String } -> ColumnConfig a
+floatColumnConfig ({ id, isEditable, title, tooltip, width, getter, localize } as properties) =
     let
         nestedDataGetter =
             .data >> getter
@@ -1267,8 +1269,8 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-intColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Int, localize : String -> String } -> ColumnConfig a
-intColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+intColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> Int, localize : String -> String } -> ColumnConfig a
+intColumnConfig ({ id, title, isEditable, tooltip, width, getter, localize } as properties) =
     let
         nestedDataGetter =
             .data >> getter
@@ -1290,8 +1292,8 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-boolColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Bool, localize : String -> String } -> ColumnConfig a
-boolColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) =
+boolColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> Bool, localize : String -> String } -> ColumnConfig a
+boolColumnConfig ({ id, isEditable, title, tooltip, width, getter, localize } as properties) =
     let
         nestedDataGetter =
             .data >> getter
@@ -1316,9 +1318,10 @@ boolToString value =
         "false"
 
 
-columnConfigProperties : { a | id : String, title : String, tooltip : String, width : Int, localize : String -> String } -> ColumnProperties
-columnConfigProperties { id, title, tooltip, width, localize } =
+columnConfigProperties : { a | id : String, isEditable : Bool, title : String, tooltip : String, width : Int, localize : String -> String } -> ColumnProperties
+columnConfigProperties { id, isEditable, title, tooltip, width, localize } =
     { id = id
+    , isEditable = isEditable
     , order = Unsorted
     , title = localize title
     , tooltip = localize tooltip

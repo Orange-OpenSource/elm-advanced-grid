@@ -385,6 +385,7 @@ columns : Dict String String -> List (ColumnConfig Data)
 columns labels =
     [ intColumnConfig
         { id = "Id"
+        , isEditable = False
         , getter = .id
         , localize = localize
         , title = "Id"
@@ -393,6 +394,7 @@ columns labels =
         }
     , stringColumnConfig
         { id = "Name"
+        , isEditable = False
         , getter = .name
         , localize = localize
         , title = "Nom"
@@ -404,6 +406,7 @@ columns labels =
         progressColumnConfig =
             floatColumnConfig
                 { id = "Progress"
+                , isEditable = False
                 , getter = .value
                 , localize = localize
                 , title = "Progrès"
@@ -414,6 +417,7 @@ columns labels =
       { progressColumnConfig | renderer = viewProgressBar 8 .value }
     , floatColumnConfig
         { id = "Value"
+        , isEditable = False
         , getter = .value >> truncateDecimals
         , localize = localize
         , title = "Valeur"
@@ -422,6 +426,7 @@ columns labels =
         }
     , stringColumnConfig
         { id = "City"
+        , isEditable = False
         , getter = .city
         , localize = localize
         , title = "Ville"
