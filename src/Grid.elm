@@ -80,7 +80,6 @@ import InfiniteList as IL
 import Json.Decode
 import List exposing (take)
 import List.Extra exposing (findIndex, unique)
-import OrionisGridTranslations exposing (Labels)
 import String
 import Task
 
@@ -117,7 +116,7 @@ type alias Config a =
     , containerWidth : Int
     , hasFilters : Bool
     , headerHeight : Int
-    , labels : Labels
+    , labels : Dict String String
     , lineHeight : Int
     , rowClass : Item a -> String
     }
@@ -1218,7 +1217,7 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-stringColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> String, localize : String -> String } -> Labels -> ColumnConfig a
+stringColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> String, localize : String -> String } -> Dict String String -> ColumnConfig a
 stringColumnConfig ({ id, title, tooltip, width, getter, localize } as properties) labels =
     let
         nestedDataGetter =

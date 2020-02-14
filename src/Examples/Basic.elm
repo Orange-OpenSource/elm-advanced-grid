@@ -348,12 +348,12 @@ init _ =
 gridConfig : Grid.Config Data
 gridConfig =
     { canSelectRows = True
-    , columns = columns
+    , columns = columns Dict.empty
     , containerHeight = 500
     , containerWidth = 676
     , hasFilters = True
     , headerHeight = 60
-    , labels = Nothing -- use default texts, which are in English
+    , labels = Dict.empty -- use default texts, which are in English
     , lineHeight = 25
     , rowClass = rowClass
     }
@@ -376,11 +376,13 @@ rowClass item =
 
 
 
-{- the definition of the columns of the grid -}
+{- the definition of the columns of the grid
+   the string columns require a dictionray of translations,
+-}
 
 
-columns : List (ColumnConfig Data)
-columns =
+columns : Dict String String -> List (ColumnConfig Data)
+columns labels =
     [ intColumnConfig
         { id = "Id"
         , getter = .id
@@ -397,6 +399,7 @@ columns =
         , tooltip = "Une indication pour la colonne Nom"
         , width = 100
         }
+        labels
     , let
         progressColumnConfig =
             floatColumnConfig
@@ -425,6 +428,7 @@ columns =
         , tooltip = "Une indication pour la colonne Ville"
         , width = 300
         }
+        labels
     ]
 
 

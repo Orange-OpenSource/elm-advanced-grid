@@ -28,10 +28,9 @@ module Grid.Filters exposing
 
 -}
 
-import Dict
+import Dict exposing (Dict)
 import Grid.Labels as Label
 import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, stringParser)
-import OrionisGridTranslations exposing (Labels)
 import Parser exposing ((|=), DeadEnd, Parser)
 
 
@@ -148,7 +147,7 @@ The localize function must return the translation in the current language for th
 A default implementation, if the grid is used in English, is the "identity" function
 
 -}
-stringFilter : (a -> String) -> Labels -> TypedFilter a String
+stringFilter : (a -> String) -> Dict String String -> TypedFilter a String
 stringFilter getter labels =
     makeFilter
         { getter = getter
@@ -163,7 +162,7 @@ stringFilter getter labels =
 {-| Returns true when the given string are the same
 or when the first one is empty and the second one is the quick filter label for selecting empty cells
 -}
-stringEquals : Labels -> String -> String -> Bool
+stringEquals : Dict String String -> String -> String -> Bool
 stringEquals labels valueInCell valueInFilter =
     (String.toLower valueInCell == String.toLower valueInFilter)
         || (valueInCell == "" && valueInFilter == Label.localize Label.empty labels)

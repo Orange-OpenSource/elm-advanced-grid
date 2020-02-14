@@ -326,7 +326,7 @@ itemCount =
 
 cities : List String
 cities =
-    [ "Paris", "London", "New York", "Moscow", "Roma", "Berlin", "Tokyo", "Delhi", "Shanghai", "Sao Paulo", "Mexico City", "Cairo", "Dhaka", "Mumbai", "Beijing", "Osaka", "Karachi", "Chongqing", "Buenos Aires", "Istanbul", "Kolkata", "Lagos", "Manila", "Tianjin", "Rio De Janeiro", "Guangzhou", "Moscow", "Lahore", "Shenzhen", "Bangalore", "Paris", "Bogota", "Chennai", "Jakarta", "Lima", "Bangkok", "Seoul", "Hyderabad", "London", "Tehran", "Chengdu", "New York", "Wuhan", "Ahmedabad", "Kuala Lumpur", "Riyadh", "Surat", "Santiago", "Madrid", "Pune", "Dar Es Salaam", "Toronto", "Johannesburg", "Barcelona", "St Petersburg", "Yangon", "Alexandria", "Guadalajara", "Ankara", "Melbourne", "Sydney", "Brasilia", "Nairobi", "Cape Town", "Rome", "Montreal", "Tel Aviv", "Los Angeles", "Medellin", "Jaipur", "Casablanca", "Lucknow", "Berlin", "Busan", "Athens", "Milan", "Kanpur", "Abuja", "Lisbon", "Surabaya", "Dubai", "Cali", "Manchester" ]
+    [ "Paris", "London", "New York", "Moscow", "Roma", "Berlin", "Tokyo", "Delhi", "Shanghai", "Sao Paulo", "Mexico City", "Cairo", "Dhaka", "Mumbai", "Beijing", "", "Osaka", "Karachi", "Chongqing", "Buenos Aires", "Istanbul", "Kolkata", "Lagos", "Manila", "Tianjin", "Rio De Janeiro", "Guangzhou", "Moscow", "Lahore", "Shenzhen", "Bangalore", "Paris", "Bogota", "Chennai", "Jakarta", "Lima", "Bangkok", "Seoul", "Hyderabad", "London", "Tehran", "Chengdu", "New York", "Wuhan", "Ahmedabad", "Kuala Lumpur", "Riyadh", "Surat", "Santiago", "Madrid", "Pune", "Dar Es Salaam", "Toronto", "Johannesburg", "Barcelona", "St Petersburg", "Yangon", "Alexandria", "Guadalajara", "Ankara", "Melbourne", "Sydney", "Brasilia", "Nairobi", "Cape Town", "Rome", "Montreal", "Tel Aviv", "Los Angeles", "Medellin", "Jaipur", "Casablanca", "Lucknow", "Berlin", "Busan", "Athens", "Milan", "Kanpur", "Abuja", "Lisbon", "Surabaya", "Dubai", "Cali", "Manchester" ]
 
 
 items : List Data
@@ -364,12 +364,12 @@ init _ =
 gridConfig : Grid.Config Data
 gridConfig =
     { canSelectRows = True
-    , columns = columns
+    , columns = columns Dict.empty
     , containerHeight = 500
     , containerWidth = 950
     , hasFilters = True
     , headerHeight = 60
-    , labels = Nothing
+    , labels = Dict.empty
     , lineHeight = 25
     , rowClass = rowClass
     }
@@ -395,12 +395,12 @@ rowClass item =
 {- the definition of the columns of the grid -}
 
 
-columns : List (ColumnConfig Data)
-columns =
+columns : Dict String String -> List (ColumnConfig Data)
+columns labels =
     [ idColumn
-    , nameColumn
+    , nameColumn labels
     , progressColumn
-    , cityColumn
+    , cityColumn labels
     , value1Column
     , value1ProgressColumn
     , value2Column
