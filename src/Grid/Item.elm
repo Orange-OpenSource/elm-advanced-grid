@@ -4,14 +4,20 @@ module Grid.Item exposing (Item, create, withData)
 You should only read them
 
     items =
-        [ { index = 0
+        [ { contentIndex = 0
+          , index = 0
           , selected = False
           , isEdited = False
+          , editedColumnId = Nothing
+          , editedValue = ""
           , data = { name = "item0" }
           }
-        , { index = 1
+        , { contentIndex = 1
+          , index = 1
           , selected = False
           , isEdited = False
+          , editedColumnId = Nothing
+          , editedValue = ""
           , data = { name = "item1" }
           }
         ]
