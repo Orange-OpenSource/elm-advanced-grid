@@ -68,14 +68,14 @@ import Css.Global exposing (descendants, typeSelector)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, lightGrey3, white, white2)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
-import Grid.Icons as Icons exposing (drawSvg, filterIcon, penIcon)
+import Grid.Icons as Icons exposing (drawSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
 import Html
 import Html.Events.Extra.Mouse as Mouse
-import Html.Styled exposing (Attribute, Html, div, hr, i, input, label, span, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, tabindex, title, type_, value)
-import Html.Styled.Events exposing (onBlur, onClick, onInput, onMouseUp, stopPropagationOn)
+import Html.Styled exposing (Attribute, Html, div, form, hr, i, input, label, span, text, toUnstyled)
+import Html.Styled.Attributes exposing (attribute, autofocus, class, css, for, fromUnstyled, id, tabindex, title, type_, value)
+import Html.Styled.Events exposing (onBlur, onClick, onDoubleClick, onInput, onMouseUp, onSubmit, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
 import List exposing (take)
@@ -176,6 +176,7 @@ You probably should not use the other constructors.
 type Msg a
     = ColumnsModificationRequested (List (ColumnConfig a))
     | InfiniteListMsg IL.Model
+    | EditorLostFocus
     | FilterLostFocus
     | FilterModified (ColumnConfig a) (Maybe String)
     | SetFilters (Dict String String) -- column ID, filter value
@@ -186,12 +187,13 @@ type Msg a
     | ShowPreferences
     | UpdateContent (a -> a)
     | UpdateContentPreservingSelection (a -> a)
-    | UserClickedEdit (Item a) String
+    | UserChangedCellValue (Item a) String
     | UserClickedHeader (ColumnConfig a)
     | UserClickedQuickFilterButton (ColumnConfig a)
     | UserClickedFilter
     | UserClickedLine (Item a)
     | UserClickedDragHandle (ColumnConfig a) Position
+    | UserDoubleClickedEditableCell (Item a) (Item a -> String) String
     | UserHoveredDragHandle
     | UserClickedPreferenceCloseButton
     | UserClickedResizeHandle (ColumnConfig a) Position
@@ -202,6 +204,7 @@ type Msg a
     | UserToggledAllItemSelection
     | UserToggledColumnVisibility (ColumnConfig a)
     | UserToggledSelection (Item a)
+    | UserValidatedCellChange (Item a)
 
 
 {-| The sorting options for a column, to be used in the properties of a ColumnConfig.
@@ -214,6 +217,7 @@ of the data provided to initialize the grid model.
 
         { properties =
             { id = "Id"
+            , isEditable = False
             , order = Unsorted
             , title = "Id"
             , visible = True
@@ -238,6 +242,7 @@ boolColumnConfig
     idColumnConfig =
         { properties =
             { id = "Id"
+            , isEditable = False
             , order = Unsorted
             , title = "Id"
             , visible = True
@@ -257,6 +262,7 @@ type alias ColumnConfig a =
     , comparator : Item a -> Item a -> Order
     , filteringValue : Maybe String
     , filters : Filter a
+    , fromString : Item a -> String -> Item a
     , toString : Item a -> String
     , renderer : ColumnProperties -> (Item a -> Html (Msg a))
     }
@@ -271,6 +277,7 @@ boolColumnConfig
 
     properties =
         { id = "name"
+        , isEditable = False
         , order = Unsorted
         , title = "Name"
         , visible = True
@@ -316,6 +323,7 @@ type alias State a =
     , content : List a -- all data, visible or not
     , draggedColumn : Maybe (DraggedColumn a)
     , dragStartX : Float
+    , editorHasFocus : Bool -- Avoids selecting a row when cliccking in an cell editor
     , filterHasFocus : Bool -- Avoids triggering a sort when clicking in an input field or a quick filter
     , headerContainerPosition : Position
     , hoveredColumn : Maybe (ColumnConfig a)
@@ -405,6 +413,13 @@ withDraggedColumn draggedColumn state =
 
 {-| Sets the filtered data
 -}
+withEditorHasFocus : Bool -> State a -> State a
+withEditorHasFocus isEditing state =
+    { state | editorHasFocus = isEditing }
+
+
+{-| Sets the filtered data
+-}
 withVisibleItems : List (Item a) -> State a -> State a
 withVisibleItems visibleItems state =
     { state | visibleItems = visibleItems }
@@ -436,6 +451,7 @@ selectionColumn =
         columnConfigProperties properties
     , filters = NoFilter
     , filteringValue = Nothing
+    , fromString = \item value -> { item | selected = stringToBool value }
     , toString = .selected >> boolToString
     , renderer = viewBool .selected
     , comparator = compareBoolField .selected
@@ -495,6 +511,7 @@ init config data =
             , hoveredColumn = Nothing
             , infList = IL.init
             , isAllSelected = False
+            , editorHasFocus = False
             , labels = config.labels
             , openedQuickFilter = Nothing
             , order = Unsorted
@@ -552,8 +569,32 @@ update msg (Model state) =
             , focusOn openedQuickFilterHtmlId
             )
 
+        UserDoubleClickedEditableCell itemToBeEdited toString columnId ->
+            let
+                updatedItems =
+                    List.map setEdited state.visibleItems
+
+                setEdited : Item a -> Item a
+                setEdited item =
+                    if item.index == itemToBeEdited.index then
+                        { item
+                            | editedColumnId = Just columnId
+                            , editedValue = toString itemToBeEdited
+                        }
+
+                    else
+                        item
+            in
+            ( Model
+                (state
+                    |> withEditorHasFocus True
+                    |> withVisibleItems updatedItems
+                )
+            , focusOn editorId
+            )
+
         _ ->
-            ( stateUpdate msg state |> Model, Cmd.none )
+            ( updateState msg state |> Model, Cmd.none )
 
 
 {-| focus on an HTML element.
@@ -574,11 +615,14 @@ closeQuickFilter state =
 
 {-| Updates the grid state for messages which won't generate any command
 -}
-stateUpdate : Msg a -> State a -> State a
-stateUpdate msg state =
+updateState : Msg a -> State a -> State a
+updateState msg state =
     case msg of
         ColumnsModificationRequested columns ->
             state |> withColumnsState columns
+
+        EditorLostFocus ->
+            state |> withEditorHasFocus False
 
         FilterLostFocus ->
             { state | filterHasFocus = False } |> closeQuickFilter
@@ -675,20 +719,49 @@ stateUpdate msg state =
             state
                 |> withDraggedColumn (Just draggedColumn)
 
-        UserClickedEdit itemToBeEdited columnId ->
+        UserChangedCellValue itemToBeEdited editedValue ->
             let
                 updatedItems =
-                    List.map setEdited state.visibleItems
+                    List.map setValue state.visibleItems
 
-                setEdited : Item a -> Item a
-                setEdited item =
+                setValue : Item a -> Item a
+                setValue item =
                     if item.index == itemToBeEdited.index then
-                        { item | editedColumnId = Just columnId }
+                        { item | editedValue = editedValue }
 
                     else
                         item
             in
-            state |> withVisibleItems updatedItems
+            state
+                |> withVisibleItems updatedItems
+
+        UserValidatedCellChange editedItem ->
+            let
+                editedColumnId =
+                    Maybe.withDefault "" editedItem.editedColumnId
+
+                updatedContent =
+                    List.indexedMap updateEditedValue state.content
+
+                editedColumn =
+                    state.config.columns
+                        |> List.filter (\col -> editedColumnId == col.properties.id)
+                        |> List.head
+                        --the selectionColumn is the only column we know for sure it exists; however in practice it should never be this one
+                        |> Maybe.withDefault selectionColumn
+
+                updateEditedValue : Int -> a -> a
+                updateEditedValue index item =
+                    if index == editedItem.index then
+                        editedColumn.fromString editedItem editedItem.editedValue |> .data
+
+                    else
+                        item
+            in
+            state
+                |> withEditorHasFocus False
+                |> withContent updatedContent
+                |> updateVisibleItems
 
         UserClickedFilter ->
             { state | filterHasFocus = True }
@@ -706,7 +779,11 @@ stateUpdate msg state =
                 sort columnConfig state.order toggleOrder state
 
         UserClickedLine item ->
-            { state | clickedItem = Just item }
+            if state.editorHasFocus then
+                state
+
+            else
+                { state | clickedItem = Just item }
 
         UserClickedPreferenceCloseButton ->
             { state | showPreferences = False }
@@ -729,6 +806,10 @@ stateUpdate msg state =
                             Nothing
             in
             { state | draggedColumn = newDraggedColumn }
+
+        UserDoubleClickedEditableCell _ _ _ ->
+            -- This message is handled in the `update` function
+            state
 
         UserEndedMouseInteraction ->
             { state
@@ -804,12 +885,12 @@ stateUpdate msg state =
 updateVisibleItems : State a -> State a
 updateVisibleItems state =
     let
-        filteredContent =
-            columnFilters state
-                |> List.foldl (\filter remainingValues -> List.filter filter remainingValues) state.content
+        allItems =
+            List.indexedMap (\index value -> Item.create value index) state.content
 
         visibleItems =
-            List.indexedMap (\index value -> Item.create value index) filteredContent
+            columnFilters state
+                |> List.foldl (\filter remainingValues -> List.filter (.data >> filter) remainingValues) allItems
     in
     case state.sortedBy of
         Just columnConfig ->
@@ -1128,10 +1209,12 @@ viewRows state =
         [ Html.Styled.fromUnstyled <| IL.view (infiniteListConfig state) state.infList state.visibleItems ]
 
 
+{-| Valid filters
+-}
 columnFilters : State a -> List (a -> Bool)
 columnFilters model =
     model.config.columns
-        |> List.filterMap (\c -> parseFilteringString c.filteringValue c.filters)
+        |> List.filterMap (\col -> parseFilteringString col.filteringValue col.filters)
 
 
 {-| The list of raw data satisfying the current filtering values
@@ -1161,7 +1244,13 @@ viewRow state idx listIdx item =
                 -- restore reading order, while preserving the left position of the scrollbar
                 , property "direction" "ltr"
                 ]
-            , onClick (UserClickedLine item)
+            , onClick
+                (if state.editorHasFocus then
+                    NoOp
+
+                 else
+                    UserClickedLine item
+                )
             ]
     <|
         List.map (\columnConfig -> viewCell columnConfig item) (visibleColumns (Model state))
@@ -1235,8 +1324,8 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-stringColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> String, localize : String -> String } -> Dict String String -> ColumnConfig a
-stringColumnConfig ({ id, isEditable, title, tooltip, width, getter, localize } as properties) labels =
+stringColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> String, setter : Item a -> String -> Item a, localize : String -> String } -> Dict String String -> ColumnConfig a
+stringColumnConfig ({ id, isEditable, title, tooltip, width, getter, setter, localize } as properties) labels =
     let
         nestedDataGetter =
             .data >> getter
@@ -1245,6 +1334,7 @@ stringColumnConfig ({ id, isEditable, title, tooltip, width, getter, localize } 
         columnConfigProperties properties
     , filters = StringFilter <| stringFilter getter labels
     , filteringValue = Nothing
+    , fromString = setter
     , toString = nestedDataGetter
     , renderer = viewString nestedDataGetter
     , comparator = compareFields nestedDataGetter
@@ -1260,8 +1350,8 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-floatColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> Float, localize : String -> String } -> ColumnConfig a
-floatColumnConfig ({ id, isEditable, title, tooltip, width, getter, localize } as properties) =
+floatColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> Float, setter : Item a -> Float -> Item a, localize : String -> String } -> ColumnConfig a
+floatColumnConfig ({ id, isEditable, title, tooltip, width, getter, setter, localize } as properties) =
     let
         nestedDataGetter =
             .data >> getter
@@ -1270,6 +1360,7 @@ floatColumnConfig ({ id, isEditable, title, tooltip, width, getter, localize } a
         columnConfigProperties properties
     , filters = FloatFilter <| floatFilter getter
     , filteringValue = Nothing
+    , fromString = \item value -> String.toFloat value |> Maybe.withDefault 0 |> setter item
     , toString = nestedDataGetter >> String.fromFloat
     , renderer = viewFloat nestedDataGetter
     , comparator = compareFields nestedDataGetter
@@ -1285,8 +1376,8 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-intColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> Int, localize : String -> String } -> ColumnConfig a
-intColumnConfig ({ id, title, isEditable, tooltip, width, getter, localize } as properties) =
+intColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> Int, setter : Item a -> Int -> Item a, localize : String -> String } -> ColumnConfig a
+intColumnConfig ({ id, title, isEditable, tooltip, width, getter, setter, localize } as properties) =
     let
         nestedDataGetter =
             .data >> getter
@@ -1295,6 +1386,7 @@ intColumnConfig ({ id, title, isEditable, tooltip, width, getter, localize } as 
         columnConfigProperties properties
     , filters = IntFilter <| intFilter getter
     , filteringValue = Nothing
+    , fromString = \item value -> String.toInt value |> Maybe.withDefault 0 |> setter item
     , toString = nestedDataGetter >> String.fromInt
     , renderer = viewInt nestedDataGetter
     , comparator = compareFields nestedDataGetter
@@ -1308,8 +1400,8 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-boolColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> Bool, localize : String -> String } -> ColumnConfig a
-boolColumnConfig ({ id, isEditable, title, tooltip, width, getter, localize } as properties) =
+boolColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> Bool, setter : Item a -> Bool -> Item a, localize : String -> String } -> ColumnConfig a
+boolColumnConfig ({ id, isEditable, title, tooltip, width, getter, setter, localize } as properties) =
     let
         nestedDataGetter =
             .data >> getter
@@ -1318,6 +1410,7 @@ boolColumnConfig ({ id, isEditable, title, tooltip, width, getter, localize } as
         columnConfigProperties properties
     , filters = BoolFilter <| boolFilter getter
     , filteringValue = Nothing
+    , fromString = \item value -> setter item (stringToBool value)
     , toString = nestedDataGetter >> boolToString
     , renderer = viewBool nestedDataGetter
     , comparator = compareBoolField nestedDataGetter
@@ -1332,6 +1425,11 @@ boolToString value =
 
     else
         "false"
+
+
+stringToBool : String -> Bool
+stringToBool string =
+    String.toLower string == "true"
 
 
 columnConfigProperties : { a | id : String, isEditable : Bool, title : String, tooltip : String, width : Int, localize : String -> String } -> ColumnProperties
@@ -1381,38 +1479,45 @@ viewString field properties item =
 
                 Just id ->
                     properties.id == id
+
+        conditionalAttributes =
+            if properties.isEditable && not isCellEdited then
+                [ onDoubleClick (UserDoubleClickedEditableCell item field properties.id) ]
+
+            else
+                []
     in
     if isCellEdited then
         div (cellAttributes properties)
-            [ input [ value <| field item ] []
-            ]
-
-    else
-        div
-            (cellAttributes properties)
-            [ text <| field item
-            , viewEditionIcon properties item
-            ]
-
-
-viewEditionIcon : ColumnProperties -> Item a -> Html (Msg a)
-viewEditionIcon properties item =
-    if properties.isEditable then
-        div
-            [ css
-                [ alignSelf flexEnd
-                , visibility hidden
+            [ form
+                [ css
+                    [ displayFlex
+                    , flexGrow (num 1)
+                    ]
+                , onSubmit (UserValidatedCellChange item)
+                ]
+                [ input
+                    [ css [ flexGrow (num 1) ]
+                    , id editorId
+                    , onBlur EditorLostFocus
+                    , onInput (UserChangedCellValue item)
+                    , value <| item.editedValue
+                    ]
+                    []
                 ]
             ]
-            [ drawSvg 20 penIcon (UserClickedEdit item properties.id) ]
 
     else
-        noContent
+        div
+            (conditionalAttributes
+                ++ cellAttributes properties
+            )
+            [ text <| field item
+            ]
 
 
-
---viewEditedString : ColumnProperties -> Item a -> Html (Msg a)
---viewEditedString columnProperties item =
+editorId =
+    "cell-editor"
 
 
 {-| Renders a progress bar in a a cell containing a integer.

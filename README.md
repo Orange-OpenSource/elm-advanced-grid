@@ -22,6 +22,7 @@ v2.0
 * Model is private now
 * add quick filters
 * translation of labels
+* cells in String columns may be editable  
 
 ## TODO
 

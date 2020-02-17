@@ -14,7 +14,7 @@ module Examples.Basic exposing (main)
 import Browser
 import Dict exposing (Dict)
 import Grid exposing (ColumnConfig, Msg(..), Sorting(..), floatColumnConfig, intColumnConfig, selectedAndVisibleItems, stringColumnConfig, viewProgressBar)
-import Grid.Item exposing (Item)
+import Grid.Item exposing (Item, withData)
 import Html exposing (Html, button, div, input, label, li, text, ul)
 import Html.Attributes exposing (attribute, style)
 import Html.Events exposing (onClick, onInput)
@@ -387,6 +387,7 @@ columns labels =
         { id = "Id"
         , isEditable = False
         , getter = .id
+        , setter = \item _ -> item
         , localize = localize
         , title = "Id"
         , tooltip = "Une indication pour la colonne Id"
@@ -396,6 +397,7 @@ columns labels =
         { id = "Name"
         , isEditable = False
         , getter = .name
+        , setter = \item _ -> item
         , localize = localize
         , title = "Nom"
         , tooltip = "Une indication pour la colonne Nom"
@@ -408,6 +410,7 @@ columns labels =
                 { id = "Progress"
                 , isEditable = False
                 , getter = .value
+                , setter = \item _ -> item
                 , localize = localize
                 , title = "Progrès"
                 , tooltip = "Une indication pour la colonne Progrès"
@@ -419,6 +422,7 @@ columns labels =
         { id = "Value"
         , isEditable = False
         , getter = .value >> truncateDecimals
+        , setter = \item _ -> item
         , localize = localize
         , title = "Valeur"
         , tooltip = "Une indication pour la colonne Valeur"
@@ -428,6 +432,7 @@ columns labels =
         { id = "City"
         , isEditable = True
         , getter = .city
+        , setter = setCity
         , localize = localize
         , title = "Ville"
         , tooltip = "Une indication pour la colonne Ville"
@@ -435,6 +440,18 @@ columns labels =
         }
         labels
     ]
+
+
+setCity : Item Data -> String -> Item Data
+setCity item city =
+    let
+        oldData =
+            item.data
+
+        newData =
+            { oldData | city = city }
+    in
+    { item | data = newData }
 
 
 
