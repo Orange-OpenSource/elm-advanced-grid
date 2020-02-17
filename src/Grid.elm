@@ -752,7 +752,7 @@ updateState msg state =
 
                 updateEditedValue : Int -> a -> a
                 updateEditedValue index item =
-                    if index == editedItem.index then
+                    if index == editedItem.contentIndex then
                         editedColumn.fromString editedItem editedItem.editedValue |> .data
 
                     else
@@ -886,11 +886,12 @@ updateVisibleItems : State a -> State a
 updateVisibleItems state =
     let
         allItems =
-            List.indexedMap (\index value -> Item.create value index) state.content
+            List.indexedMap (\contentIndex value -> Item.create value contentIndex) state.content
 
         visibleItems =
             columnFilters state
                 |> List.foldl (\filter remainingValues -> List.filter (.data >> filter) remainingValues) allItems
+                |> List.indexedMap (\index item -> { item | index = index })
     in
     case state.sortedBy of
         Just columnConfig ->

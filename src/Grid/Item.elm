@@ -22,7 +22,8 @@ TODO: make Item private?
 
 
 type alias Item a =
-    { data : a
+    { contentIndex : Int -- the index of the data in the raw data list
+    , data : a -- the wrapped data
     , editedColumnId : Maybe String
     , editedValue : String
     , index : Int
@@ -36,10 +37,11 @@ withData item value =
 
 
 create : a -> Int -> Item a
-create data index =
-    { data = data
+create data contentIndex =
+    { contentIndex = contentIndex
+    , data = data
     , editedColumnId = Nothing
     , editedValue = ""
-    , index = index
+    , index = 0
     , selected = False
     }
