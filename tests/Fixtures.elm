@@ -10,6 +10,7 @@ module Fixtures exposing (Data, columns, data, dataOrderedByAscendingScore, data
       THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -}
 
+import Dict
 import Grid exposing (ColumnConfig, Model, Sorting(..), boolColumnConfig, floatColumnConfig, stringColumnConfig)
 import Grid.Item as Item exposing (Item)
 
@@ -134,8 +135,10 @@ dataWithOneEmptyCell =
 scoreColumn =
     floatColumnConfig
         { id = "score"
+        , isEditable = False
         , getter = .score
         , localize = identity
+        , setter = \item _ -> item
         , title = "Score"
         , tooltip = "Some text"
         , width = 50
@@ -145,19 +148,24 @@ scoreColumn =
 titleColumn =
     stringColumnConfig
         { id = "title"
+        , isEditable = False
         , getter = .title
         , localize = identity
+        , setter = \item _ -> item
         , title = "Title"
         , tooltip = "Some text"
         , width = 100
         }
+        Dict.empty
 
 
 isValidColumn =
     boolColumnConfig
         { id = "isValid"
+        , isEditable = False
         , getter = .isValid
         , localize = identity
+        , setter = \item _ -> item
         , title = "is Valid?"
         , tooltip = "Some text"
         , width = 100
@@ -181,7 +189,7 @@ gridConfig =
     , hasFilters = True
     , headerHeight = 60
     , lineHeight = 20
-    , labels = Nothing
+    , labels = Dict.empty
     , rowClass = rowClass
     }
 
