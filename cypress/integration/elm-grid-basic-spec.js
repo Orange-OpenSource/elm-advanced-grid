@@ -24,7 +24,7 @@ describe('elm grid example', function () {
             .next().contains("id:2 - name: name2")
     })
 
-    it('should not detect a line click when the user toggles a checkboxe', function () {
+    it('should not detect a line click when the user toggles a checkbox', function () {
         cy.visit(url)
         cy.get(':nth-child(2) > [data-testid=_MultipleSelection_] > input').click()
 
@@ -79,5 +79,16 @@ describe('elm grid example', function () {
         selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
         selectedItems.should('have.length', 0)
     })
+
+    it('should verify that if a row is hidden and I check another one, the last one is really checked', function () {
+        cy.visit(url)
+        cy.get('input[data-testid="filter-Id"]').type(">0")
+
+        cy.get(':nth-child(5) > [data-testid=_MultipleSelection_] > input').click()
+
+        let selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
+        selectedItems.should('have.length', 1)
+        selectedItems.first().contains("id:5 - name: name5")
+   })
 
 })
