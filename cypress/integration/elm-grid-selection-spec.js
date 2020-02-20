@@ -12,7 +12,7 @@ This code is released under the MIT license.
 describe('elm grid example', function () {
 
    const url = 'http://127.0.0.1:9999'
-   const sortCitiesAscending = ['Abuja', 'Ahmedabad', 'Alexandria', 'Ankara']
+   const sortCitiesAscending = ['', '', 'Abuja', 'Ahmedabad']
    const sortCitiesDescending = ['Yangon', 'Wuhan', 'Toronto', 'Tokyo']
 
    it('should have headers', function () {
@@ -78,6 +78,5 @@ describe('elm grid example', function () {
             cy.wrap($cell).should('not.contain', 'City')
         })
    })
-
 
 })

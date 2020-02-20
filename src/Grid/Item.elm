@@ -48,6 +48,6 @@ create data contentIndex =
     , data = data
     , editedColumnId = Nothing
     , editedValue = ""
-    , index = 0
+    , index = contentIndex
     , selected = False
     }

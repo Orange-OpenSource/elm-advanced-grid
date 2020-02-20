@@ -124,4 +124,53 @@ describe('elm grid example', function () {
         cy.get('div[data-testid="City"]').contains("London")
     })
 
+    it('should filter elements containing the wished item when using the quick filter', function () {
+        cy.visit(url)
+        cy.get('div[data-testid="quickFilter-City"]').click()
+        cy.get('div[id="openedQuickFilter"] > div').eq(11).click()
+        let rows = cy.get('div[data-testid="row"]')
+        rows.should('have.length', 1)
+        cy.get('div[data-testid="row"]').click()
+
+        let status = cy.get('div[data-testid="clickedItem"]')
+        status.contains("Clicked Item = id:31 - name: name31")
+        cy.resetFilters()
+        rows = cy.get('div[data-testid="row"]')
+        rows.should('have.length', 45)
+    })
+
+    it('should filter elements containing empty value when using the quick filter', function () {
+        cy.visit(url)
+        cy.get('div[data-testid="quickFilter-City"]').click()
+        cy.get('div[id="openedQuickFilter"] > div').eq(0).click()
+        let rows = cy.get('div[data-testid="row"]')
+        rows.should('have.length', 2)
+        cy.get('input[data-testid="allItemSelection"]').click()
+
+        let selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
+        selectedItems.should('have.length', 2)
+        selectedItems.first().contains("id:33 - name: name33")
+            .next().contains("id:40 - name: name40")
+        cy.resetFilters()
+        rows = cy.get('div[data-testid="row"]')
+        rows.should('have.length', 45)
+    })
+
+    it('should be allowed to edit a label in City column', function () {
+        cy.visit(url)
+        cy.get(':nth-child(7) > [data-testid="City"]')
+          .dblclick()
+          .type('{backspace}')
+          .type('{backspace}')
+          .type('{backspace}')
+          .type('{backspace}')
+          .type('{backspace}')
+          .type('Saint Christophe de Valains')
+        cy.get('input[id="cell-editor"]')
+          .type('{enter}')
+
+        cy.get('input[data-testid="filter-City"]').type("valains")
+        cy.get('div[data-testid="City"]').should('contain', 'Saint Christophe de Valains')
+    })
+
 })
