@@ -65,7 +65,6 @@ import Array
 import Browser.Dom
 import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector)
-import Debug exposing (toString)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, lightGrey3, white, white2)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
@@ -592,18 +591,9 @@ update msg (Model state) =
             , focusOn openedQuickFilterHtmlId
             )
 
-        UserDoubleClickedEditableCell itemToBeEdited toString columnId editableCellId ->
-            let
-                updatedStringEditor =
-                    StringEditor.update (StringEditor.SetEditedValue (toString itemToBeEdited)) state.stringEditorModel
-            in
+        UserDoubleClickedEditableCell itemToBeEdited fieldToString columnId editableCellId ->
             ( Model
-                (state
-                    |> withEditorHasFocus True
-                    |> withEditedColumnId columnId
-                    |> withEditedItem (Just itemToBeEdited)
-                    |> withStringEditorModel updatedStringEditor
-                )
+                (openEditor state columnId itemToBeEdited fieldToString)
             , Cmd.batch
                 [ focusOn StringEditor.editorId
                 , getElementInfo editableCellId GotCellInfo
@@ -905,11 +895,11 @@ updateState msg state =
             { state | visibleItems = newItems }
 
 
-openEditor : State a -> String -> Item a -> State a
-openEditor state columnId itemToBeEdited =
+openEditor : State a -> String -> Item a -> (Item a -> String) -> State a
+openEditor state columnId itemToBeEdited fieldToString =
     let
         updatedStringEditor =
-            StringEditor.update (StringEditor.SetEditedValue (toString itemToBeEdited)) state.stringEditorModel
+            StringEditor.update (StringEditor.SetEditedValue (fieldToString itemToBeEdited)) state.stringEditorModel
     in
     state
         |> withEditorHasFocus True
