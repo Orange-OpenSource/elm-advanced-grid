@@ -636,7 +636,8 @@ updateState msg state =
             state |> withColumnsState columns
 
         StringEditorMsg StringEditor.EditorLostFocus ->
-            closeEditor state
+            --closeEditor state
+            state
 
         FilterLostFocus ->
             { state | filterHasFocus = False } |> closeQuickFilter

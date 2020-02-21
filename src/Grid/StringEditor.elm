@@ -1,6 +1,6 @@
 module Grid.StringEditor exposing (..)
 
-import Css exposing (absolute, flexGrow, height, left, num, position, px, top, width)
+import Css exposing (absolute, flexGrow, fontSize, height, left, margin, num, padding, paddingLeft, position, px, rem, top, width)
 import Grid.Item exposing (Item)
 import Html.Styled exposing (Html, div, form, input)
 import Html.Styled.Attributes exposing (css, id, value)
@@ -71,13 +71,16 @@ view model item =
                 [ position absolute
                 , left (px model.position.x)
                 , top (px model.position.y)
-                , width (px model.dimensions.width)
-                , height (px model.dimensions.height)
                 ]
             , onSubmit <| UserSubmittedForm item
             ]
             [ input
-                [ css [ flexGrow (num 1) ]
+                [ css
+                    [ fontSize (rem 1)
+                    , width (px <| model.dimensions.width - 9)
+                    , paddingLeft (px 2)
+                    , margin (px 0)
+                    ]
                 , id editorId
                 , onBlur EditorLostFocus
                 , onInput <| UserChangedValue
