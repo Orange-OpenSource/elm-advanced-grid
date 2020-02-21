@@ -750,7 +750,6 @@ updateState msg state =
             state
                 |> withDraggedColumn (Just draggedColumn)
 
-        -- TODO remove edited item from msg, as it is stored into state
         StringEditorMsg (StringEditor.UserSubmittedForm editedItem) ->
             let
                 updatedContent =
