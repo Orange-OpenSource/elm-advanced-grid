@@ -65,6 +65,7 @@ import Array
 import Browser.Dom
 import Css exposing (..)
 import Css.Global exposing (descendants, typeSelector)
+import Debug exposing (toString)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, lightGrey3, white, white2)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
@@ -645,7 +646,7 @@ updateState msg state =
             state |> withColumnsState columns
 
         StringEditorMsg StringEditor.EditorLostFocus ->
-            state |> withEditorHasFocus False
+            closeEditor state
 
         FilterLostFocus ->
             { state | filterHasFocus = False } |> closeQuickFilter
@@ -665,14 +666,14 @@ updateState msg state =
 
         GotCellInfo (Ok info) ->
             let
-                x =
-                    info.element.x
+                position =
+                    { x = info.element.x, y = info.element.y }
 
-                y =
-                    info.element.y
+                dimensions =
+                    { width = info.element.width, height = info.element.height }
 
                 updatedStringEditor =
-                    StringEditor.update (StringEditor.SetPosition x y) state.stringEditorModel
+                    StringEditor.update (StringEditor.SetPositionAndDimensions position dimensions) state.stringEditorModel
             in
             state |> withStringEditorModel updatedStringEditor
 
@@ -780,10 +781,7 @@ updateState msg state =
                         item
             in
             state
-                |> withEditorHasFocus False
-                |> withEditedColumnId ""
-                |> withStringEditorModel StringEditor.init
-                |> withEditedItem Nothing
+                |> closeEditor
                 |> withContent updatedContent
                 |> updateVisibleItems
 
@@ -905,6 +903,28 @@ updateState msg state =
                     List.Extra.updateAt item.visibleIndex (\it -> toggleSelection it) state.visibleItems
             in
             { state | visibleItems = newItems }
+
+
+openEditor : State a -> String -> Item a -> State a
+openEditor state columnId itemToBeEdited =
+    let
+        updatedStringEditor =
+            StringEditor.update (StringEditor.SetEditedValue (toString itemToBeEdited)) state.stringEditorModel
+    in
+    state
+        |> withEditorHasFocus True
+        |> withEditedColumnId columnId
+        |> withEditedItem (Just itemToBeEdited)
+        |> withStringEditorModel updatedStringEditor
+
+
+closeEditor : State a -> State a
+closeEditor state =
+    state
+        |> withEditorHasFocus False
+        |> withEditedColumnId ""
+        |> withStringEditorModel StringEditor.init
+        |> withEditedItem Nothing
 
 
 {-| Apply the current filters to the whole data
