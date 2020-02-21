@@ -379,7 +379,7 @@ rowClass : Item Data -> String
 rowClass item =
     let
         even =
-            toFloat item.index / 2 == toFloat (item.index // 2)
+            toFloat item.visibleIndex / 2 == toFloat (item.visibleIndex // 2)
     in
     if item.selected then
         "selected-row"
@@ -432,14 +432,26 @@ idColumn =
 nameColumn =
     stringColumnConfig
         { id = "Name"
-        , isEditable = False
+        , isEditable = True
         , getter = .name
         , localize = localize
-        , setter = \item _ -> item
+        , setter = setName
         , title = "Nom"
         , tooltip = "Une indication pour la colonne Nom"
         , width = 100
         }
+
+
+setName : Item Data -> String -> Item Data
+setName item name =
+    let
+        oldData =
+            item.data
+
+        newData =
+            { oldData | name = name }
+    in
+    { item | data = newData }
 
 
 progressColumn =
