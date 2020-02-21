@@ -71,11 +71,12 @@ import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, pa
 import Grid.Icons as Icons exposing (drawSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
+import Grid.StringEditor as StringEditor
 import Html
 import Html.Events.Extra.Mouse as Mouse
-import Html.Styled exposing (Attribute, Html, div, form, hr, i, input, label, span, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, autofocus, class, css, for, fromUnstyled, id, tabindex, title, type_, value)
-import Html.Styled.Events exposing (onBlur, onClick, onDoubleClick, onInput, onMouseUp, onSubmit, stopPropagationOn)
+import Html.Styled exposing (Attribute, Html, div, hr, i, input, label, span, text, toUnstyled)
+import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, tabindex, title, type_, value)
+import Html.Styled.Events exposing (onBlur, onClick, onDoubleClick, onInput, onMouseUp, stopPropagationOn)
 import InfiniteList as IL
 import Json.Decode
 import List exposing (take)
@@ -176,35 +177,34 @@ You probably should not use the other constructors.
 type Msg a
     = ColumnsModificationRequested (List (ColumnConfig a))
     | InfiniteListMsg IL.Model
-    | EditorLostFocus
     | FilterLostFocus
     | FilterModified (ColumnConfig a) (Maybe String)
+    | NoOp
+    | GotCellInfo (Result Browser.Dom.Error Browser.Dom.Element)
+    | GotHeaderContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | SetFilters (Dict String String) -- column ID, filter value
     | SetSorting String Sorting -- column ID, Ascending or Descending
-    | NoOp
-    | GotHeaderContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | ScrollTo (Item a -> Bool) -- scroll to the first item for which the function returns True
     | ShowPreferences
+    | StringEditorMsg (StringEditor.Msg a)
     | UpdateContent (a -> a)
     | UpdateContentPreservingSelection (a -> a)
-    | UserChangedCellValue (Item a) String
     | UserClickedHeader (ColumnConfig a)
     | UserClickedQuickFilterButton (ColumnConfig a)
     | UserClickedFilter
     | UserClickedLine (Item a)
     | UserClickedDragHandle (ColumnConfig a) Position
-    | UserDoubleClickedEditableCell (Item a) (Item a -> String) String
-    | UserHoveredDragHandle
     | UserClickedPreferenceCloseButton
     | UserClickedResizeHandle (ColumnConfig a) Position
+    | UserDoubleClickedEditableCell (Item a) (Item a -> String) String String
     | UserDraggedColumn Position
     | UserEndedMouseInteraction
+    | UserHoveredDragHandle
     | UserMovedResizeHandle Position
     | UserSwappedColumns (ColumnConfig a) (ColumnConfig a)
     | UserToggledAllItemSelection
     | UserToggledColumnVisibility (ColumnConfig a)
     | UserToggledSelection (Item a)
-    | UserValidatedCellChange (Item a)
 
 
 {-| The sorting options for a column, to be used in the properties of a ColumnConfig.
@@ -323,7 +323,9 @@ type alias State a =
     , content : List a -- all data, visible or not
     , draggedColumn : Maybe (DraggedColumn a)
     , dragStartX : Float
-    , editorHasFocus : Bool -- Avoids selecting a row when cliccking in an cell editor
+    , editedColumnId : String
+    , editedItem : Maybe (Item a)
+    , editorHasFocus : Bool -- Avoids selecting a row when clicking in an cell editor
     , filterHasFocus : Bool -- Avoids triggering a sort when clicking in an input field or a quick filter
     , headerContainerPosition : Position
     , hoveredColumn : Maybe (ColumnConfig a)
@@ -337,6 +339,7 @@ type alias State a =
     , resizedColumn : Maybe (ColumnConfig a)
     , showPreferences : Bool
     , sortedBy : Maybe (ColumnConfig a)
+    , stringEditorModel : StringEditor.Model
     , visibleItems : List (Item a) -- the subset of items remaining visible after applying filters
     }
 
@@ -411,11 +414,28 @@ withDraggedColumn draggedColumn state =
     { state | draggedColumn = draggedColumn }
 
 
-{-| Sets the filtered data
+{-| Memorize if the editor has focus or not
 -}
 withEditorHasFocus : Bool -> State a -> State a
 withEditorHasFocus isEditing state =
     { state | editorHasFocus = isEditing }
+
+
+{-| Sets the identifier of the column in which a cell is being edited
+-}
+withEditedColumnId : String -> State a -> State a
+withEditedColumnId id state =
+    { state | editedColumnId = id }
+
+
+withEditedItem : Maybe (Item a) -> State a -> State a
+withEditedItem maybeItem state =
+    { state | editedItem = maybeItem }
+
+
+withStringEditorModel : StringEditor.Model -> State a -> State a
+withStringEditorModel model state =
+    { state | stringEditorModel = model }
 
 
 {-| Sets the filtered data
@@ -506,6 +526,8 @@ init config data =
             , content = data
             , draggedColumn = Nothing
             , dragStartX = 0
+            , editedColumnId = ""
+            , editedItem = Nothing
             , filterHasFocus = False
             , headerContainerPosition = { x = 0, y = 0 }
             , hoveredColumn = Nothing
@@ -518,6 +540,7 @@ init config data =
             , resizedColumn = Nothing
             , showPreferences = False
             , sortedBy = Nothing
+            , stringEditorModel = StringEditor.init
             , visibleItems = indexedItems
             }
     in
@@ -540,8 +563,7 @@ update msg (Model state) =
         UserHoveredDragHandle ->
             ( Model state
               -- get the position of the header container, in order to fix the ghost header position
-            , Browser.Dom.getElement headerContainerId
-                |> Task.attempt GotHeaderContainerInfo
+            , getElementInfo headerContainerId GotHeaderContainerInfo
             )
 
         ScrollTo isTargetItem ->
@@ -569,28 +591,22 @@ update msg (Model state) =
             , focusOn openedQuickFilterHtmlId
             )
 
-        UserDoubleClickedEditableCell itemToBeEdited toString columnId ->
+        UserDoubleClickedEditableCell itemToBeEdited toString columnId editableCellId ->
             let
-                updatedItems =
-                    List.map setEdited state.visibleItems
-
-                setEdited : Item a -> Item a
-                setEdited item =
-                    if item.index == itemToBeEdited.index then
-                        { item
-                            | editedColumnId = Just columnId
-                            , editedValue = toString itemToBeEdited
-                        }
-
-                    else
-                        item
+                updatedStringEditor =
+                    StringEditor.update (StringEditor.SetEditedValue (toString itemToBeEdited)) state.stringEditorModel
             in
             ( Model
                 (state
                     |> withEditorHasFocus True
-                    |> withVisibleItems updatedItems
+                    |> withEditedColumnId columnId
+                    |> withEditedItem (Just itemToBeEdited)
+                    |> withStringEditorModel updatedStringEditor
                 )
-            , focusOn editorId
+            , Cmd.batch
+                [ focusOn StringEditor.editorId
+                , getElementInfo editableCellId GotCellInfo
+                ]
             )
 
         _ ->
@@ -603,6 +619,13 @@ No callback is called (even if focus fails)
 focusOn : String -> Cmd (Msg a)
 focusOn elementId =
     Browser.Dom.focus elementId |> Task.attempt (\result -> NoOp)
+
+
+{-| creates a command to get the absolute position of a given dom element
+-}
+getElementInfo : String -> (Result Browser.Dom.Error Browser.Dom.Element -> Msg a) -> Cmd (Msg a)
+getElementInfo elementId msg =
+    Browser.Dom.getElement elementId |> Task.attempt (\result -> msg result)
 
 
 closeQuickFilter : State a -> State a
@@ -621,7 +644,7 @@ updateState msg state =
         ColumnsModificationRequested columns ->
             state |> withColumnsState columns
 
-        EditorLostFocus ->
+        StringEditorMsg StringEditor.EditorLostFocus ->
             state |> withEditorHasFocus False
 
         FilterLostFocus ->
@@ -639,6 +662,22 @@ updateState msg state =
                     state |> withColumnsState newColumns
             in
             updateVisibleItems newState |> closeQuickFilter
+
+        GotCellInfo (Ok info) ->
+            let
+                x =
+                    info.element.x
+
+                y =
+                    info.element.y
+
+                updatedStringEditor =
+                    StringEditor.update (StringEditor.SetPosition x y) state.stringEditorModel
+            in
+            state |> withStringEditorModel updatedStringEditor
+
+        GotCellInfo (Err _) ->
+            state
 
         GotHeaderContainerInfo (Ok info) ->
             { state | headerContainerPosition = { x = info.element.x, y = info.element.y } }
@@ -719,33 +758,15 @@ updateState msg state =
             state
                 |> withDraggedColumn (Just draggedColumn)
 
-        UserChangedCellValue itemToBeEdited editedValue ->
+        -- TODO remove edited item from msg, as it is stored into state
+        StringEditorMsg (StringEditor.UserSubmittedForm editedItem) ->
             let
-                updatedItems =
-                    List.map setValue state.visibleItems
-
-                setValue : Item a -> Item a
-                setValue item =
-                    if item.index == itemToBeEdited.index then
-                        { item | editedValue = editedValue }
-
-                    else
-                        item
-            in
-            state
-                |> withVisibleItems updatedItems
-
-        UserValidatedCellChange editedItem ->
-            let
-                editedColumnId =
-                    Maybe.withDefault "" editedItem.editedColumnId
-
                 updatedContent =
                     List.indexedMap updateEditedValue state.content
 
                 editedColumn =
                     state.config.columns
-                        |> List.filter (\col -> editedColumnId == col.properties.id)
+                        |> List.filter (\col -> state.editedColumnId == col.properties.id)
                         |> List.head
                         --the selectionColumn is the only column we know for sure it exists; however in practice it should never be this one
                         |> Maybe.withDefault selectionColumn
@@ -753,15 +774,21 @@ updateState msg state =
                 updateEditedValue : Int -> a -> a
                 updateEditedValue index item =
                     if index == editedItem.contentIndex then
-                        editedColumn.fromString editedItem editedItem.editedValue |> .data
+                        editedColumn.fromString editedItem state.stringEditorModel.value |> .data
 
                     else
                         item
             in
             state
                 |> withEditorHasFocus False
+                |> withEditedColumnId ""
+                |> withStringEditorModel StringEditor.init
+                |> withEditedItem Nothing
                 |> withContent updatedContent
                 |> updateVisibleItems
+
+        StringEditorMsg stringEditorMsg ->
+            state |> withStringEditorModel (StringEditor.update stringEditorMsg state.stringEditorModel)
 
         UserClickedFilter ->
             { state | filterHasFocus = True }
@@ -807,7 +834,7 @@ updateState msg state =
             in
             { state | draggedColumn = newDraggedColumn }
 
-        UserDoubleClickedEditableCell _ _ _ ->
+        UserDoubleClickedEditableCell _ _ _ _ ->
             -- This message is handled in the `update` function
             state
 
@@ -875,7 +902,7 @@ updateState msg state =
         UserToggledSelection item ->
             let
                 newItems =
-                    List.Extra.updateAt item.index (\it -> toggleSelection it) state.visibleItems
+                    List.Extra.updateAt item.visibleIndex (\it -> toggleSelection it) state.visibleItems
             in
             { state | visibleItems = newItems }
 
@@ -891,7 +918,7 @@ updateVisibleItems state =
         visibleItems =
             columnFilters state
                 |> List.foldl (\filter remainingValues -> List.filter (.data >> filter) remainingValues) allItems
-                |> List.indexedMap (\index item -> { item | index = index })
+                |> List.indexedMap (\index item -> { item | visibleIndex = index })
     in
     case state.sortedBy of
         Just columnConfig ->
@@ -1030,7 +1057,7 @@ updatePropertiesInColumnConfig updateFunction columnConfig =
 
 updateIndexes : List (Item a) -> List (Item a)
 updateIndexes items =
-    List.indexedMap (\i item -> { item | index = i }) items
+    List.indexedMap (\i item -> { item | visibleIndex = i }) items
 
 
 toggleSelection : Item a -> Item a
@@ -1132,7 +1159,10 @@ view (Model state) =
             viewPreferences state
 
         else
-            viewGrid state
+            div []
+                [ viewGrid state
+                , viewStringEditor state
+                ]
 
 
 {-| the id of the Html node containing the grid
@@ -1192,6 +1222,21 @@ viewGrid state =
             ]
 
 
+viewStringEditor : State a -> Html (Msg a)
+viewStringEditor state =
+    case state.editedItem of
+        Just editedItem ->
+            let
+                updatedStringEditorView : Html (StringEditor.Msg a)
+                updatedStringEditorView =
+                    StringEditor.view state.stringEditorModel editedItem
+            in
+            Html.Styled.map StringEditorMsg updatedStringEditorView
+
+        Nothing ->
+            noContent
+
+
 viewRows : State a -> Html (Msg a)
 viewRows state =
     div
@@ -1228,7 +1273,7 @@ visibleData (Model state) =
 
 {-| Renders the row for a given item
 idx is the index of the visible line; if there are 25 visible lines, 0 <= idx < 25
-listIdx is the index in the data source; if the total number of items is 1000, 0<= listidx < 1000
+listIdx is the index in the data source; if the total number of items is 1000, 0 <= listidx < 1000
 -}
 viewRow : State a -> Int -> Int -> Item a -> Html.Html (Msg a)
 viewRow state idx listIdx item =
@@ -1279,7 +1324,7 @@ returns the field to be displayed in this column.
 viewInt : (Item a -> Int) -> ColumnProperties -> Item a -> Html (Msg a)
 viewInt field properties item =
     div
-        (cellAttributes properties)
+        (cellAttributes properties item)
         [ text <| String.fromInt (field item) ]
 
 
@@ -1295,7 +1340,7 @@ returns the field to be displayed in this column.
 viewBool : (Item a -> Bool) -> ColumnProperties -> Item a -> Html (Msg a)
 viewBool field properties item =
     div
-        (cellAttributes properties)
+        (cellAttributes properties item)
         [ input
             [ type_ "checkbox"
             , Html.Styled.Attributes.checked (field item)
@@ -1457,7 +1502,7 @@ returns the field to be displayed in this column.
 viewFloat : (Item a -> Float) -> ColumnProperties -> Item a -> Html (Msg a)
 viewFloat field properties item =
     div
-        (cellAttributes properties)
+        (cellAttributes properties item)
         [ text <| String.fromFloat (field item) ]
 
 
@@ -1473,52 +1518,19 @@ returns the field to be displayed in this column.
 viewString : (Item a -> String) -> ColumnProperties -> Item a -> Html (Msg a)
 viewString field properties item =
     let
-        isCellEdited =
-            case item.editedColumnId of
-                Nothing ->
-                    False
-
-                Just id ->
-                    properties.id == id
-
         conditionalAttributes =
-            if properties.isEditable && not isCellEdited then
-                [ onDoubleClick (UserDoubleClickedEditableCell item field properties.id) ]
+            if properties.isEditable then
+                [ onDoubleClick (UserDoubleClickedEditableCell item field properties.id (cellId properties item)) ]
 
             else
                 []
     in
-    if isCellEdited then
-        div (cellAttributes properties)
-            [ form
-                [ css
-                    [ displayFlex
-                    , flexGrow (num 1)
-                    ]
-                , onSubmit (UserValidatedCellChange item)
-                ]
-                [ input
-                    [ css [ flexGrow (num 1) ]
-                    , id editorId
-                    , onBlur EditorLostFocus
-                    , onInput (UserChangedCellValue item)
-                    , value <| item.editedValue
-                    ]
-                    []
-                ]
-            ]
-
-    else
-        div
-            (conditionalAttributes
-                ++ cellAttributes properties
-            )
-            [ text <| field item
-            ]
-
-
-editorId =
-    "cell-editor"
+    div
+        (conditionalAttributes
+            ++ cellAttributes properties item
+        )
+        [ text <| field item
+        ]
 
 
 {-| Renders a progress bar in a a cell containing a integer.
@@ -2319,9 +2331,10 @@ cumulatedBorderWidth =
 
 {-| Common attributes for cell renderers
 -}
-cellAttributes : ColumnProperties -> List (Html.Styled.Attribute (Msg a))
-cellAttributes properties =
-    [ attribute "data-testid" properties.id
+cellAttributes : ColumnProperties -> Item a -> List (Html.Styled.Attribute (Msg a))
+cellAttributes properties item =
+    [ id (cellId properties item)
+    , attribute "data-testid" properties.id
     , css
         [ alignItems center
         , display inlineFlex
@@ -2340,6 +2353,11 @@ cellAttributes properties =
         , width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
     ]
+
+
+cellId : ColumnProperties -> Item a -> String
+cellId columnProperties item =
+    columnProperties.id ++ String.fromInt item.visibleIndex
 
 
 {-| The unique values in a column

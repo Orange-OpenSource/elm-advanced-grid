@@ -363,7 +363,7 @@ rowClass : Item Data -> String
 rowClass item =
     let
         even =
-            toFloat item.index / 2 == toFloat (item.index // 2)
+            toFloat item.visibleIndex / 2 == toFloat (item.visibleIndex // 2)
     in
     if item.selected then
         "selected-row"
