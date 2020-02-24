@@ -591,18 +591,9 @@ update msg (Model state) =
             , focusOn openedQuickFilterHtmlId
             )
 
-        UserDoubleClickedEditableCell itemToBeEdited toString columnId editableCellId ->
-            let
-                updatedStringEditor =
-                    StringEditor.update (StringEditor.SetEditedValue (toString itemToBeEdited)) state.stringEditorModel
-            in
+        UserDoubleClickedEditableCell itemToBeEdited fieldToString columnId editableCellId ->
             ( Model
-                (state
-                    |> withEditorHasFocus True
-                    |> withEditedColumnId columnId
-                    |> withEditedItem (Just itemToBeEdited)
-                    |> withStringEditorModel updatedStringEditor
-                )
+                (openEditor state columnId itemToBeEdited fieldToString)
             , Cmd.batch
                 [ focusOn StringEditor.editorId
                 , getElementInfo editableCellId GotCellInfo
@@ -645,7 +636,7 @@ updateState msg state =
             state |> withColumnsState columns
 
         StringEditorMsg StringEditor.EditorLostFocus ->
-            state |> withEditorHasFocus False
+            closeEditor state
 
         FilterLostFocus ->
             { state | filterHasFocus = False } |> closeQuickFilter
@@ -665,14 +656,14 @@ updateState msg state =
 
         GotCellInfo (Ok info) ->
             let
-                x =
-                    info.element.x
+                position =
+                    { x = info.element.x, y = info.element.y }
 
-                y =
-                    info.element.y
+                dimensions =
+                    { width = info.element.width, height = info.element.height }
 
                 updatedStringEditor =
-                    StringEditor.update (StringEditor.SetPosition x y) state.stringEditorModel
+                    StringEditor.update (StringEditor.SetPositionAndDimensions position dimensions) state.stringEditorModel
             in
             state |> withStringEditorModel updatedStringEditor
 
@@ -758,7 +749,6 @@ updateState msg state =
             state
                 |> withDraggedColumn (Just draggedColumn)
 
-        -- TODO remove edited item from msg, as it is stored into state
         StringEditorMsg (StringEditor.UserSubmittedForm editedItem) ->
             let
                 updatedContent =
@@ -780,10 +770,7 @@ updateState msg state =
                         item
             in
             state
-                |> withEditorHasFocus False
-                |> withEditedColumnId ""
-                |> withStringEditorModel StringEditor.init
-                |> withEditedItem Nothing
+                |> closeEditor
                 |> withContent updatedContent
                 |> updateVisibleItems
 
@@ -905,6 +892,28 @@ updateState msg state =
                     List.Extra.updateAt item.visibleIndex (\it -> toggleSelection it) state.visibleItems
             in
             { state | visibleItems = newItems }
+
+
+openEditor : State a -> String -> Item a -> (Item a -> String) -> State a
+openEditor state columnId itemToBeEdited fieldToString =
+    let
+        updatedStringEditor =
+            StringEditor.update (StringEditor.SetEditedValue (fieldToString itemToBeEdited)) state.stringEditorModel
+    in
+    state
+        |> withEditorHasFocus True
+        |> withEditedColumnId columnId
+        |> withEditedItem (Just itemToBeEdited)
+        |> withStringEditorModel updatedStringEditor
+
+
+closeEditor : State a -> State a
+closeEditor state =
+    state
+        |> withEditorHasFocus False
+        |> withEditedColumnId ""
+        |> withStringEditorModel StringEditor.init
+        |> withEditedItem Nothing
 
 
 {-| Apply the current filters to the whole data

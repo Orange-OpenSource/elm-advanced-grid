@@ -28,8 +28,8 @@ You should only read them
 type alias Item a =
     { contentIndex : Int -- the index of the data in the raw data list
     , data : a -- the wrapped data
-    , visibleIndex : Int -- the index of the Item in the visible items list
     , selected : Bool
+    , visibleIndex : Int -- the index of the Item in the visible items list
     }
 
 
