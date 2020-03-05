@@ -82,7 +82,8 @@ view model item =
         [ input
             [ css
                 [ fontSize (rem 1)
-                , width (px <| model.dimensions.width - 9)
+                , height (px <| model.dimensions.height)
+                , width (px <| model.dimensions.width)
                 , paddingLeft (px 2)
                 , margin (px 0)
                 ]
