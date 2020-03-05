@@ -17,7 +17,7 @@ module Grid exposing
     , Model, Msg(..), init, update, view
     , selectedAndVisibleItems, visibleData
     , visibleColumns, isColumn, isSelectionColumn, isSelectionColumnProperties
-    , currentOrder, sortedBy
+    , currentOrder, getEditedValue, sortedBy
     )
 
 {-| This module allows to create dynamically configurable data grid.
@@ -77,6 +77,7 @@ import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, hr, i, input, label, span, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, tabindex, title, type_, value)
 import Html.Styled.Events exposing (onBlur, onClick, onDoubleClick, onInput, onMouseUp, stopPropagationOn)
+import Html.Styled.Lazy exposing (lazy)
 import InfiniteList as IL
 import Json.Decode
 import List exposing (take)
@@ -182,6 +183,7 @@ type Msg a
     | NoOp
     | GotCellInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | GotHeaderContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
+    | GotRootContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | SetFilters (Dict String String) -- column ID, filter value
     | SetSorting String Sorting -- column ID, Ascending or Descending
     | ScrollTo (Item a -> Bool) -- scroll to the first item for which the function returns True
@@ -313,7 +315,7 @@ type alias Position =
 {-| The internal grid model
 -}
 type Model a
-    = Model (State a)
+    = Model (State a) StringEditor.Model
 
 
 type alias State a =
@@ -339,7 +341,6 @@ type alias State a =
     , resizedColumn : Maybe (ColumnConfig a)
     , showPreferences : Bool
     , sortedBy : Maybe (ColumnConfig a)
-    , stringEditorModel : StringEditor.Model
     , visibleItems : List (Item a) -- the subset of items remaining visible after applying filters
     }
 
@@ -347,29 +348,29 @@ type alias State a =
 {-| The current configuration of the grid
 -}
 currentConfig : Model a -> Config a
-currentConfig (Model state) =
+currentConfig (Model state _) =
     state.config
 
 
 {-| The column according to which the grid content is sorted, if any
 -}
 sortedBy : Model a -> Maybe (ColumnConfig a)
-sortedBy (Model state) =
+sortedBy (Model state _) =
     state.sortedBy
 
 
 {-| The order used if the grid is sorted using the value of a given column}
 -}
 currentOrder : Model a -> Sorting
-currentOrder (Model state) =
+currentOrder (Model state _) =
     state.order
 
 
 {-| Sets the grid configuration
 -}
 withConfig : Config a -> Model a -> Model a
-withConfig config (Model state) =
-    Model (withConfigState config state)
+withConfig config (Model state stringEditorModel) =
+    Model (withConfigState config state) stringEditorModel
 
 
 withConfigState : Config a -> State a -> State a
@@ -380,8 +381,8 @@ withConfigState config state =
 {-| Sets the column definitions into the configuration
 -}
 withColumns : List (ColumnConfig a) -> Model a -> Model a
-withColumns columns (Model state) =
-    Model (withColumnsState columns state)
+withColumns columns (Model state stringEditorModel) =
+    Model (withColumnsState columns state) stringEditorModel
 
 
 withColumnsState : List (ColumnConfig a) -> State a -> State a
@@ -431,11 +432,6 @@ withEditedColumnId id state =
 withEditedItem : Maybe (Item a) -> State a -> State a
 withEditedItem maybeItem state =
     { state | editedItem = maybeItem }
-
-
-withStringEditorModel : StringEditor.Model -> State a -> State a
-withStringEditorModel model state =
-    { state | stringEditorModel = model }
 
 
 {-| Sets the filtered data
@@ -540,38 +536,64 @@ init config data =
             , resizedColumn = Nothing
             , showPreferences = False
             , sortedBy = Nothing
-            , stringEditorModel = StringEditor.init
             , visibleItems = indexedItems
             }
     in
-    Model { initialState | columnsX = columnsX initialState }
+    Model { initialState | columnsX = columnsX initialState } StringEditor.init
 
 
 {-| The list of X coordinates of columns; coordinates are expressed in pixels. The first one is at 0.
 -}
 columnsX : State a -> List Int
-columnsX model =
-    visibleColumns (Model model)
+columnsX state =
+    visibleColumns_ state
         |> List.Extra.scanl (\col x -> x + col.properties.width) 0
 
 
 {-| Updates the grid model
 -}
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
-update msg (Model state) =
+update msg model =
+    let
+        (Model state stringEditorModel) =
+            model
+    in
     case msg of
-        UserHoveredDragHandle ->
-            ( Model state
-              -- get the position of the header container, in order to fix the ghost header position
-            , getElementInfo headerContainerId GotHeaderContainerInfo
-            )
+        GotCellInfo (Ok info) ->
+            let
+                position =
+                    { x = info.element.x, y = info.element.y }
+
+                dimensions =
+                    { width = info.element.width, height = info.element.height }
+
+                updatedStringEditorModel =
+                    StringEditor.update (StringEditor.SetPositionAndDimensions position dimensions) stringEditorModel
+            in
+            ( Model state updatedStringEditorModel, Cmd.none )
+
+        GotCellInfo (Err _) ->
+            ( Model state stringEditorModel, Cmd.none )
+
+        GotRootContainerInfo (Ok info) ->
+            let
+                position =
+                    { x = info.element.x, y = info.element.y }
+
+                updatedStringEditorModel =
+                    StringEditor.update (StringEditor.SetOrigin position) stringEditorModel
+            in
+            ( Model state updatedStringEditorModel, Cmd.none )
+
+        GotRootContainerInfo (Err _) ->
+            ( Model state stringEditorModel, Cmd.none )
 
         ScrollTo isTargetItem ->
             let
                 targetItemIndex =
                     Maybe.withDefault 0 <| findIndex isTargetItem state.visibleItems
             in
-            ( Model state
+            ( Model state stringEditorModel
             , IL.scrollToNthItem
                 { postScrollMessage = NoOp
                 , listHtmlId = gridHtmlId
@@ -581,6 +603,20 @@ update msg (Model state) =
                 }
             )
 
+        StringEditorMsg (StringEditor.UserSubmittedForm editedItem) ->
+            ( applyStringEdition editedItem model
+            , Cmd.none
+            )
+
+        StringEditorMsg stringEditorMsg ->
+            let
+                updatedStringEditorModel =
+                    StringEditor.update stringEditorMsg stringEditorModel
+            in
+            ( Model state updatedStringEditorModel
+            , Cmd.none
+            )
+
         UserClickedQuickFilterButton columnConfig ->
             -- the focus must be put on opened filter div, so that the blur event will be launched when we leave it
             ( Model
@@ -588,20 +624,27 @@ update msg (Model state) =
                     | openedQuickFilter = Just columnConfig
                     , filterHasFocus = True
                 }
+                stringEditorModel
             , focusOn openedQuickFilterHtmlId
             )
 
         UserDoubleClickedEditableCell itemToBeEdited fieldToString columnId editableCellId ->
-            ( Model
-                (openEditor state columnId itemToBeEdited fieldToString)
+            ( openEditor model columnId itemToBeEdited fieldToString
             , Cmd.batch
                 [ focusOn StringEditor.editorId
+                , getElementInfo rootContainerId GotRootContainerInfo
                 , getElementInfo editableCellId GotCellInfo
                 ]
             )
 
+        UserHoveredDragHandle ->
+            ( Model state stringEditorModel
+              -- get the position of the header container, in order to fix the ghost header position
+            , getElementInfo headerContainerId GotHeaderContainerInfo
+            )
+
         _ ->
-            ( updateState msg state |> Model, Cmd.none )
+            ( Model (updateState msg state) stringEditorModel, Cmd.none )
 
 
 {-| focus on an HTML element.
@@ -654,20 +697,8 @@ updateState msg state =
             in
             updateVisibleItems newState |> closeQuickFilter
 
-        GotCellInfo (Ok info) ->
-            let
-                position =
-                    { x = info.element.x, y = info.element.y }
-
-                dimensions =
-                    { width = info.element.width, height = info.element.height }
-
-                updatedStringEditor =
-                    StringEditor.update (StringEditor.SetPositionAndDimensions position dimensions) state.stringEditorModel
-            in
-            state |> withStringEditorModel updatedStringEditor
-
-        GotCellInfo (Err _) ->
+        -- processed by update
+        GotCellInfo _ ->
             state
 
         GotHeaderContainerInfo (Ok info) ->
@@ -676,8 +707,15 @@ updateState msg state =
         GotHeaderContainerInfo (Err _) ->
             state
 
+        -- processed by update
+        GotRootContainerInfo _ ->
+            state
+
         InfiniteListMsg infList ->
             { state | infList = infList }
+
+        NoOp ->
+            state
 
         SetFilters filterValues ->
             let
@@ -701,15 +739,15 @@ updateState msg state =
                 Nothing ->
                     state
 
-        NoOp ->
-            state
-
         ScrollTo _ ->
             -- This message is handled in the `update` function
             state
 
         ShowPreferences ->
             { state | showPreferences = True }
+
+        StringEditorMsg _ ->
+            state
 
         UpdateContent updateContent ->
             let
@@ -748,34 +786,6 @@ updateState msg state =
             in
             state
                 |> withDraggedColumn (Just draggedColumn)
-
-        StringEditorMsg (StringEditor.UserSubmittedForm editedItem) ->
-            let
-                updatedContent =
-                    List.indexedMap updateEditedValue state.content
-
-                editedColumn =
-                    state.config.columns
-                        |> List.filter (\col -> state.editedColumnId == col.properties.id)
-                        |> List.head
-                        --the selectionColumn is the only column we know for sure it exists; however in practice it should never be this one
-                        |> Maybe.withDefault selectionColumn
-
-                updateEditedValue : Int -> a -> a
-                updateEditedValue index item =
-                    if index == editedItem.contentIndex then
-                        editedColumn.fromString editedItem state.stringEditorModel.value |> .data
-
-                    else
-                        item
-            in
-            state
-                |> closeEditor
-                |> withContent updatedContent
-                |> updateVisibleItems
-
-        StringEditorMsg stringEditorMsg ->
-            state |> withStringEditorModel (StringEditor.update stringEditorMsg state.stringEditorModel)
 
         UserClickedFilter ->
             { state | filterHasFocus = True }
@@ -894,17 +904,60 @@ updateState msg state =
             { state | visibleItems = newItems }
 
 
-openEditor : State a -> String -> Item a -> (Item a -> String) -> State a
-openEditor state columnId itemToBeEdited fieldToString =
+applyStringEdition : Item a -> Model a -> Model a
+applyStringEdition editedItem model =
     let
-        updatedStringEditor =
-            StringEditor.update (StringEditor.SetEditedValue (fieldToString itemToBeEdited)) state.stringEditorModel
+        (Model state stringEditorModel) =
+            model
+
+        updatedContent =
+            List.indexedMap updateEditedValue state.content
+
+        editedColumn =
+            state.config.columns
+                |> List.filter (\col -> state.editedColumnId == col.properties.id)
+                |> List.head
+                --the selectionColumn is the only column we know for sure it exists; however in practice it should never be this one
+                |> Maybe.withDefault selectionColumn
+
+        updateEditedValue : Int -> a -> a
+        updateEditedValue index item =
+            if index == editedItem.contentIndex then
+                editedColumn.fromString editedItem stringEditorModel.value
+                    |> .data
+
+            else
+                item
+
+        updatedState =
+            state
+                |> closeEditor
+                |> withContent updatedContent
+                |> updateVisibleItems
     in
-    state
-        |> withEditorHasFocus True
-        |> withEditedColumnId columnId
-        |> withEditedItem (Just itemToBeEdited)
-        |> withStringEditorModel updatedStringEditor
+    Model updatedState StringEditor.init
+
+
+openEditor : Model a -> String -> Item a -> (Item a -> String) -> Model a
+openEditor model columnId itemToBeEdited fieldToString =
+    let
+        (Model state stringEditorModel) =
+            model
+
+        updatedStringEditorModel =
+            StringEditor.update (StringEditor.SetEditedValue (fieldToString itemToBeEdited)) stringEditorModel
+
+        updatedState =
+            state
+                |> withEditorHasFocus True
+                |> withEditedColumnId columnId
+                |> withEditedItem (Just itemToBeEdited)
+    in
+    Model updatedState updatedStringEditorModel
+
+
+
+--|> withStringEditorModel updatedStringEditor
 
 
 closeEditor : State a -> State a
@@ -912,8 +965,12 @@ closeEditor state =
     state
         |> withEditorHasFocus False
         |> withEditedColumnId ""
-        |> withStringEditorModel StringEditor.init
         |> withEditedItem Nothing
+
+
+getEditedValue : Model a -> String
+getEditedValue (Model _ stringEditorModel) =
+    stringEditorModel.value
 
 
 {-| Apply the current filters to the whole data
@@ -1145,7 +1202,7 @@ moveItemRight list originIndex indexDelta =
 {-| the list of items selected by the user, after filters were applied
 -}
 selectedAndVisibleItems : Model a -> List (Item a)
-selectedAndVisibleItems (Model state) =
+selectedAndVisibleItems (Model state _) =
     List.filter .selected state.visibleItems
 
 
@@ -1162,16 +1219,33 @@ infiniteListConfig state =
 {-| Renders the grid
 -}
 view : Model a -> Html.Html (Msg a)
-view (Model state) =
+view model =
+    let
+        (Model state stringEditorModel) =
+            model
+    in
     toUnstyled <|
         if state.showPreferences then
             viewPreferences state
 
         else
-            div []
-                [ viewGrid state
-                , viewStringEditor state
+            div
+                [ id rootContainerId
+                , css
+                    [ width (px <| toFloat (state.config.containerWidth + cumulatedBorderWidth))
+                    , overflow hidden
+                    , margin auto
+                    , position relative
+                    ]
                 ]
+                [ lazy viewGrid state
+                , lazy viewStringEditor model
+                ]
+
+
+rootContainerId : String.String
+rootContainerId =
+    "grid-root-container"
 
 
 {-| the id of the Html node containing the grid
@@ -1231,14 +1305,14 @@ viewGrid state =
             ]
 
 
-viewStringEditor : State a -> Html (Msg a)
-viewStringEditor state =
+viewStringEditor : Model a -> Html (Msg a)
+viewStringEditor (Model state stringEditorModel) =
     case state.editedItem of
         Just editedItem ->
             let
                 updatedStringEditorView : Html (StringEditor.Msg a)
                 updatedStringEditorView =
-                    StringEditor.view state.stringEditorModel editedItem
+                    StringEditor.view stringEditorModel editedItem
             in
             Html.Styled.map StringEditorMsg updatedStringEditorView
 
@@ -1275,7 +1349,7 @@ columnFilters model =
 {-| The list of raw data satisfying the current filtering values
 -}
 visibleData : Model a -> List a
-visibleData (Model state) =
+visibleData (Model state _) =
     state.visibleItems
         |> List.map .data
 
@@ -1299,21 +1373,14 @@ viewRow state idx listIdx item =
                 -- restore reading order, while preserving the left position of the scrollbar
                 , property "direction" "ltr"
                 ]
-            , onClick
-                (if state.editorHasFocus then
-                    NoOp
-
-                 else
-                    UserClickedLine item
-                )
             ]
     <|
-        List.map (\columnConfig -> viewCell columnConfig item) (visibleColumns (Model state))
+        List.map (\columnConfig -> viewCell columnConfig item) (visibleColumns_ state)
 
 
 gridWidth : State a -> Int
 gridWidth state =
-    List.foldl (\columnConfig -> (+) columnConfig.properties.width) 0 (visibleColumns (Model state))
+    List.foldl (\columnConfig -> (+) columnConfig.properties.width) 0 (visibleColumns_ state)
 
 
 viewCell : ColumnConfig a -> Item a -> Html (Msg a)
@@ -1723,7 +1790,12 @@ This list ignores the actual position of the columns; some of them may require
 an horizontal scrolling to be seen
 -}
 visibleColumns : Model a -> List (ColumnConfig a)
-visibleColumns (Model state) =
+visibleColumns (Model state _) =
+    visibleColumns_ state
+
+
+visibleColumns_ : State a -> List (ColumnConfig a)
+visibleColumns_ state =
     List.filter (\column -> column.properties.visible) state.config.columns
 
 
@@ -1754,7 +1826,7 @@ viewHeaderContainer state =
 
 viewHeaders : State a -> List (Html (Msg a))
 viewHeaders state =
-    List.indexedMap (\index column -> viewHeader state column index) <| visibleColumns (Model state)
+    List.indexedMap (\index column -> viewHeader state column index) <| visibleColumns_ state
 
 
 headerContainerId : String
@@ -2342,6 +2414,14 @@ cumulatedBorderWidth =
 -}
 cellAttributes : ColumnProperties -> Item a -> List (Html.Styled.Attribute (Msg a))
 cellAttributes properties item =
+    let
+        conditionalAttributes =
+            if properties.isEditable then
+                []
+
+            else
+                [ onClick (UserClickedLine item) ]
+    in
     [ id (cellId properties item)
     , attribute "data-testid" properties.id
     , css
@@ -2362,6 +2442,7 @@ cellAttributes properties item =
         , width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
     ]
+        ++ conditionalAttributes
 
 
 cellId : ColumnProperties -> Item a -> String
