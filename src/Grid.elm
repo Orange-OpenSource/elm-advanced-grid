@@ -1354,8 +1354,7 @@ viewRows state =
             -- displays the vertical scrollbar to the left. https://stackoverflow.com/questions/7347532/how-to-position-a-div-scrollbar-on-the-left-hand-side
             , property "direction" "rtl"
             ]
-
-        --, stopPropagationOnScroll NoOp
+        , fromUnstyled <| IL.onScroll InfiniteListMsg
         , id gridHtmlId
         ]
         [ Html.Styled.fromUnstyled <| IL.view (infiniteListConfig state) state.infList state.visibleItems ]
