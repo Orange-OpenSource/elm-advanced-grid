@@ -173,4 +173,21 @@ describe('elm grid example', function () {
         cy.get('div[data-testid="City"]').should('contain', 'Saint Christophe de Valains')
     })
 
+    it('should be allowed to start modifying a label in City column then escape', function () {
+        cy.visit(url)
+        cy.get(':nth-child(16) > [data-testid="City"]')
+          .dblclick()
+        cy.get('input[id="cell-editor"]')
+          .type('{backspace}')
+          .type('{backspace}')
+          .type('{backspace}')
+          .type('{backspace}')
+          .type('{backspace}')
+          .type('Saint Christophe de Valains')
+          .type('{esc}')
+
+        cy.get('input[data-testid="filter-City"]').type("osaka")
+        cy.get('div[data-testid="City"]').should('contain', 'Osaka')
+    })
+
 })
