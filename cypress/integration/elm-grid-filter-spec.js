@@ -175,7 +175,7 @@ describe('elm grid example', function () {
 
     it('should be allowed to start modifying a label in City column then escape', function () {
         cy.visit(url)
-        cy.get(':nth-child(16) > [data-testid="City"]')
+        cy.get(':nth-child(7) > [data-testid="City"]')
           .dblclick()
         cy.get('input[id="cell-editor"]')
           .type('{backspace}')
@@ -186,8 +186,8 @@ describe('elm grid example', function () {
           .type('Saint Christophe de Valains')
           .type('{esc}')
 
-        cy.get('input[data-testid="filter-City"]').type("osaka")
-        cy.get('div[data-testid="City"]').should('contain', 'Osaka')
+        cy.get('input[data-testid="filter-City"]').type("Tokyo")
+        cy.get('div[data-testid="City"]').should('contain', 'Tokyo')
     })
 
 })
