@@ -1,10 +1,11 @@
 module Grid.StringEditor exposing (..)
 
-import Css exposing (absolute, flexGrow, fontSize, height, left, margin, num, padding, paddingLeft, position, px, rem, top, width)
+import Css exposing (absolute, fontSize, height, left, margin, paddingLeft, position, px, rem, top, width)
 import Grid.Item exposing (Item)
-import Html.Styled exposing (Html, div, form, input)
+import Html.Styled exposing (Attribute, Html, form, input)
 import Html.Styled.Attributes exposing (css, id, value)
-import Html.Styled.Events exposing (onBlur, onInput, onSubmit)
+import Html.Styled.Events exposing (keyCode, on, onBlur, onInput, onSubmit)
+import Json.Decode
 
 
 type alias Model =
@@ -48,6 +49,7 @@ type Msg a
     | SetPositionAndDimensions Position Dimensions
     | UserChangedValue String
     | UserSubmittedForm (Item a)
+    | OnKeyUp Int -- the param is the key code
 
 
 update : Msg a -> Model -> Model
@@ -90,7 +92,13 @@ view model item =
             , id editorId
             , onBlur EditorLostFocus
             , onInput <| UserChangedValue
+            , onKeyUp OnKeyUp
             , value model.value
             ]
             []
         ]
+
+
+onKeyUp : (Int -> msg) -> Attribute msg
+onKeyUp msgConstructor =
+    on "keyup" (Json.Decode.map msgConstructor keyCode)

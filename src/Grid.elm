@@ -603,19 +603,8 @@ update msg model =
                 }
             )
 
-        StringEditorMsg (StringEditor.UserSubmittedForm editedItem) ->
-            ( applyStringEdition editedItem model
-            , Cmd.none
-            )
-
         StringEditorMsg stringEditorMsg ->
-            let
-                updatedStringEditorModel =
-                    StringEditor.update stringEditorMsg stringEditorModel
-            in
-            ( Model state updatedStringEditorModel
-            , Cmd.none
-            )
+            updateStringEditor stringEditorMsg model
 
         UserClickedQuickFilterButton columnConfig ->
             -- the focus must be put on opened filter div, so that the blur event will be launched when we leave it
@@ -670,6 +659,10 @@ closeQuickFilter state =
     }
 
 
+escapeKeyCode =
+    27
+
+
 {-| Updates the grid state for messages which won't generate any command
 -}
 updateState : Msg a -> State a -> State a
@@ -677,9 +670,6 @@ updateState msg state =
     case msg of
         ColumnsModificationRequested columns ->
             state |> withColumnsState columns
-
-        StringEditorMsg StringEditor.EditorLostFocus ->
-            closeEditor state
 
         FilterLostFocus ->
             { state | filterHasFocus = False } |> closeQuickFilter
@@ -902,6 +892,38 @@ updateState msg state =
                     List.Extra.updateAt item.visibleIndex (\it -> toggleSelection it) state.visibleItems
             in
             { state | visibleItems = newItems }
+
+
+updateStringEditor : StringEditor.Msg a -> Model a -> ( Model a, Cmd (Msg a) )
+updateStringEditor msg model =
+    let
+        (Model state stringEditorModel) =
+            model
+    in
+    case msg of
+        StringEditor.EditorLostFocus ->
+            ( Model (closeEditor state) StringEditor.init, Cmd.none )
+
+        StringEditor.OnKeyUp keyCode ->
+            if keyCode == escapeKeyCode then
+                ( Model (closeEditor state) StringEditor.init, Cmd.none )
+
+            else
+                ( model, Cmd.none )
+
+        StringEditor.UserSubmittedForm editedItem ->
+            ( applyStringEdition editedItem model
+            , Cmd.none
+            )
+
+        stringEditorMsg ->
+            let
+                updatedStringEditorModel =
+                    StringEditor.update stringEditorMsg stringEditorModel
+            in
+            ( Model state updatedStringEditorModel
+            , Cmd.none
+            )
 
 
 applyStringEdition : Item a -> Model a -> Model a
@@ -1332,7 +1354,8 @@ viewRows state =
             -- displays the vertical scrollbar to the left. https://stackoverflow.com/questions/7347532/how-to-position-a-div-scrollbar-on-the-left-hand-side
             , property "direction" "rtl"
             ]
-        , fromUnstyled <| IL.onScroll InfiniteListMsg
+
+        --, stopPropagationOnScroll NoOp
         , id gridHtmlId
         ]
         [ Html.Styled.fromUnstyled <| IL.view (infiniteListConfig state) state.infList state.visibleItems ]
@@ -1424,6 +1447,13 @@ viewBool field properties item =
             ]
             []
         ]
+
+
+{-| Prevents the grid to be scrolled when an editor is open
+-}
+stopPropagationOnScroll : Msg a -> Attribute (Msg a)
+stopPropagationOnScroll msg =
+    stopPropagationOn "scroll" (Json.Decode.map alwaysPreventDefault (Json.Decode.succeed msg))
 
 
 {-| Prevents the click on the line to be detected when interacting with the checkbox
