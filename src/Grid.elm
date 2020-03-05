@@ -76,10 +76,10 @@ import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, hr, i, input, label, span, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, tabindex, title, type_, value)
-import Html.Styled.Events exposing (onBlur, onClick, onDoubleClick, onInput, onMouseUp, stopPropagationOn)
+import Html.Styled.Events exposing (on, onBlur, onClick, onDoubleClick, onInput, onMouseUp, stopPropagationOn)
 import Html.Styled.Lazy exposing (lazy)
 import InfiniteList as IL
-import Json.Decode
+import Json.Decode as Decode
 import List exposing (take)
 import List.Extra exposing (findIndex, unique)
 import String
@@ -180,10 +180,11 @@ type Msg a
     | InfiniteListMsg IL.Model
     | FilterLostFocus
     | FilterModified (ColumnConfig a) (Maybe String)
-    | NoOp
     | GotCellInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | GotHeaderContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | GotRootContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
+    | OnScrolled ScrollInfo
+    | NoOp
     | SetFilters (Dict String String) -- column ID, filter value
     | SetSorting String Sorting -- column ID, Ascending or Descending
     | ScrollTo (Item a -> Bool) -- scroll to the first item for which the function returns True
@@ -325,6 +326,7 @@ type alias State a =
     , content : List a -- all data, visible or not
     , draggedColumn : Maybe (DraggedColumn a)
     , dragStartX : Float
+    , editedCellId : String
     , editedColumnId : String
     , editedItem : Maybe (Item a)
     , editorHasFocus : Bool -- Avoids selecting a row when clicking in an cell editor
@@ -420,6 +422,13 @@ withDraggedColumn draggedColumn state =
 withEditorHasFocus : Bool -> State a -> State a
 withEditorHasFocus isEditing state =
     { state | editorHasFocus = isEditing }
+
+
+{-| Sets the identifier of the cell which is being edited
+-}
+withEditedCellId : String -> State a -> State a
+withEditedCellId id state =
+    { state | editedCellId = id }
 
 
 {-| Sets the identifier of the column in which a cell is being edited
@@ -522,6 +531,7 @@ init config data =
             , content = data
             , draggedColumn = Nothing
             , dragStartX = 0
+            , editedCellId = ""
             , editedColumnId = ""
             , editedItem = Nothing
             , filterHasFocus = False
@@ -573,7 +583,7 @@ update msg model =
             ( Model state updatedStringEditorModel, Cmd.none )
 
         GotCellInfo (Err _) ->
-            ( Model state stringEditorModel, Cmd.none )
+            ( model, Cmd.none )
 
         GotRootContainerInfo (Ok info) ->
             let
@@ -586,7 +596,10 @@ update msg model =
             ( Model state updatedStringEditorModel, Cmd.none )
 
         GotRootContainerInfo (Err _) ->
-            ( Model state stringEditorModel, Cmd.none )
+            ( model, Cmd.none )
+
+        OnScrolled _ ->
+            ( model, getElementInfo state.editedCellId GotCellInfo )
 
         ScrollTo isTargetItem ->
             let
@@ -618,7 +631,7 @@ update msg model =
             )
 
         UserDoubleClickedEditableCell itemToBeEdited fieldToString columnId editableCellId ->
-            ( openEditor model columnId itemToBeEdited fieldToString
+            ( openEditor model columnId editableCellId itemToBeEdited fieldToString
             , Cmd.batch
                 [ focusOn StringEditor.editorId
                 , getElementInfo rootContainerId GotRootContainerInfo
@@ -893,6 +906,9 @@ updateState msg state =
             in
             { state | visibleItems = newItems }
 
+        OnScrolled _ ->
+            state
+
 
 updateStringEditor : StringEditor.Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 updateStringEditor msg model =
@@ -960,8 +976,8 @@ applyStringEdition editedItem model =
     Model updatedState StringEditor.init
 
 
-openEditor : Model a -> String -> Item a -> (Item a -> String) -> Model a
-openEditor model columnId itemToBeEdited fieldToString =
+openEditor : Model a -> String -> String -> Item a -> (Item a -> String) -> Model a
+openEditor model columnId editedCellId itemToBeEdited fieldToString =
     let
         (Model state stringEditorModel) =
             model
@@ -972,6 +988,7 @@ openEditor model columnId itemToBeEdited fieldToString =
         updatedState =
             state
                 |> withEditorHasFocus True
+                |> withEditedCellId editedCellId
                 |> withEditedColumnId columnId
                 |> withEditedItem (Just itemToBeEdited)
     in
@@ -1294,6 +1311,9 @@ viewGrid state =
                 , margin auto
                 , position relative
                 ]
+
+            -- TODO activate only when a cell is edited
+            , onScroll OnScrolled
             ]
 
         conditionalAttributes =
@@ -1355,9 +1375,26 @@ viewRows state =
             , property "direction" "rtl"
             ]
         , fromUnstyled <| IL.onScroll InfiniteListMsg
+
+        -- TODO activate only when a cell is edited
+        , onScroll OnScrolled
         , id gridHtmlId
         ]
         [ Html.Styled.fromUnstyled <| IL.view (infiniteListConfig state) state.infList state.visibleItems ]
+
+
+type alias ScrollInfo =
+    { scrollTop : Float
+    }
+
+
+scrollInfoDecoder =
+    Decode.map ScrollInfo
+        (Decode.at [ "target", "scrollTop" ] Decode.float)
+
+
+onScroll msg =
+    on "scroll" (Decode.map msg scrollInfoDecoder)
 
 
 {-| Valid filters
@@ -1448,18 +1485,11 @@ viewBool field properties item =
         ]
 
 
-{-| Prevents the grid to be scrolled when an editor is open
--}
-stopPropagationOnScroll : Msg a -> Attribute (Msg a)
-stopPropagationOnScroll msg =
-    stopPropagationOn "scroll" (Json.Decode.map alwaysPreventDefault (Json.Decode.succeed msg))
-
-
 {-| Prevents the click on the line to be detected when interacting with the checkbox
 -}
 stopPropagationOnClick : Msg a -> Attribute (Msg a)
 stopPropagationOnClick msg =
-    stopPropagationOn "click" (Json.Decode.map alwaysPreventDefault (Json.Decode.succeed msg))
+    stopPropagationOn "click" (Decode.map alwaysPreventDefault (Decode.succeed msg))
 
 
 alwaysPreventDefault : Msg a -> ( Msg a, Bool )
@@ -1905,6 +1935,7 @@ headerStyles state =
         , height (px <| toFloat <| state.config.headerHeight - cumulatedBorderWidth)
         , descendantsVisibleOnHover
         , padding (px 2)
+        , zIndex (int 10)
         ]
 
 
