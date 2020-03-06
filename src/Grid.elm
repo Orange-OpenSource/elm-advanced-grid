@@ -2486,7 +2486,7 @@ cellAttributes properties item =
         , width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
     ]
-        |> appendIf properties.isEditable [ onClick (UserClickedLine item) ]
+        |> appendIf (not properties.isEditable) [ onClick (UserClickedLine item) ]
 
 
 cellId : ColumnProperties -> Item a -> String

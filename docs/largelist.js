@@ -8283,7 +8283,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes = F2(
 	function (properties, item) {
 		return A3(
 			$Orange_OpenSource$elm_advanced_grid$Grid$List$appendIf,
-			properties.w,
+			!properties.w,
 			_List_fromArray(
 				[
 					$rtfeldman$elm_css$Html$Styled$Events$onClick(
@@ -13794,8 +13794,6 @@ var $rtfeldman$elm_css$Html$Styled$Events$onSubmit = function (msg) {
 			$rtfeldman$elm_css$Html$Styled$Events$alwaysPreventDefault,
 			$elm$json$Json$Decode$succeed(msg)));
 };
-var $rtfeldman$elm_css$Css$RemUnits = 0;
-var $rtfeldman$elm_css$Css$rem = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, 0, 'rem');
 var $Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$view = F2(
 	function (model, item) {
 		return A2(
@@ -13823,15 +13821,13 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$view = F2(
 							$rtfeldman$elm_css$Html$Styled$Attributes$css(
 							_List_fromArray(
 								[
-									$rtfeldman$elm_css$Css$fontSize(
-									$rtfeldman$elm_css$Css$rem(1)),
 									$rtfeldman$elm_css$Css$height(
 									$rtfeldman$elm_css$Css$px(model.bg.c6)),
 									$rtfeldman$elm_css$Css$width(
 									$rtfeldman$elm_css$Css$px(model.bg.B)),
-									$rtfeldman$elm_css$Css$paddingLeft(
-									$rtfeldman$elm_css$Css$px(2)),
 									$rtfeldman$elm_css$Css$margin(
+									$rtfeldman$elm_css$Css$px(0)),
+									$rtfeldman$elm_css$Css$padding(
 									$rtfeldman$elm_css$Css$px(0))
 								])),
 							$rtfeldman$elm_css$Html$Styled$Attributes$id($Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$editorId),
