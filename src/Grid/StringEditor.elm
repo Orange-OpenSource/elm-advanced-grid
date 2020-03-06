@@ -10,6 +10,7 @@ import Json.Decode
 
 type alias Model =
     { dimensions : Dimensions
+    , maxLength : Int
     , origin : Position
     , position : Position
     , value : String
@@ -18,9 +19,10 @@ type alias Model =
 
 init : Model
 init =
-    { origin = { x = 0, y = 0 }
+    { dimensions = { width = 0, height = 0 }
+    , maxLength = 0
+    , origin = { x = 0, y = 0 }
     , position = { x = 0, y = 0 }
-    , dimensions = { width = 0, height = 0 }
     , value = ""
     }
 

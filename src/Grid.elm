@@ -266,7 +266,7 @@ type alias ColumnConfig a =
     , comparator : Item a -> Item a -> Order
     , filteringValue : Maybe String
     , filters : Filter a
-    , fromString : Item a -> String -> Item a
+    , editor : Maybe (EditorConfig a)
     , toString : Item a -> String
     , renderer : ColumnProperties -> (Item a -> Html (Msg a))
     }
@@ -297,6 +297,11 @@ type alias ColumnProperties =
     , tooltip : String
     , visible : Bool
     , width : Int
+    }
+
+
+type alias EditorConfig a =
+    { fromString : Item a -> String -> Item a
     }
 
 
@@ -475,13 +480,13 @@ selectionColumn =
     in
     { properties =
         columnConfigProperties properties
+    , comparator = compareBoolField .selected
+    , editor = Nothing
     , filters = NoFilter
     , filteringValue = Nothing
-    , fromString = \item value -> { item | selected = stringToBool value }
-    , toString = .selected >> boolToString
-    , renderer = viewBool .selected
-    , comparator = compareBoolField .selected
     , hasQuickFilter = False
+    , renderer = viewBool .selected
+    , toString = .selected >> boolToString
     }
 
 
@@ -952,18 +957,22 @@ applyStringEdition editedItem model =
         updatedContent =
             List.indexedMap updateEditedValue state.content
 
-        editedColumn =
-            state.config.columns
-                |> List.filter (\col -> state.editedColumnId == col.properties.id)
-                |> List.head
-                --the selectionColumn is the only column we know for sure it exists; however in practice it should never be this one
-                |> Maybe.withDefault selectionColumn
-
         updateEditedValue : Int -> a -> a
         updateEditedValue index item =
             if index == editedItem.contentIndex then
-                editedColumn.fromString editedItem stringEditorModel.value
-                    |> .data
+                let
+                    editedColumn : ColumnConfig a
+                    editedColumn =
+                        editedColumnConfig state
+                in
+                case editedColumn.editor of
+                    Just editor ->
+                        editor.fromString editedItem stringEditorModel.value
+                            |> .data
+
+                    Nothing ->
+                        -- this case should never occur
+                        item
 
             else
                 item
@@ -983,6 +992,9 @@ openEditor model columnId editedCellId itemToBeEdited fieldToString =
         (Model state stringEditorModel) =
             model
 
+        editedColumn =
+            editedColumnConfig state
+
         updatedStringEditorModel =
             StringEditor.update (StringEditor.SetEditedValue (fieldToString itemToBeEdited)) stringEditorModel
 
@@ -994,6 +1006,15 @@ openEditor model columnId editedCellId itemToBeEdited fieldToString =
                 |> withEditedItem (Just itemToBeEdited)
     in
     Model updatedState updatedStringEditorModel
+
+
+editedColumnConfig : State a -> ColumnConfig a
+editedColumnConfig state =
+    state.config.columns
+        |> List.filter (\col -> state.editedColumnId == col.properties.id)
+        |> List.head
+        --the selectionColumn is the only column we know for sure it exists; however in practice it should never be this one
+        |> Maybe.withDefault selectionColumn
 
 
 
@@ -1519,7 +1540,7 @@ stringColumnConfig ({ id, isEditable, title, tooltip, width, getter, setter, loc
         columnConfigProperties properties
     , filters = StringFilter <| stringFilter getter labels
     , filteringValue = Nothing
-    , fromString = setter
+    , editor = Just { fromString = setter }
     , toString = nestedDataGetter
     , renderer = viewString nestedDataGetter
     , comparator = compareFields nestedDataGetter
@@ -1545,7 +1566,7 @@ floatColumnConfig ({ id, isEditable, title, tooltip, width, getter, setter, loca
         columnConfigProperties properties
     , filters = FloatFilter <| floatFilter getter
     , filteringValue = Nothing
-    , fromString = \item value -> String.toFloat value |> Maybe.withDefault 0 |> setter item
+    , editor = Nothing
     , toString = nestedDataGetter >> String.fromFloat
     , renderer = viewFloat nestedDataGetter
     , comparator = compareFields nestedDataGetter
@@ -1571,7 +1592,7 @@ intColumnConfig ({ id, title, isEditable, tooltip, width, getter, setter, locali
         columnConfigProperties properties
     , filters = IntFilter <| intFilter getter
     , filteringValue = Nothing
-    , fromString = \item value -> String.toInt value |> Maybe.withDefault 0 |> setter item
+    , editor = Nothing
     , toString = nestedDataGetter >> String.fromInt
     , renderer = viewInt nestedDataGetter
     , comparator = compareFields nestedDataGetter
@@ -1595,7 +1616,7 @@ boolColumnConfig ({ id, isEditable, title, tooltip, width, getter, setter, local
         columnConfigProperties properties
     , filters = BoolFilter <| boolFilter getter
     , filteringValue = Nothing
-    , fromString = \item value -> setter item (stringToBool value)
+    , editor = Nothing
     , toString = nestedDataGetter >> boolToString
     , renderer = viewBool nestedDataGetter
     , comparator = compareBoolField nestedDataGetter
@@ -1658,7 +1679,10 @@ viewString : (Item a -> String) -> ColumnProperties -> Item a -> Html (Msg a)
 viewString field properties item =
     div
         (cellAttributes properties item
-            |> appendIf properties.isEditable [ onDoubleClick (UserDoubleClickedEditableCell item field properties.id (cellId properties item)) ]
+            |> appendIf properties.isEditable
+                [ onDoubleClick (UserDoubleClickedEditableCell item field properties.id (cellId properties item))
+                , title (field item)
+                ]
         )
         [ text <| field item
         ]
@@ -2486,7 +2510,9 @@ cellAttributes properties item =
         , width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
     ]
-        |> appendIf (not properties.isEditable) [ onClick (UserClickedLine item) ]
+        |> appendIf (not properties.isEditable)
+            [ onClick (UserClickedLine item)
+            ]
 
 
 cellId : ColumnProperties -> Item a -> String
