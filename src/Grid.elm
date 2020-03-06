@@ -261,14 +261,13 @@ boolColumnConfig
 
 -}
 type alias ColumnConfig a =
-    { properties : ColumnProperties
+    { properties : ColumnProperties a
     , hasQuickFilter : Bool
     , comparator : Item a -> Item a -> Order
     , filteringValue : Maybe String
     , filters : Filter a
-    , editor : Maybe (EditorConfig a)
     , toString : Item a -> String
-    , renderer : ColumnProperties -> (Item a -> Html (Msg a))
+    , renderer : ColumnProperties a -> (Item a -> Html (Msg a))
     }
 
 
@@ -289,9 +288,9 @@ boolColumnConfig
         }
 
 -}
-type alias ColumnProperties =
+type alias ColumnProperties a =
     { id : String
-    , isEditable : Bool
+    , editor : Maybe (EditorConfig a)
     , order : Sorting
     , title : String
     , tooltip : String
@@ -302,6 +301,7 @@ type alias ColumnProperties =
 
 type alias EditorConfig a =
     { fromString : Item a -> String -> Item a
+    , maxLength : Int
     }
 
 
@@ -468,20 +468,19 @@ used when canSelectRows is True in grid config.
 -}
 selectionColumn =
     let
+        properties : ColumnProperties a
         properties =
             { id = "_MultipleSelection_"
-            , isEditable = False
-            , getter = .selected
+            , editor = Nothing
+            , order = Unsorted
             , title = ""
             , tooltip = ""
+            , visible = True
             , width = 40
-            , localize = \_ -> ""
             }
     in
-    { properties =
-        columnConfigProperties properties
+    { properties = properties
     , comparator = compareBoolField .selected
-    , editor = Nothing
     , filters = NoFilter
     , filteringValue = Nothing
     , hasQuickFilter = False
@@ -965,7 +964,7 @@ applyStringEdition editedItem model =
                     editedColumn =
                         editedColumnConfig state
                 in
-                case editedColumn.editor of
+                case editedColumn.properties.editor of
                     Just editor ->
                         editor.fromString editedItem stringEditorModel.value
                             |> .data
@@ -992,18 +991,28 @@ openEditor model columnId editedCellId itemToBeEdited fieldToString =
         (Model state stringEditorModel) =
             model
 
-        editedColumn =
-            editedColumnConfig state
-
-        updatedStringEditorModel =
-            StringEditor.update (StringEditor.SetEditedValue (fieldToString itemToBeEdited)) stringEditorModel
-
         updatedState =
             state
                 |> withEditorHasFocus True
                 |> withEditedCellId editedCellId
                 |> withEditedColumnId columnId
                 |> withEditedItem (Just itemToBeEdited)
+
+        editedColumn =
+            editedColumnConfig updatedState
+
+        maxLength =
+            case editedColumn.properties.editor of
+                Just editor ->
+                    editor.maxLength
+
+                Nothing ->
+                    0
+
+        updatedStringEditorModel =
+            stringEditorModel
+                |> StringEditor.withMaxLength maxLength
+                |> StringEditor.update (StringEditor.SetEditedValue (fieldToString itemToBeEdited))
     in
     Model updatedState updatedStringEditorModel
 
@@ -1170,14 +1179,14 @@ updateColumnWidthProperty model columnConfig width =
     updateColumnProperties setWidth model columnConfig.properties.id
 
 
-updateColumnProperties : (ColumnProperties -> ColumnProperties) -> State a -> String -> List (ColumnConfig a)
+updateColumnProperties : (ColumnProperties a -> ColumnProperties a) -> State a -> String -> List (ColumnConfig a)
 updateColumnProperties updateFunction model columnId =
     List.Extra.updateIf (hasId columnId)
         (updatePropertiesInColumnConfig updateFunction)
         model.config.columns
 
 
-updatePropertiesInColumnConfig : (ColumnProperties -> ColumnProperties) -> ColumnConfig a -> ColumnConfig a
+updatePropertiesInColumnConfig : (ColumnProperties a -> ColumnProperties a) -> ColumnConfig a -> ColumnConfig a
 updatePropertiesInColumnConfig updateFunction columnConfig =
     { columnConfig | properties = updateFunction columnConfig.properties }
 
@@ -1481,7 +1490,7 @@ returns the field to be displayed in this column.
         viewInt (\item -> item.id)
 
 -}
-viewInt : (Item a -> Int) -> ColumnProperties -> Item a -> Html (Msg a)
+viewInt : (Item a -> Int) -> ColumnProperties a -> Item a -> Html (Msg a)
 viewInt field properties item =
     div
         (cellAttributes properties item)
@@ -1497,7 +1506,7 @@ returns the field to be displayed in this column.
         viewBool (\item -> item.even)
 
 -}
-viewBool : (Item a -> Bool) -> ColumnProperties -> Item a -> Html (Msg a)
+viewBool : (Item a -> Bool) -> ColumnProperties a -> Item a -> Html (Msg a)
 viewBool field properties item =
     div
         (cellAttributes properties item)
@@ -1530,17 +1539,36 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-stringColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> String, setter : Item a -> String -> Item a, localize : String -> String } -> Dict String String -> ColumnConfig a
-stringColumnConfig ({ id, isEditable, title, tooltip, width, getter, setter, localize } as properties) labels =
+stringColumnConfig :
+    { id : String
+    , editor : Maybe (EditorConfig a)
+    , title : String
+    , tooltip : String
+    , width : Int
+    , getter : a -> String
+    , setter : Item a -> String -> Item a
+    , localize : String -> String
+    }
+    -> Dict String String
+    -> ColumnConfig a
+stringColumnConfig properties labels =
     let
+        columnProperties =
+            { id = properties.id
+            , editor = properties.editor
+            , order = Unsorted
+            , title = properties.localize properties.title
+            , tooltip = properties.localize properties.tooltip
+            , visible = True
+            , width = properties.width
+            }
+
         nestedDataGetter =
-            .data >> getter
+            .data >> properties.getter
     in
-    { properties =
-        columnConfigProperties properties
-    , filters = StringFilter <| stringFilter getter labels
+    { properties = columnProperties
+    , filters = StringFilter <| stringFilter properties.getter labels
     , filteringValue = Nothing
-    , editor = Just { fromString = setter }
     , toString = nestedDataGetter
     , renderer = viewString nestedDataGetter
     , comparator = compareFields nestedDataGetter
@@ -1556,17 +1584,25 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-floatColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> Float, setter : Item a -> Float -> Item a, localize : String -> String } -> ColumnConfig a
-floatColumnConfig ({ id, isEditable, title, tooltip, width, getter, setter, localize } as properties) =
+floatColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Float, setter : Item a -> Float -> Item a, localize : String -> String } -> ColumnConfig a
+floatColumnConfig properties =
     let
+        columnProperties =
+            { id = properties.id
+            , editor = Nothing
+            , order = Unsorted
+            , title = properties.localize properties.title
+            , tooltip = properties.localize properties.tooltip
+            , visible = True
+            , width = properties.width
+            }
+
         nestedDataGetter =
-            .data >> getter
+            .data >> properties.getter
     in
-    { properties =
-        columnConfigProperties properties
-    , filters = FloatFilter <| floatFilter getter
+    { properties = columnProperties
+    , filters = FloatFilter <| floatFilter properties.getter
     , filteringValue = Nothing
-    , editor = Nothing
     , toString = nestedDataGetter >> String.fromFloat
     , renderer = viewFloat nestedDataGetter
     , comparator = compareFields nestedDataGetter
@@ -1582,17 +1618,25 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-intColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> Int, setter : Item a -> Int -> Item a, localize : String -> String } -> ColumnConfig a
-intColumnConfig ({ id, title, isEditable, tooltip, width, getter, setter, localize } as properties) =
+intColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Int, setter : Item a -> Int -> Item a, localize : String -> String } -> ColumnConfig a
+intColumnConfig properties =
     let
+        columnProperties =
+            { id = properties.id
+            , editor = Nothing
+            , order = Unsorted
+            , title = properties.localize properties.title
+            , tooltip = properties.localize properties.tooltip
+            , visible = True
+            , width = properties.width
+            }
+
         nestedDataGetter =
-            .data >> getter
+            .data >> properties.getter
     in
-    { properties =
-        columnConfigProperties properties
-    , filters = IntFilter <| intFilter getter
+    { properties = columnProperties
+    , filters = IntFilter <| intFilter properties.getter
     , filteringValue = Nothing
-    , editor = Nothing
     , toString = nestedDataGetter >> String.fromInt
     , renderer = viewInt nestedDataGetter
     , comparator = compareFields nestedDataGetter
@@ -1606,17 +1650,25 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-boolColumnConfig : { id : String, isEditable : Bool, title : String, tooltip : String, width : Int, getter : a -> Bool, setter : Item a -> Bool -> Item a, localize : String -> String } -> ColumnConfig a
-boolColumnConfig ({ id, isEditable, title, tooltip, width, getter, setter, localize } as properties) =
+boolColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Bool, setter : Item a -> Bool -> Item a, localize : String -> String } -> ColumnConfig a
+boolColumnConfig properties =
     let
+        columnProperties =
+            { id = properties.id
+            , editor = Nothing
+            , order = Unsorted
+            , title = properties.localize properties.title
+            , tooltip = properties.localize properties.tooltip
+            , visible = True
+            , width = properties.width
+            }
+
         nestedDataGetter =
-            .data >> getter
+            .data >> properties.getter
     in
-    { properties =
-        columnConfigProperties properties
-    , filters = BoolFilter <| boolFilter getter
+    { properties = columnProperties
+    , filters = BoolFilter <| boolFilter properties.getter
     , filteringValue = Nothing
-    , editor = Nothing
     , toString = nestedDataGetter >> boolToString
     , renderer = viewBool nestedDataGetter
     , comparator = compareBoolField nestedDataGetter
@@ -1638,18 +1690,6 @@ stringToBool string =
     String.toLower string == "true"
 
 
-columnConfigProperties : { a | id : String, isEditable : Bool, title : String, tooltip : String, width : Int, localize : String -> String } -> ColumnProperties
-columnConfigProperties { id, isEditable, title, tooltip, width, localize } =
-    { id = id
-    , isEditable = isEditable
-    , order = Unsorted
-    , title = localize title
-    , tooltip = localize tooltip
-    , visible = True
-    , width = width
-    }
-
-
 {-| Renders a cell containing a floating number. Use this function in a ColumnConfig
 to define how the values in a given column should be rendered.
 The unique parameter to be provided is a lambda which
@@ -1659,7 +1699,7 @@ returns the field to be displayed in this column.
         viewFloat (\item -> item.value)
 
 -}
-viewFloat : (Item a -> Float) -> ColumnProperties -> Item a -> Html (Msg a)
+viewFloat : (Item a -> Float) -> ColumnProperties a -> Item a -> Html (Msg a)
 viewFloat field properties item =
     div
         (cellAttributes properties item)
@@ -1675,11 +1715,11 @@ returns the field to be displayed in this column.
         viewString (\item -> item.name)
 
 -}
-viewString : (Item a -> String) -> ColumnProperties -> Item a -> Html (Msg a)
+viewString : (Item a -> String) -> ColumnProperties a -> Item a -> Html (Msg a)
 viewString field properties item =
     div
         (cellAttributes properties item
-            |> appendIf properties.isEditable
+            |> appendIf (properties.editor /= Nothing)
                 [ onDoubleClick (UserDoubleClickedEditableCell item field properties.id (cellId properties item))
                 , title (field item)
                 ]
@@ -1698,7 +1738,7 @@ returns the field to be displayed in this column.
         viewProgressBar 8 (\item -> item.value)
 
 -}
-viewProgressBar : Int -> (a -> Float) -> ColumnProperties -> Item a -> Html (Msg a)
+viewProgressBar : Int -> (a -> Float) -> ColumnProperties a -> Item a -> Html (Msg a)
 viewProgressBar barHeight getter properties item =
     let
         maxWidth =
@@ -2488,7 +2528,7 @@ cumulatedBorderWidth =
 
 {-| Common attributes for cell renderers
 -}
-cellAttributes : ColumnProperties -> Item a -> List (Html.Styled.Attribute (Msg a))
+cellAttributes : ColumnProperties a -> Item a -> List (Html.Styled.Attribute (Msg a))
 cellAttributes properties item =
     [ id (cellId properties item)
     , attribute "data-testid" properties.id
@@ -2510,12 +2550,12 @@ cellAttributes properties item =
         , width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
     ]
-        |> appendIf (not properties.isEditable)
+        |> appendIf (properties.editor == Nothing)
             [ onClick (UserClickedLine item)
             ]
 
 
-cellId : ColumnProperties -> Item a -> String
+cellId : ColumnProperties a -> Item a -> String
 cellId columnProperties item =
     columnProperties.id ++ String.fromInt item.visibleIndex
 

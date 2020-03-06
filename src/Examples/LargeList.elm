@@ -419,7 +419,6 @@ columns labels =
 idColumn =
     intColumnConfig
         { id = "Id"
-        , isEditable = False
         , getter = .id
         , localize = localize
         , setter = \item _ -> item
@@ -432,7 +431,7 @@ idColumn =
 nameColumn =
     stringColumnConfig
         { id = "Name"
-        , isEditable = True
+        , editor = Just { fromString = setName, maxLength = 20 }
         , getter = .name
         , localize = localize
         , setter = setName
@@ -459,7 +458,6 @@ progressColumn =
         progressColumnConfig =
             floatColumnConfig
                 { id = "Progress"
-                , isEditable = False
                 , getter = .value1
                 , localize = localize
                 , setter = \item _ -> item
@@ -474,7 +472,7 @@ progressColumn =
 cityColumn =
     stringColumnConfig
         { id = "City"
-        , isEditable = False
+        , editor = Nothing
         , getter = .city
         , localize = localize
         , setter = \item _ -> item
@@ -487,7 +485,6 @@ cityColumn =
 value1Column =
     floatColumnConfig
         { id = "Value1"
-        , isEditable = False
         , getter = .value1 >> truncateDecimals
         , localize = localize
         , setter = \item _ -> item
@@ -502,7 +499,6 @@ value1ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue1"
-                , isEditable = False
                 , getter = .value1 >> truncateDecimals
                 , localize = localize
                 , setter = \item _ -> item
@@ -517,7 +513,6 @@ value1ProgressColumn =
 value2Column =
     floatColumnConfig
         { id = "Value2"
-        , isEditable = False
         , getter = .value2 >> truncateDecimals
         , localize = localize
         , setter = \item _ -> item
@@ -532,7 +527,6 @@ value2ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue2"
-                , isEditable = False
                 , getter = .value2 >> truncateDecimals
                 , localize = localize
                 , setter = \item _ -> item
@@ -547,7 +541,6 @@ value2ProgressColumn =
 value3Column =
     floatColumnConfig
         { id = "Value3"
-        , isEditable = False
         , getter = .value3 >> truncateDecimals
         , localize = localize
         , setter = \item _ -> item
@@ -562,7 +555,6 @@ value3ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue3"
-                , isEditable = False
                 , getter = .value3 >> truncateDecimals
                 , localize = localize
                 , setter = \item _ -> item
@@ -577,7 +569,6 @@ value3ProgressColumn =
 value4Column =
     floatColumnConfig
         { id = "Value4"
-        , isEditable = False
         , getter = .value4 >> truncateDecimals
         , localize = localize
         , setter = \item _ -> item
@@ -592,7 +583,6 @@ value4ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue4"
-                , isEditable = False
                 , getter = .value4 >> truncateDecimals
                 , localize = localize
                 , setter = \item _ -> item
@@ -607,7 +597,6 @@ value4ProgressColumn =
 value5Column =
     floatColumnConfig
         { id = "Value5"
-        , isEditable = False
         , getter = .value5 >> truncateDecimals
         , localize = localize
         , setter = \item _ -> item
@@ -622,7 +611,6 @@ value5ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue5"
-                , isEditable = False
                 , getter = .value5 >> truncateDecimals
                 , localize = localize
                 , setter = \item _ -> item
@@ -637,7 +625,6 @@ value5ProgressColumn =
 value6Column =
     floatColumnConfig
         { id = "Value6"
-        , isEditable = False
         , getter = .value6 >> truncateDecimals
         , localize = localize
         , setter = \item _ -> item
@@ -652,7 +639,6 @@ value6ProgressColumn =
         columnConfig =
             floatColumnConfig
                 { id = "ProgressValue6"
-                , isEditable = False
                 , getter = .value6 >> truncateDecimals
                 , localize = localize
                 , setter = \item _ -> item

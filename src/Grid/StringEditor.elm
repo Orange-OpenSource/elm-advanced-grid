@@ -3,7 +3,7 @@ module Grid.StringEditor exposing (..)
 import Css exposing (absolute, height, left, margin, padding, position, px, top, width)
 import Grid.Item exposing (Item)
 import Html.Styled exposing (Attribute, Html, form, input)
-import Html.Styled.Attributes exposing (css, id, value)
+import Html.Styled.Attributes exposing (css, id, maxlength, value)
 import Html.Styled.Events exposing (keyCode, on, onBlur, onInput, onSubmit)
 import Json.Decode
 
@@ -25,6 +25,11 @@ init =
     , position = { x = 0, y = 0 }
     , value = ""
     }
+
+
+withMaxLength : Int -> Model -> Model
+withMaxLength maxLength model =
+    { model | maxLength = maxLength }
 
 
 editorId : String
@@ -94,6 +99,7 @@ view model item =
             , onBlur (EditorLostFocus item)
             , onInput <| UserChangedValue
             , onKeyUp OnKeyUp
+            , maxlength model.maxLength
             , value model.value
             ]
             []

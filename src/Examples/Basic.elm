@@ -383,63 +383,61 @@ rowClass item =
 
 columns : Dict String String -> List (ColumnConfig Data)
 columns labels =
-    [ intColumnConfig
-        { id = "Id"
-        , isEditable = False
-        , getter = .id
-        , setter = \item _ -> item
-        , localize = localize
-        , title = "Id"
-        , tooltip = "Une indication pour la colonne Id"
-        , width = 50
-        }
-    , stringColumnConfig
-        { id = "Name"
-        , isEditable = False
-        , getter = .name
-        , setter = \item _ -> item
-        , localize = localize
-        , title = "Nom"
-        , tooltip = "Une indication pour la colonne Nom"
-        , width = 100
-        }
-        labels
-    , let
-        progressColumnConfig =
-            floatColumnConfig
-                { id = "Progress"
-                , isEditable = False
-                , getter = .value
-                , setter = \item _ -> item
-                , localize = localize
-                , title = "Progrès"
-                , tooltip = "Une indication pour la colonne Progrès"
-                , width = 100
-                }
-      in
-      { progressColumnConfig | renderer = viewProgressBar 8 .value }
-    , floatColumnConfig
-        { id = "Value"
-        , isEditable = False
-        , getter = .value >> truncateDecimals
-        , setter = \item _ -> item
-        , localize = localize
-        , title = "Valeur"
-        , tooltip = "Une indication pour la colonne Valeur"
-        , width = 100
-        }
-    , stringColumnConfig
-        { id = "City"
-        , isEditable = True
-        , getter = .city
-        , setter = setCity
-        , localize = localize
-        , title = "Ville"
-        , tooltip = "Une indication pour la colonne Ville"
-        , width = 300
-        }
-        labels
-    ]
+    Debug.log "columns" <|
+        [ intColumnConfig
+            { id = "Id"
+            , getter = .id
+            , setter = \item _ -> item
+            , localize = localize
+            , title = "Id"
+            , tooltip = "Une indication pour la colonne Id"
+            , width = 50
+            }
+        , stringColumnConfig
+            { id = "Name"
+            , editor = Nothing
+            , getter = .name
+            , setter = \item _ -> item
+            , localize = localize
+            , title = "Nom"
+            , tooltip = "Une indication pour la colonne Nom"
+            , width = 100
+            }
+            labels
+        , let
+            progressColumnConfig =
+                floatColumnConfig
+                    { id = "Progress"
+                    , getter = .value
+                    , setter = \item _ -> item
+                    , localize = localize
+                    , title = "Progrès"
+                    , tooltip = "Une indication pour la colonne Progrès"
+                    , width = 100
+                    }
+          in
+          { progressColumnConfig | renderer = viewProgressBar 8 .value }
+        , floatColumnConfig
+            { id = "Value"
+            , getter = .value >> truncateDecimals
+            , setter = \item _ -> item
+            , localize = localize
+            , title = "Valeur"
+            , tooltip = "Une indication pour la colonne Valeur"
+            , width = 100
+            }
+        , stringColumnConfig
+            { id = "City"
+            , editor = Just { fromString = setCity, maxLength = 20 }
+            , getter = .city
+            , setter = setCity
+            , localize = localize
+            , title = "Ville"
+            , tooltip = "Une indication pour la colonne Ville"
+            , width = 300
+            }
+            labels
+        ]
 
 
 setCity : Item Data -> String -> Item Data

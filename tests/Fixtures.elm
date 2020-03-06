@@ -135,7 +135,6 @@ dataWithOneEmptyCell =
 scoreColumn =
     floatColumnConfig
         { id = "score"
-        , isEditable = False
         , getter = .score
         , localize = identity
         , setter = \item _ -> item
@@ -148,7 +147,7 @@ scoreColumn =
 titleColumn =
     stringColumnConfig
         { id = "title"
-        , isEditable = False
+        , editor = Nothing
         , getter = .title
         , localize = identity
         , setter = \item _ -> item
@@ -162,7 +161,6 @@ titleColumn =
 isValidColumn =
     boolColumnConfig
         { id = "isValid"
-        , isEditable = False
         , getter = .isValid
         , localize = identity
         , setter = \item _ -> item
