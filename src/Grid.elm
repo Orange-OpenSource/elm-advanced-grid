@@ -71,6 +71,7 @@ import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, pa
 import Grid.Icons as Icons exposing (drawSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
+import Grid.List exposing (appendIf)
 import Grid.StringEditor as StringEditor
 import Html
 import Html.Events.Extra.Mouse as Mouse
@@ -1311,22 +1312,22 @@ viewGrid state =
                 , margin auto
                 , position relative
                 ]
-
-            -- TODO activate only when a cell is edited
-            , onScroll OnScrolled
             ]
 
-        conditionalAttributes =
-            if state.resizedColumn /= Nothing || state.draggedColumn /= Nothing then
+        columnIsResizedOrDragged =
+            state.resizedColumn /= Nothing || state.draggedColumn /= Nothing
+
+        editionInProgress =
+            state.editedItem /= Nothing
+    in
+    div
+        (attributes
+            |> appendIf columnIsResizedOrDragged
                 [ onMouseUp UserEndedMouseInteraction
                 , fromUnstyled <| Mouse.onLeave (\_ -> UserEndedMouseInteraction)
                 ]
-
-            else
-                []
-    in
-    div
-        (attributes ++ conditionalAttributes)
+            |> appendIf editionInProgress [ onScroll OnScrolled ]
+        )
     <|
         if state.config.hasFilters then
             [ div
@@ -1364,8 +1365,12 @@ viewStringEditor (Model state stringEditorModel) =
 
 viewRows : State a -> Html (Msg a)
 viewRows state =
+    let
+        editionInProgress =
+            state.editedItem /= Nothing
+    in
     div
-        [ css
+        ([ css
             [ height (px <| toFloat state.config.containerHeight)
             , width (px <| toFloat <| gridWidth state)
             , overflowX hidden
@@ -1374,12 +1379,11 @@ viewRows state =
             -- displays the vertical scrollbar to the left. https://stackoverflow.com/questions/7347532/how-to-position-a-div-scrollbar-on-the-left-hand-side
             , property "direction" "rtl"
             ]
-        , fromUnstyled <| IL.onScroll InfiniteListMsg
-
-        -- TODO activate only when a cell is edited
-        , onScroll OnScrolled
-        , id gridHtmlId
-        ]
+         , fromUnstyled <| IL.onScroll InfiniteListMsg
+         , id gridHtmlId
+         ]
+            |> appendIf editionInProgress [ onScroll OnScrolled ]
+        )
         [ Html.Styled.fromUnstyled <| IL.view (infiniteListConfig state) state.infList state.visibleItems ]
 
 
@@ -1652,17 +1656,9 @@ returns the field to be displayed in this column.
 -}
 viewString : (Item a -> String) -> ColumnProperties -> Item a -> Html (Msg a)
 viewString field properties item =
-    let
-        conditionalAttributes =
-            if properties.isEditable then
-                [ onDoubleClick (UserDoubleClickedEditableCell item field properties.id (cellId properties item)) ]
-
-            else
-                []
-    in
     div
-        (conditionalAttributes
-            ++ cellAttributes properties item
+        (cellAttributes properties item
+            |> appendIf properties.isEditable [ onDoubleClick (UserDoubleClickedEditableCell item field properties.id (cellId properties item)) ]
         )
         [ text <| field item
         ]
@@ -1871,15 +1867,13 @@ viewHeaderContainer state =
             , id headerContainerId
             ]
 
-        conditionalAttributes =
-            if state.resizedColumn /= Nothing then
-                [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle (event |> toPosition)) ]
-
-            else
-                []
+        isResizing =
+            state.resizedColumn /= Nothing
     in
     div
-        (attributes ++ conditionalAttributes)
+        (attributes
+            |> appendIf isResizing [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle (event |> toPosition)) ]
+        )
         (viewHeaders state)
 
 
@@ -1906,15 +1900,13 @@ viewHeader state columnConfig index =
             , title columnConfig.properties.tooltip
             ]
 
-        conditionalAttributes =
-            if state.resizedColumn == Nothing && not state.filterHasFocus then
-                [ onClick (UserClickedHeader columnConfig) ]
-
-            else
-                []
+        headerIsClickable =
+            state.resizedColumn == Nothing && not state.filterHasFocus
     in
     div
-        (attributes ++ conditionalAttributes)
+        (attributes
+            |> appendIf headerIsClickable [ onClick (UserClickedHeader columnConfig) ]
+        )
         [ if isSelectionColumn columnConfig then
             viewSelectionHeader state columnConfig
 
@@ -2474,14 +2466,6 @@ cumulatedBorderWidth =
 -}
 cellAttributes : ColumnProperties -> Item a -> List (Html.Styled.Attribute (Msg a))
 cellAttributes properties item =
-    let
-        conditionalAttributes =
-            if properties.isEditable then
-                []
-
-            else
-                [ onClick (UserClickedLine item) ]
-    in
     [ id (cellId properties item)
     , attribute "data-testid" properties.id
     , css
@@ -2502,7 +2486,7 @@ cellAttributes properties item =
         , width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
     ]
-        ++ conditionalAttributes
+        |> appendIf properties.isEditable [ onClick (UserClickedLine item) ]
 
 
 cellId : ColumnProperties -> Item a -> String
