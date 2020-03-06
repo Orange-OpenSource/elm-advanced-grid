@@ -918,8 +918,8 @@ updateStringEditor msg model =
             model
     in
     case msg of
-        StringEditor.EditorLostFocus ->
-            ( Model (closeEditor state) StringEditor.init, Cmd.none )
+        StringEditor.EditorLostFocus editedItem ->
+            ( applyStringEdition editedItem model, Cmd.none )
 
         StringEditor.OnKeyUp keyCode ->
             if keyCode == escapeKeyCode then

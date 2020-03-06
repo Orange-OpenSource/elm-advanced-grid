@@ -43,7 +43,7 @@ type alias Dimensions =
 
 
 type Msg a
-    = EditorLostFocus
+    = EditorLostFocus (Item a)
     | SetEditedValue String
     | SetOrigin Position
     | SetPositionAndDimensions Position Dimensions
@@ -89,7 +89,7 @@ view model item =
                 , padding (px 0)
                 ]
             , id editorId
-            , onBlur EditorLostFocus
+            , onBlur (EditorLostFocus item)
             , onInput <| UserChangedValue
             , onKeyUp OnKeyUp
             , value model.value

@@ -11603,11 +11603,9 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$updateStringEditor = F2(
 		var stringEditorModel = _v0.b;
 		switch (msg.$) {
 			case 0:
+				var editedItem = msg.a;
 				return _Utils_Tuple2(
-					A2(
-						$Orange_OpenSource$elm_advanced_grid$Grid$Model,
-						$Orange_OpenSource$elm_advanced_grid$Grid$closeEditor(state),
-						$Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$init),
+					A2($Orange_OpenSource$elm_advanced_grid$Grid$applyStringEdition, editedItem, model),
 					$elm$core$Platform$Cmd$none);
 			case 6:
 				var keyCode = msg.a;
@@ -13754,7 +13752,9 @@ var $rtfeldman$elm_css$VirtualDom$Styled$map = F2(
 		}
 	});
 var $rtfeldman$elm_css$Html$Styled$map = $rtfeldman$elm_css$VirtualDom$Styled$map;
-var $Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$EditorLostFocus = {$: 0};
+var $Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$EditorLostFocus = function (a) {
+	return {$: 0, a: a};
+};
 var $Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$OnKeyUp = function (a) {
 	return {$: 6, a: a};
 };
@@ -13831,7 +13831,8 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$view = F2(
 									$rtfeldman$elm_css$Css$px(0))
 								])),
 							$rtfeldman$elm_css$Html$Styled$Attributes$id($Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$editorId),
-							$rtfeldman$elm_css$Html$Styled$Events$onBlur($Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$EditorLostFocus),
+							$rtfeldman$elm_css$Html$Styled$Events$onBlur(
+							$Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$EditorLostFocus(item)),
 							$rtfeldman$elm_css$Html$Styled$Events$onInput($Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$UserChangedValue),
 							$Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$onKeyUp($Orange_OpenSource$elm_advanced_grid$Grid$StringEditor$OnKeyUp),
 							$rtfeldman$elm_css$Html$Styled$Attributes$value(model.dV)
