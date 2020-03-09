@@ -14,7 +14,7 @@ module Examples.Basic exposing (main)
 import Browser
 import Dict exposing (Dict)
 import Grid exposing (ColumnConfig, Msg(..), Sorting(..), floatColumnConfig, intColumnConfig, selectedAndVisibleItems, stringColumnConfig, viewProgressBar)
-import Grid.Item exposing (Item, withData)
+import Grid.Item exposing (Item)
 import Html exposing (Html, button, div, input, label, li, text, ul)
 import Html.Attributes exposing (attribute, style)
 import Html.Events exposing (onClick, onInput)
@@ -353,7 +353,7 @@ gridConfig =
     , containerWidth = 676
     , hasFilters = True
     , headerHeight = 60
-    , labels = Dict.empty -- use default texts, which are in English
+    , labels = translations -- use default texts, which are in English; you could use "translations", which is provided below as an example
     , lineHeight = 25
     , rowClass = rowClass
     }
@@ -377,7 +377,8 @@ rowClass item =
 
 
 {- the definition of the columns of the grid
-   the string columns require a dictionray of translations,
+   the string columns require a dictionary of translations.
+   Here, as an example, the texts are defined in french by default and an english translation is provided
 -}
 
 
@@ -427,7 +428,7 @@ columns labels =
         }
     , stringColumnConfig
         { id = "City"
-        , editor = Just { fromString = setCity, maxLength = 20 }
+        , editor = Just { fromString = setCity, maxLength = 25 }
         , getter = .city
         , setter = setCity
         , localize = localize

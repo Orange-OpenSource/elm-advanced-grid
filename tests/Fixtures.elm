@@ -1,5 +1,3 @@
-module Fixtures exposing (Data, columns, data, dataOrderedByAscendingScore, dataOrderedByDescendingScore, dataWithScoreGreaterThan2, gridConfig, isValidColumn, item1, item2, item3, item4, item5, item6, model, modelWithOneEmptyTitle, scoreColumn, titleColumn)
-
 {- Copyright (c) 2019 Orange
    This code is released under the MIT license.
 
@@ -9,6 +7,9 @@ module Fixtures exposing (Data, columns, data, dataOrderedByAscendingScore, data
 
       THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -}
+
+
+module Fixtures exposing (Data, columns, data, dataOrderedByAscendingScore, dataOrderedByDescendingScore, dataWithScoreGreaterThan2, gridConfig, isValidColumn, item1, item2, item3, item4, item5, item6, model, modelWithOneEmptyTitle, scoreColumn, titleColumn)
 
 import Dict
 import Grid exposing (ColumnConfig, Model, Sorting(..), boolColumnConfig, floatColumnConfig, stringColumnConfig)

@@ -554,7 +554,7 @@ init config data =
             , visibleItems = indexedItems
             }
     in
-    Model { initialState | columnsX = columnsX initialState } StringEditor.init
+    Model { initialState | columnsX = columnsX initialState } (StringEditor.init config.labels)
 
 
 {-| The list of X coordinates of columns; coordinates are expressed in pixels. The first one is at 0.
@@ -925,9 +925,12 @@ updateStringEditor msg model =
         StringEditor.EditorLostFocus editedItem ->
             ( applyStringEdition editedItem model, Cmd.none )
 
+        StringEditor.UserClickedCancel ->
+            ( Model (closeEditor state) (StringEditor.init state.labels), Cmd.none )
+
         StringEditor.OnKeyUp keyCode ->
             if keyCode == escapeKeyCode then
-                ( Model (closeEditor state) StringEditor.init, Cmd.none )
+                ( Model (closeEditor state) (StringEditor.init state.labels), Cmd.none )
 
             else
                 ( model, Cmd.none )
@@ -982,7 +985,7 @@ applyStringEdition editedItem model =
                 |> withContent updatedContent
                 |> updateVisibleItems
     in
-    Model updatedState StringEditor.init
+    Model updatedState (StringEditor.init state.labels)
 
 
 openEditor : Model a -> String -> String -> Item a -> (Item a -> String) -> Model a

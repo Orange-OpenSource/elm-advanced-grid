@@ -20,15 +20,17 @@ localize key translations =
 -}
 keys : List String
 keys =
-    [ clear
+    [ cancel
+    , clear
     , empty
     , openQuickFilter
+    , submit
     ]
 
 
-empty : String
-empty =
-    "Empty"
+cancel : String
+cancel =
+    "cancel"
 
 
 clear : String
@@ -36,6 +38,16 @@ clear =
     "Clear"
 
 
+empty : String
+empty =
+    "Empty"
+
+
 openQuickFilter : String
 openQuickFilter =
     "Open quick filter"
+
+
+submit : String
+submit =
+    "Submit"
