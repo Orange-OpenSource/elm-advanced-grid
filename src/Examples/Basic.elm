@@ -428,7 +428,7 @@ columns labels =
         }
     , stringColumnConfig
         { id = "City"
-        , editor = Just { fromString = setCity, maxLength = 25 }
+        , editor = Just { fromString = setCity, maxLength = 32 }
         , getter = .city
         , setter = setCity
         , localize = localize
