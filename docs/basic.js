@@ -8882,7 +8882,7 @@ var $Orange_OpenSource$elm_advanced_grid$Examples$Basic$columns = function (labe
 			$Orange_OpenSource$elm_advanced_grid$Grid$stringColumnConfig,
 			{
 				cS: $elm$core$Maybe$Just(
-					{em: $Orange_OpenSource$elm_advanced_grid$Examples$Basic$setCity, eG: 25}),
+					{em: $Orange_OpenSource$elm_advanced_grid$Examples$Basic$setCity, eG: 32}),
 				a9: function ($) {
 					return $.a3;
 				},
