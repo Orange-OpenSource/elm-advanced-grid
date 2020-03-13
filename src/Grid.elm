@@ -68,17 +68,19 @@ import Css.Global exposing (descendants, typeSelector)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, lightGrey3, white, white2)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
+import Grid.Html exposing (noContent)
 import Grid.Icons as Icons exposing (drawSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
 import Grid.List exposing (appendIf)
+import Grid.QuickFilter as QuickFilter exposing (openedQuickFilterHtmlId)
 import Grid.StringEditor as StringEditor
 import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, hr, i, input, label, span, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, tabindex, title, type_, value)
 import Html.Styled.Events exposing (on, onBlur, onClick, onDoubleClick, onInput, onMouseUp, stopPropagationOn)
-import Html.Styled.Lazy exposing (lazy)
+import Html.Styled.Lazy exposing (lazy, lazy2)
 import InfiniteList as IL
 import Json.Decode as Decode
 import List exposing (take)
@@ -184,8 +186,10 @@ type Msg a
     | GotCellInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | GotHeaderContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | GotRootContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
+    | GotQuickFilterButtonInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | OnScrolled ScrollInfo
     | NoOp
+    | QuickFilterMsg QuickFilter.Msg
     | SetFilters (Dict String String) -- column ID, filter value
     | SetSorting String Sorting -- column ID, Ascending or Descending
     | ScrollTo (Item a -> Bool) -- scroll to the first item for which the function returns True
@@ -322,12 +326,14 @@ type alias Position =
 {-| The internal grid model
 -}
 type Model a
-    = Model (State a) StringEditor.Model
+    = Model (State a) StringEditor.Model QuickFilter.Model
 
 
 type alias State a =
     { clickedItem : Maybe (Item a)
     , config : Config a
+
+    -- TODO: seems to be written but never read. Confirm and delete if this is true
     , columnsX : List Int
     , content : List a -- all data, visible or not
     , draggedColumn : Maybe (DraggedColumn a)
@@ -342,7 +348,7 @@ type alias State a =
     , infList : IL.Model
     , isAllSelected : Bool
     , labels : Dict String String
-    , openedQuickFilter : Maybe (ColumnConfig a)
+    , quickFilteredColumn : Maybe (ColumnConfig a)
 
     -- TODO: order and sortedBy can have incompatible values. It would be better to join them in a single Maybe
     , order : Sorting
@@ -356,29 +362,29 @@ type alias State a =
 {-| The current configuration of the grid
 -}
 currentConfig : Model a -> Config a
-currentConfig (Model state _) =
+currentConfig (Model state _ _) =
     state.config
 
 
 {-| The column according to which the grid content is sorted, if any
 -}
 sortedBy : Model a -> Maybe (ColumnConfig a)
-sortedBy (Model state _) =
+sortedBy (Model state _ _) =
     state.sortedBy
 
 
 {-| The order used if the grid is sorted using the value of a given column}
 -}
 currentOrder : Model a -> Sorting
-currentOrder (Model state _) =
+currentOrder (Model state _ _) =
     state.order
 
 
 {-| Sets the grid configuration
 -}
 withConfig : Config a -> Model a -> Model a
-withConfig config (Model state stringEditorModel) =
-    Model (withConfigState config state) stringEditorModel
+withConfig config (Model state stringEditorModel quickFilterModel) =
+    Model (withConfigState config state) stringEditorModel quickFilterModel
 
 
 withConfigState : Config a -> State a -> State a
@@ -389,8 +395,8 @@ withConfigState config state =
 {-| Sets the column definitions into the configuration
 -}
 withColumns : List (ColumnConfig a) -> Model a -> Model a
-withColumns columns (Model state stringEditorModel) =
-    Model (withColumnsState columns state) stringEditorModel
+withColumns columns (Model state stringEditorModel quickFilterModel) =
+    Model (withColumnsState columns state) stringEditorModel quickFilterModel
 
 
 withColumnsState : List (ColumnConfig a) -> State a -> State a
@@ -546,15 +552,21 @@ init config data =
             , isAllSelected = False
             , editorHasFocus = False
             , labels = config.labels
-            , openedQuickFilter = Nothing
+            , quickFilteredColumn = Nothing
             , order = Unsorted
             , resizedColumn = Nothing
             , showPreferences = False
             , sortedBy = Nothing
             , visibleItems = indexedItems
             }
+
+        stringEditorModel =
+            StringEditor.init config.labels
+
+        quickFilterModel =
+            QuickFilter.init [] Nothing config.labels 0
     in
-    Model { initialState | columnsX = columnsX initialState } (StringEditor.init config.labels)
+    Model { initialState | columnsX = columnsX initialState } stringEditorModel quickFilterModel
 
 
 {-| The list of X coordinates of columns; coordinates are expressed in pixels. The first one is at 0.
@@ -570,7 +582,7 @@ columnsX state =
 update : Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 update msg model =
     let
-        (Model state stringEditorModel) =
+        (Model state stringEditorModel quickFilterModel) =
             model
     in
     case msg of
@@ -585,9 +597,22 @@ update msg model =
                 updatedStringEditorModel =
                     StringEditor.update (StringEditor.SetPositionAndDimensions position dimensions) stringEditorModel
             in
-            ( Model state updatedStringEditorModel, Cmd.none )
+            ( Model state updatedStringEditorModel quickFilterModel, Cmd.none )
 
         GotCellInfo (Err _) ->
+            ( model, Cmd.none )
+
+        GotQuickFilterButtonInfo (Ok info) ->
+            let
+                position =
+                    { x = info.element.x, y = info.element.y }
+
+                updatedQuickFilterModel =
+                    QuickFilter.update (QuickFilter.SetPosition position) quickFilterModel
+            in
+            ( Model state stringEditorModel updatedQuickFilterModel, Cmd.none )
+
+        GotQuickFilterButtonInfo (Err _) ->
             ( model, Cmd.none )
 
         GotRootContainerInfo (Ok info) ->
@@ -597,8 +622,11 @@ update msg model =
 
                 updatedStringEditorModel =
                     StringEditor.update (StringEditor.SetOrigin position) stringEditorModel
+
+                updatedQuickFilterModel =
+                    QuickFilter.update (QuickFilter.SetOrigin position) quickFilterModel
             in
-            ( Model state updatedStringEditorModel, Cmd.none )
+            ( Model state updatedStringEditorModel updatedQuickFilterModel, Cmd.none )
 
         GotRootContainerInfo (Err _) ->
             ( model, Cmd.none )
@@ -606,12 +634,17 @@ update msg model =
         OnScrolled _ ->
             ( model, getElementInfo state.editedCellId GotCellInfo )
 
+        QuickFilterMsg quickFilterMsg ->
+            ( updateQuickFilter quickFilterMsg model
+            , Cmd.none
+            )
+
         ScrollTo isTargetItem ->
             let
                 targetItemIndex =
                     Maybe.withDefault 0 <| findIndex isTargetItem state.visibleItems
             in
-            ( Model state stringEditorModel
+            ( Model state stringEditorModel quickFilterModel
             , IL.scrollToNthItem
                 { postScrollMessage = NoOp
                 , listHtmlId = gridHtmlId
@@ -622,17 +655,35 @@ update msg model =
             )
 
         StringEditorMsg stringEditorMsg ->
-            updateStringEditor stringEditorMsg model
+            ( updateStringEditor stringEditorMsg model, Cmd.none )
 
         UserClickedQuickFilterButton columnConfig ->
             -- the focus must be put on opened filter div, so that the blur event will be launched when we leave it
+            let
+                allValuesInColumn =
+                    columnVisibleValues columnConfig state
+
+                columnWidth =
+                    toFloat columnConfig.properties.width
+
+                filteringValue =
+                    columnConfig.filteringValue
+
+                updatedQuickFilterModel =
+                    QuickFilter.init allValuesInColumn filteringValue state.labels columnWidth
+            in
             ( Model
                 { state
-                    | openedQuickFilter = Just columnConfig
+                    | quickFilteredColumn = Just columnConfig
                     , filterHasFocus = True
                 }
                 stringEditorModel
-            , focusOn openedQuickFilterHtmlId
+                updatedQuickFilterModel
+            , Cmd.batch
+                [ focusOn openedQuickFilterHtmlId
+                , getElementInfo rootContainerId GotRootContainerInfo
+                , getElementInfo (quickFilterButtonId columnConfig) GotQuickFilterButtonInfo
+                ]
             )
 
         UserDoubleClickedEditableCell itemToBeEdited fieldToString columnId editableCellId ->
@@ -645,13 +696,15 @@ update msg model =
             )
 
         UserHoveredDragHandle ->
-            ( Model state stringEditorModel
+            ( Model state stringEditorModel quickFilterModel
               -- get the position of the header container, in order to fix the ghost header position
             , getElementInfo headerContainerId GotHeaderContainerInfo
             )
 
         _ ->
-            ( Model (updateState msg state) stringEditorModel, Cmd.none )
+            ( Model (updateState msg state) stringEditorModel quickFilterModel
+            , Cmd.none
+            )
 
 
 {-| focus on an HTML element.
@@ -672,7 +725,7 @@ getElementInfo elementId msg =
 closeQuickFilter : State a -> State a
 closeQuickFilter state =
     { state
-        | openedQuickFilter = Nothing
+        | quickFilteredColumn = Nothing
         , filterHasFocus = False
     }
 
@@ -693,17 +746,7 @@ updateState msg state =
             { state | filterHasFocus = False } |> closeQuickFilter
 
         FilterModified columnConfig maybeString ->
-            let
-                newColumnconfig =
-                    { columnConfig | filteringValue = maybeString }
-
-                newColumns =
-                    List.Extra.setIf (isColumn columnConfig) newColumnconfig state.config.columns
-
-                newState =
-                    state |> withColumnsState newColumns
-            in
-            updateVisibleItems newState |> closeQuickFilter
+            applyFilter state columnConfig maybeString
 
         -- processed by update
         GotCellInfo _ ->
@@ -715,6 +758,9 @@ updateState msg state =
         GotHeaderContainerInfo (Err _) ->
             state
 
+        GotQuickFilterButtonInfo _ ->
+            state
+
         -- processed by update
         GotRootContainerInfo _ ->
             state
@@ -723,6 +769,9 @@ updateState msg state =
             { state | infList = infList }
 
         NoOp ->
+            state
+
+        QuickFilterMsg _ ->
             state
 
         SetFilters filterValues ->
@@ -915,45 +964,82 @@ updateState msg state =
             state
 
 
-updateStringEditor : StringEditor.Msg a -> Model a -> ( Model a, Cmd (Msg a) )
+applyFilter : State a -> ColumnConfig a -> Maybe String -> State a
+applyFilter state columnConfig filteringValue =
+    let
+        newColumnconfig =
+            { columnConfig | filteringValue = filteringValue }
+
+        newColumns =
+            List.Extra.setIf (isColumn columnConfig) newColumnconfig state.config.columns
+
+        newState =
+            state |> withColumnsState newColumns
+    in
+    updateVisibleItems newState |> closeQuickFilter
+
+
+updateQuickFilter : QuickFilter.Msg -> Model a -> Model a
+updateQuickFilter msg model =
+    let
+        (Model state stringEditorModel quickFilterModel) =
+            model
+
+        updatedQuickFilterModel =
+            QuickFilter.update msg quickFilterModel
+    in
+    case msg of
+        QuickFilter.UserSelectedEntry filteringValue ->
+            case state.quickFilteredColumn of
+                Just column ->
+                    let
+                        updatedState =
+                            applyFilter state column filteringValue
+                    in
+                    Model updatedState stringEditorModel quickFilterModel
+
+                Nothing ->
+                    model
+
+        _ ->
+            Model state stringEditorModel updatedQuickFilterModel
+
+
+updateStringEditor : StringEditor.Msg a -> Model a -> Model a
 updateStringEditor msg model =
     let
-        (Model state stringEditorModel) =
+        (Model state stringEditorModel quickFilterModel) =
             model
     in
     case msg of
         StringEditor.EditorLostFocus editedItem ->
-            ( applyStringEdition editedItem model, Cmd.none )
+            applyStringEdition editedItem model
 
         StringEditor.UserClickedCancel ->
-            ( Model (closeEditor state) (StringEditor.init state.labels), Cmd.none )
+            Model (closeEditor state) (StringEditor.init state.labels) quickFilterModel
 
         StringEditor.OnKeyUp keyCode ->
             if keyCode == escapeKeyCode then
-                ( Model (closeEditor state) (StringEditor.init state.labels), Cmd.none )
+                Model (closeEditor state) (StringEditor.init state.labels) quickFilterModel
 
             else
-                ( model, Cmd.none )
+                model
 
         StringEditor.UserSubmittedForm editedItem ->
-            ( applyStringEdition editedItem model
-            , Cmd.none
-            )
+            applyStringEdition editedItem model
 
         stringEditorMsg ->
             let
                 updatedStringEditorModel =
                     StringEditor.update stringEditorMsg stringEditorModel
             in
-            ( Model state updatedStringEditorModel
-            , Cmd.none
-            )
+            Model state updatedStringEditorModel quickFilterModel
 
 
 applyStringEdition : Item a -> Model a -> Model a
 applyStringEdition editedItem model =
     let
-        (Model state stringEditorModel) =
+        (Model state stringEditorModel quickFilterModel) =
             model
 
         updatedContent =
@@ -985,13 +1071,13 @@ applyStringEdition editedItem model =
                 |> withContent updatedContent
                 |> updateVisibleItems
     in
-    Model updatedState (StringEditor.init state.labels)
+    Model updatedState (StringEditor.init state.labels) quickFilterModel
 
 
 openEditor : Model a -> String -> String -> Item a -> (Item a -> String) -> Model a
 openEditor model columnId editedCellId itemToBeEdited fieldToString =
     let
-        (Model state stringEditorModel) =
+        (Model state stringEditorModel quickFilterModel) =
             model
 
         updatedState =
@@ -1017,7 +1103,7 @@ openEditor model columnId editedCellId itemToBeEdited fieldToString =
                 |> StringEditor.withMaxLength maxLength
                 |> StringEditor.update (StringEditor.SetEditedValue (fieldToString itemToBeEdited))
     in
-    Model updatedState updatedStringEditorModel
+    Model updatedState updatedStringEditorModel quickFilterModel
 
 
 editedColumnConfig : State a -> ColumnConfig a
@@ -1042,7 +1128,7 @@ closeEditor state =
 
 
 getEditedValue : Model a -> String
-getEditedValue (Model _ stringEditorModel) =
+getEditedValue (Model _ stringEditorModel _) =
     stringEditorModel.value
 
 
@@ -1275,7 +1361,7 @@ moveItemRight list originIndex indexDelta =
 {-| the list of items selected by the user, after filters were applied
 -}
 selectedAndVisibleItems : Model a -> List (Item a)
-selectedAndVisibleItems (Model state _) =
+selectedAndVisibleItems (Model state _ _) =
     List.filter .selected state.visibleItems
 
 
@@ -1294,7 +1380,7 @@ infiniteListConfig state =
 view : Model a -> Html.Html (Msg a)
 view model =
     let
-        (Model state stringEditorModel) =
+        (Model state stringEditorModel quickFilterModel) =
             model
     in
     toUnstyled <|
@@ -1312,7 +1398,8 @@ view model =
                     ]
                 ]
                 [ lazy viewGrid state
-                , lazy viewStringEditor model
+                , lazy2 viewStringEditor state.editedItem stringEditorModel
+                , lazy2 viewQuickFilter state.quickFilteredColumn quickFilterModel
                 ]
 
 
@@ -1326,11 +1413,6 @@ rootContainerId =
 gridHtmlId : String
 gridHtmlId =
     "_grid_"
-
-
-openedQuickFilterHtmlId : String
-openedQuickFilterHtmlId =
-    "openedQuickFilter"
 
 
 {-| Renders the grid
@@ -1381,16 +1463,31 @@ viewGrid state =
             ]
 
 
-viewStringEditor : Model a -> Html (Msg a)
-viewStringEditor (Model state stringEditorModel) =
-    case state.editedItem of
-        Just editedItem ->
+viewStringEditor : Maybe (Item a) -> StringEditor.Model -> Html (Msg a)
+viewStringEditor editedItem stringEditorModel =
+    case editedItem of
+        Just item ->
             let
                 updatedStringEditorView : Html (StringEditor.Msg a)
                 updatedStringEditorView =
-                    StringEditor.view stringEditorModel editedItem
+                    StringEditor.view stringEditorModel item
             in
             Html.Styled.map StringEditorMsg updatedStringEditorView
+
+        Nothing ->
+            noContent
+
+
+viewQuickFilter : Maybe (ColumnConfig a) -> QuickFilter.Model -> Html (Msg a)
+viewQuickFilter filteredColumn quickFilterModel =
+    case filteredColumn of
+        Just _ ->
+            let
+                updatedQuickFilterView : Html QuickFilter.Msg
+                updatedQuickFilterView =
+                    QuickFilter.view quickFilterModel
+            in
+            Html.Styled.map QuickFilterMsg updatedQuickFilterView
 
         Nothing ->
             noContent
@@ -1445,7 +1542,7 @@ columnFilters model =
 {-| The list of raw data satisfying the current filtering values
 -}
 visibleData : Model a -> List a
-visibleData (Model state _) =
+visibleData (Model state _ _) =
     state.visibleItems
         |> List.map .data
 
@@ -1912,7 +2009,7 @@ This list ignores the actual position of the columns; some of them may require
 an horizontal scrolling to be seen
 -}
 visibleColumns : Model a -> List (ColumnConfig a)
-visibleColumns (Model state _) =
+visibleColumns (Model state _ _) =
     visibleColumns_ state
 
 
@@ -2257,11 +2354,6 @@ resizingHandleWidth =
     5
 
 
-noContent : Html msg
-noContent =
-    text ""
-
-
 viewArrowUp : Html (Msg a)
 viewArrowUp =
     viewArrow borderBottom3
@@ -2334,191 +2426,37 @@ viewFilter state columnConfig =
             , value <| Maybe.withDefault "" columnConfig.filteringValue
             ]
             []
-        , viewQuickFilter state columnConfig
+        , viewQuickFilterButton state columnConfig
         ]
 
 
-type QuickFilterState
-    = Open
-    | Closed
-    | None
-
-
-viewQuickFilter : State a -> ColumnConfig a -> Html (Msg a)
-viewQuickFilter state columnConfig =
+viewQuickFilterButton : State a -> ColumnConfig a -> Html (Msg a)
+viewQuickFilterButton state columnConfig =
     let
-        isQuickFilterOpen =
-            Maybe.map (isColumn columnConfig) state.openedQuickFilter |> Maybe.withDefault False
-
-        quickFilterState =
-            if not columnConfig.hasQuickFilter then
-                None
-
-            else if isQuickFilterOpen then
-                Open
-
-            else
-                Closed
-    in
-    case quickFilterState of
-        None ->
-            noContent
-
-        Open ->
-            div [ css [ position absolute ] ]
-                [ viewOpenedQuickFilter state columnConfig ]
-
-        Closed ->
-            div
-                [ css
-                    [ cursor pointer
-                    , displayFlex
-                    , justifyContent center
-                    , flexDirection row
-                    , padding (px 2)
-                    , paddingTop (px 6)
-                    ]
-                , attribute "data-testid" <| "quickFilter-" ++ columnConfig.properties.id
-                , onClick UserClickedFilter
-                , title <| localize Label.openQuickFilter state.labels
-                ]
-                [ drawSvg Icons.width filterIcon (UserClickedQuickFilterButton columnConfig)
-                ]
-
-
-viewOpenedQuickFilter : State a -> ColumnConfig a -> Html (Msg a)
-viewOpenedQuickFilter state columnConfig =
-    let
-        maxQuickFilterPropositions =
-            100
-
-        values =
-            columnVisibleValues columnConfig state
-                |> take maxQuickFilterPropositions
-
-        firstItem =
-            List.head values
-                |> Maybe.withDefault ""
-
-        emptyLabel =
-            localize Label.empty state.labels
-
-        filterPropositions =
-            if firstItem == "" then
-                values
-                    |> List.drop 1
-                    |> (::) emptyLabel
-
-            else
-                values
-
-        params value =
-            { columnConfig = columnConfig
-            , emptyLabel = emptyLabel
-            , filterString = Just ("=" ++ value)
-            , isCommand = False
-            , label = value
-            }
+        htmlId =
+            quickFilterButtonId columnConfig
     in
     div
-        [ quickFilterPopupStyles columnConfig
-
-        -- allow this div to receive focus (necessary to receive blur event)
-        , tabindex 0
-        , onBlur FilterLostFocus
-        , id openedQuickFilterHtmlId
-        ]
-    <|
-        List.map (\value -> viewQuickFilterEntry (params value))
-            filterPropositions
-            ++ viewEllipsis (List.length filterPropositions) maxQuickFilterPropositions
-            ++ viewResetSelector columnConfig (localize Label.clear state.labels)
-
-
-quickFilterPopupStyles : ColumnConfig a -> Attribute msg
-quickFilterPopupStyles columnConfig =
-    css
-        [ position absolute
-        , left (px <| contextualMenuPosition columnConfig)
-        , top (px -10)
-        , zIndex (int 1000)
-        , border3 (px 1) solid lightGrey2
-        , margin auto
-        , padding (px 5)
-        , opacity (int 1)
-        , width (px <| toFloat <| max columnConfig.properties.width 100)
-        , maxHeight <| px <| toFloat 400
-        , backgroundColor white
-        , overflowX hidden
-        , overflowY auto
-        , whiteSpace noWrap
-        ]
-
-
-{-| The horizontal position of the quick filtering menu, relative to the column left border
--}
-contextualMenuPosition : ColumnConfig a -> Float
-contextualMenuPosition columnConfig =
-    toFloat columnConfig.properties.width - Icons.width - resizingHandleWidth - 10
-
-
-viewEllipsis : Int -> Int -> List (Html (Msg a))
-viewEllipsis totalNumber actualNumber =
-    if totalNumber > actualNumber then
-        [ span [ css [ cursor auto ] ] [ text "..." ] ]
-
-    else
-        []
-
-
-viewResetSelector : ColumnConfig a -> String -> List (Html (Msg a))
-viewResetSelector columnConfig label =
-    let
-        params =
-            { columnConfig = columnConfig
-            , emptyLabel = ""
-            , filterString = Nothing
-            , isCommand = True
-            , label = label
-            }
-    in
-    if columnConfig.filteringValue == Nothing then
-        []
-
-    else
-        [ hr [ css [ color darkGrey2 ] ] []
-        , viewQuickFilterEntry params
-        ]
-
-
-type alias ViewQuickFilterEntryParams a =
-    { columnConfig : ColumnConfig a
-    , emptyLabel : String
-    , filterString : Maybe String
-    , isCommand : Bool
-    , label : String
-    }
-
-
-viewQuickFilterEntry : ViewQuickFilterEntryParams a -> Html (Msg a)
-viewQuickFilterEntry params =
-    let
-        style =
-            if params.isCommand || params.label == params.emptyLabel then
-                fontStyle italic
-
-            else
-                fontStyle normal
-    in
-    div
-        [ onClick <| FilterModified params.columnConfig params.filterString
-        , css
+        [ css
             [ cursor pointer
-            , style
-            , hover [ backgroundColor lightGrey3 ]
+            , displayFlex
+            , justifyContent center
+            , flexDirection row
+            , padding (px 2)
+            , paddingTop (px 6)
             ]
+        , attribute "data-testid" htmlId
+        , id htmlId
+        , onClick UserClickedFilter
+        , title <| localize Label.openQuickFilter state.labels
         ]
-        [ text params.label ]
+        [ drawSvg Icons.width filterIcon (UserClickedQuickFilterButton columnConfig)
+        ]
+
+
+quickFilterButtonId : ColumnConfig a -> String
+quickFilterButtonId columnConfig =
+    "quickFilter-" ++ columnConfig.properties.id
 
 
 {-| Left + right cell border width, including padding, in px.
@@ -2561,6 +2499,14 @@ cellAttributes properties item =
 cellId : ColumnProperties a -> Item a -> String
 cellId columnProperties item =
     columnProperties.id ++ String.fromInt item.visibleIndex
+
+
+{-| TODO use or drop
+The horizontal position of the quick filtering menu, relative to the column left border
+-}
+contextualMenuPosition : ColumnConfig a -> Float
+contextualMenuPosition columnConfig =
+    toFloat columnConfig.properties.width - Icons.width - resizingHandleWidth - 10
 
 
 {-| The unique values in a column
