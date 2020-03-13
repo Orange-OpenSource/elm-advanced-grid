@@ -64,9 +64,8 @@ A grid is defined using a `Config`
 import Array
 import Browser.Dom
 import Css exposing (..)
-import Css.Global exposing (descendants, typeSelector)
 import Dict exposing (Dict)
-import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, lightGrey3, white, white2)
+import Grid.Colors exposing (black)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Grid.Html exposing (noContent)
 import Grid.Icons as Icons exposing (drawSvg, filterIcon)
@@ -75,15 +74,16 @@ import Grid.Labels as Label exposing (localize)
 import Grid.List exposing (appendIf)
 import Grid.QuickFilter as QuickFilter exposing (openedQuickFilterHtmlId)
 import Grid.StringEditor as StringEditor
+import Grid.Stylesheet as Stylesheet exposing (resizingHandleWidth)
 import Html
 import Html.Events.Extra.Mouse as Mouse
-import Html.Styled exposing (Attribute, Html, div, hr, i, input, label, span, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, tabindex, title, type_, value)
+import Html.Styled exposing (Attribute, Html, div, i, input, label, span, text, toUnstyled)
+import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
 import Html.Styled.Events exposing (on, onBlur, onClick, onDoubleClick, onInput, onMouseUp, stopPropagationOn)
 import Html.Styled.Lazy exposing (lazy, lazy2)
 import InfiniteList as IL
 import Json.Decode as Decode
-import List exposing (take)
+import List
 import List.Extra exposing (findIndex, unique)
 import String
 import Task
@@ -1390,14 +1390,11 @@ view model =
         else
             div
                 [ id rootContainerId
-                , css
-                    [ width (px <| toFloat (state.config.containerWidth + cumulatedBorderWidth))
-                    , overflow hidden
-                    , margin auto
-                    , position relative
-                    ]
+                , class "root"
+                , css [ width (px <| toFloat (state.config.containerWidth + cumulatedBorderWidth)) ]
                 ]
-                [ lazy viewGrid state
+                [ Stylesheet.grid
+                , lazy viewGrid state
                 , lazy2 viewStringEditor state.editedItem stringEditorModel
                 , lazy2 viewQuickFilter state.quickFilteredColumn quickFilterModel
                 ]
@@ -1420,15 +1417,6 @@ gridHtmlId =
 viewGrid : State a -> Html (Msg a)
 viewGrid state =
     let
-        attributes =
-            [ css
-                [ width (px <| toFloat (state.config.containerWidth + cumulatedBorderWidth))
-                , overflow auto
-                , margin auto
-                , position relative
-                ]
-            ]
-
         columnIsResizedOrDragged =
             state.resizedColumn /= Nothing || state.draggedColumn /= Nothing
 
@@ -1436,19 +1424,24 @@ viewGrid state =
             state.editedItem /= Nothing
     in
     div
-        (attributes
+        ([ class "grid"
+         , css
+            [ width (px <| toFloat (state.config.containerWidth + cumulatedBorderWidth))
+            ]
+         ]
             |> appendIf columnIsResizedOrDragged
                 [ onMouseUp UserEndedMouseInteraction
                 , fromUnstyled <| Mouse.onLeave (\_ -> UserEndedMouseInteraction)
                 ]
             |> appendIf editionInProgress [ onScroll OnScrolled ]
         )
+    -- TODO check if this if is still relevant
     <|
         if state.config.hasFilters then
             [ div
-                [ css
-                    [ width (px <| toFloat <| gridWidth state)
-                    ]
+                [ class "headers"
+                , css
+                    [ width (px <| toFloat <| gridWidth state) ]
                 ]
                 [ viewHeaderContainer state
                 ]
@@ -1500,14 +1493,10 @@ viewRows state =
             state.editedItem /= Nothing
     in
     div
-        ([ css
+        ([ class "rows"
+         , css
             [ height (px <| toFloat state.config.containerHeight)
             , width (px <| toFloat <| gridWidth state)
-            , overflowX hidden
-            , overflowY auto
-
-            -- displays the vertical scrollbar to the left. https://stackoverflow.com/questions/7347532/how-to-position-a-div-scrollbar-on-the-left-hand-side
-            , property "direction" "rtl"
             ]
          , fromUnstyled <| IL.onScroll InfiniteListMsg
          , id gridHtmlId
@@ -1557,14 +1546,10 @@ viewRow state idx listIdx item =
         << div
             [ attribute "data-testid" "row"
             , class (state.config.rowClass item)
+            , class "row"
             , css
-                [ displayFlex
-                , height (px <| toFloat state.config.lineHeight)
+                [ height (px <| toFloat state.config.lineHeight)
                 , width (px <| toFloat <| gridWidth state)
-                , borderBottom3 (px 1) solid lightGrey
-
-                -- restore reading order, while preserving the left position of the scrollbar
-                , property "direction" "ltr"
                 ]
             ]
     <|
@@ -1851,32 +1836,17 @@ viewProgressBar barHeight getter properties item =
             (nestedDataGetter item / toFloat 100) * toFloat maxWidth
     in
     div
-        [ css
-            [ displayFlex
-            , alignItems center
-            , border3 (px 1) solid lightGrey
-            , boxSizing contentBox
-            , height (pct 100)
-            , paddingLeft (px 5)
-            , paddingRight (px 5)
-            ]
+        [ class "progress-bar-container"
         ]
         [ div
-            [ css
-                [ displayFlex
-                , backgroundColor white
-                , borderRadius (px 5)
-                , border3 (px 1) solid lightGrey
-                , width (px <| toFloat maxWidth)
-                ]
+            [ class "progress-bar-background"
+            , css [ width (px <| toFloat maxWidth) ]
             ]
             [ div
-                [ css
-                    [ backgroundColor lightGreen
-                    , width (px actualWidth)
+                [ class "progress-bar-foreground"
+                , css
+                    [ width (px actualWidth)
                     , height (px <| toFloat barHeight)
-                    , borderRadius (px 5)
-                    , overflow visible
                     ]
                 ]
                 []
@@ -1893,52 +1863,23 @@ viewPreferences state =
             List.filter (not << isSelectionColumn) state.config.columns
     in
     div
-        [ css
-            [ border3 (px 1) solid lightGrey2
-            , margin auto
-            , padding (px 5)
-            , width (px <| toFloat state.config.containerWidth * 0.6)
-            ]
+        [ class "bordered"
+        , css
+            [ width (px <| toFloat state.config.containerWidth * 0.6) ]
         ]
     <|
-        (viewClosebutton
-            :: List.map viewColumnVisibilitySelector dataColumns
-        )
+        [ Stylesheet.preferences
+        , viewClosebutton
+        ]
+            ++ List.map viewColumnVisibilitySelector dataColumns
 
 
 viewClosebutton : Html (Msg a)
 viewClosebutton =
     div
-        [ css
-            [ cursor pointer
-            , position relative
-            , float right
-            , width (px 16)
-            , height (px 16)
-            , opacity (num 0.3)
-            , hover
-                [ opacity (num 1) ]
-            , before
-                [ position absolute
-                , left (px 7)
-                , property "content" "' '"
-                , height (px 17)
-                , width (px 2)
-                , backgroundColor black
-                , transform (rotate (deg 45))
-                ]
-            , after
-                [ position absolute
-                , left (px 7)
-                , property "content" "' '"
-                , height (px 17)
-                , width (px 2)
-                , backgroundColor black
-                , transform (rotate (deg -45))
-                ]
-            ]
+        [ attribute "data-testid" "configureDisplayCloseCross"
+        , class "close-button"
         , onClick UserClickedPreferenceCloseButton
-        , attribute "data-testid" "configureDisplayCloseCross"
         ]
         []
 
@@ -1955,9 +1896,7 @@ viewColumnVisibilitySelector columnConfig =
             ]
             []
         , label
-            [ css
-                [ marginLeft (px 5)
-                ]
+            [ class "margin-Left-XS"
             , for columnConfig.properties.id
             ]
             [ text columnConfig.properties.title ]
@@ -2022,12 +1961,9 @@ viewHeaderContainer : State a -> Html (Msg a)
 viewHeaderContainer state =
     let
         attributes =
-            [ css
-                [ backgroundColor darkGrey
-                , displayFlex
-                , noShrink
-                , height (px <| toFloat state.config.headerHeight)
-                ]
+            [ class "header-container"
+            , css
+                [ height (px <| toFloat state.config.headerHeight) ]
             , id headerContainerId
             ]
 
@@ -2059,6 +1995,7 @@ viewHeader state columnConfig index =
 
         attributes =
             [ attribute "data-testid" headerId
+            , class "header"
             , id headerId
             , headerStyles state
             , title columnConfig.properties.tooltip
@@ -2082,27 +2019,7 @@ viewHeader state columnConfig index =
 headerStyles : State a -> Attribute (Msg a)
 headerStyles state =
     css
-        [ backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
-        , display inlineFlex
-        , noShrink
-        , flexDirection row
-        , border3 (px 1) solid lightGrey2
-        , boxSizing contentBox
-        , height (px <| toFloat <| state.config.headerHeight - cumulatedBorderWidth)
-        , descendantsVisibleOnHover
-        , padding (px 2)
-        , zIndex (int 10)
-        ]
-
-
-descendantsVisibleOnHover : Style
-descendantsVisibleOnHover =
-    hover
-        [ descendants
-            [ typeSelector "div"
-                [ visibility visible -- makes the move handle visible when hover the column
-                ]
-            ]
+        [ height (px <| toFloat <| state.config.headerHeight - cumulatedBorderWidth)
         ]
 
 
@@ -2115,12 +2032,9 @@ viewSelectionHeader state _ =
             List.all .selected state.visibleItems
     in
     div
-        [ css
+        [ class "selection-header"
+        , css
             [ width <| px <| toFloat <| selectionColumn.properties.width - cumulatedBorderWidth
-            , displayFlex
-            , noShrink
-            , justifyContent center
-            , alignItems center
             ]
         ]
         [ input
@@ -2137,37 +2051,19 @@ viewSelectionHeader state _ =
 -}
 viewDataHeader : State a -> ColumnConfig a -> List (Attribute (Msg a)) -> Html (Msg a)
 viewDataHeader state columnConfig conditionalAttributes =
-    let
-        attributes =
-            [ css
-                [ displayFlex
-                , noShrink
-                , flexDirection row
-                ]
-            ]
-    in
     div
-        attributes
+        [ class "flex-row"
+        ]
         [ div
-            ([ css
-                [ displayFlex
-                , noShrink
-                , flexDirection column
-                , alignItems flexStart
-                , overflow hidden
-                , width <| px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth) - resizingHandleWidth
+            ([ class "flex-column"
+             , css
+                [ width <| px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth) - resizingHandleWidth
                 ]
              ]
                 ++ conditionalAttributes
             )
             [ div
-                [ css
-                    [ displayFlex
-                    , noShrink
-                    , flexDirection row
-                    , flexGrow (num 1)
-                    , justifyContent flexStart
-                    ]
+                [ class "flex-row"
                 ]
                 [ viewDragHandle columnConfig
                 , viewTitle state columnConfig
@@ -2185,7 +2081,7 @@ draggingAttributes state currentColumn =
         Just draggedColumn ->
             [ fromUnstyled <| Mouse.onMove (\event -> UserDraggedColumn (event |> toPosition)) ]
                 ++ (if isColumn currentColumn draggedColumn.column then
-                        [ css [ opacity (num 0) ] ]
+                        [ class "invisible" ]
 
                     else
                         [ fromUnstyled <|
@@ -2205,11 +2101,9 @@ viewGhostHeader state =
         Just draggedColumn ->
             div
                 (headerStyles state
-                    :: [ css
-                            [ position absolute
-                            , left (px <| draggedColumn.x - state.headerContainerPosition.x)
-                            , top (px 2)
-                            , pointerEvents none
+                    :: [ class "ghost-header"
+                       , css
+                            [ left (px <| draggedColumn.x - state.headerContainerPosition.x)
                             ]
                        ]
                 )
@@ -2253,9 +2147,9 @@ viewTitle state columnConfig =
                     fontStyle normal
     in
     span
-        [ css
+        [ class "header-title"
+        , css
             [ titleFontStyle
-            , lineHeight (num 1.2)
             ]
         ]
         [ text <| columnConfig.properties.title
@@ -2283,33 +2177,18 @@ viewSortingSymbol state columnConfig =
 viewDragHandle : ColumnConfig a -> Html (Msg a)
 viewDragHandle columnConfig =
     div
-        [ css
-            [ displayFlex
-            , flexDirection row
-            , cursor move
-            , fontSize (px 0.1)
-            , height (pct 100)
-            , visibility hidden
-            , width (px 10)
-            , zIndex (int 5)
-            ]
+        [ class "drag-handle"
         , fromUnstyled <| Mouse.onOver (\_ -> UserHoveredDragHandle)
         , fromUnstyled <| Mouse.onDown (\event -> UserClickedDragHandle columnConfig (event |> toPosition))
         , fromUnstyled <| Mouse.onUp (\_ -> UserEndedMouseInteraction)
         , attribute "data-testid" <| "dragHandle-" ++ columnConfig.properties.id
         ]
+        -- TODO replace with SVG
         (List.repeat 2 <|
             div [] <|
                 List.repeat 4 <|
                     div
-                        [ css
-                            [ backgroundColor darkGrey2
-                            , borderRadius (pct 50)
-                            , height (px 3)
-                            , width (px 3)
-                            , marginRight (px 1)
-                            , marginBottom (px 2)
-                            ]
+                        [ class "small-square"
                         ]
                         []
         )
@@ -2323,14 +2202,7 @@ toPosition event =
 viewResizeHandle : ColumnConfig a -> Html (Msg a)
 viewResizeHandle columnConfig =
     div
-        [ css
-            [ cursor colResize
-            , displayFlex
-            , justifyContent spaceAround
-            , height (pct 100)
-            , visibility hidden
-            , width (px resizingHandleWidth)
-            ]
+        [ class "resize-handle"
         , fromUnstyled <| Mouse.onDown (\event -> UserClickedResizeHandle columnConfig (event |> toPosition))
         , onBlur UserEndedMouseInteraction
         ]
@@ -2340,18 +2212,8 @@ viewResizeHandle columnConfig =
 viewVerticalBar : Html msg
 viewVerticalBar =
     div
-        [ css
-            [ width (px 1)
-            , height (px 10)
-            , backgroundColor darkGrey3
-            ]
-        ]
+        [ class "vertical-bar" ]
         []
-
-
-resizingHandleWidth : Float
-resizingHandleWidth =
-    5
 
 
 viewArrowUp : Html (Msg a)
@@ -2367,14 +2229,8 @@ viewArrowDown =
 viewArrow : (Px -> BorderStyle (TextDecorationStyle {}) -> Color -> Style) -> Html msg
 viewArrow horizontalBorder =
     div
-        [ css
-            [ width (px 0)
-            , height (px 0)
-            , borderLeft3 (px 5) solid transparent
-            , borderRight3 (px 5) solid transparent
-            , horizontalBorder (px 5) solid black
-            , margin (px 5)
-            ]
+        [ class "arrow-head"
+        , css [ horizontalBorder (px 5) solid black ]
         ]
         []
 
@@ -2398,25 +2254,13 @@ filterInputWidth columnConfig =
 viewFilter : State a -> ColumnConfig a -> Html (Msg a)
 viewFilter state columnConfig =
     div
-        [ css
-            [ displayFlex
-            , flexDirection row
-            , justifyContent spaceBetween
-            , alignItems center
-            , alignSelf stretch
-            , backgroundColor white
-            , borderRadius (px 3)
-            , marginLeft (px 4)
-            ]
+        [ class "input-filter-container"
         ]
         [ input
             [ attribute "data-testid" <| "filter-" ++ columnConfig.properties.id
+            , class "input-filter"
             , css
-                [ border (px 0)
-                , height (px <| toFloat <| state.config.lineHeight)
-                , paddingLeft (px 2)
-                , paddingRight (px 2)
-                , marginLeft (px resizingHandleWidth) -- for visual centering in the header
+                [ height (px <| toFloat <| state.config.lineHeight)
                 , width <| filterInputWidth columnConfig
                 ]
             , onClick UserClickedFilter
@@ -2437,15 +2281,8 @@ viewQuickFilterButton state columnConfig =
             quickFilterButtonId columnConfig
     in
     div
-        [ css
-            [ cursor pointer
-            , displayFlex
-            , justifyContent center
-            , flexDirection row
-            , padding (px 2)
-            , paddingTop (px 6)
-            ]
-        , attribute "data-testid" htmlId
+        [ attribute "data-testid" htmlId
+        , class "quick-filter-button"
         , id htmlId
         , onClick UserClickedFilter
         , title <| localize Label.openQuickFilter state.labels
@@ -2473,22 +2310,9 @@ cellAttributes : ColumnProperties a -> Item a -> List (Html.Styled.Attribute (Ms
 cellAttributes properties item =
     [ id (cellId properties item)
     , attribute "data-testid" properties.id
+    , class "cell"
     , css
-        [ alignItems center
-        , display inlineFlex
-        , noShrink
-        , justifyContent spaceBetween
-        , borderLeft3 (px 1) solid lightGrey
-        , borderRight3 (px 1) solid lightGrey
-        , firstOfType [ justifyContent flexEnd ] -- justifies on right the first column to avoid it being partially hidden by vertical scrollbar
-        , boxSizing contentBox
-        , minHeight (pct 100) -- 100% min height forces empty divs to be correctly rendered
-        , paddingLeft (px 2)
-        , paddingRight (px 2)
-        , descendantsVisibleOnHover
-        , overflow hidden
-        , whiteSpace noWrap
-        , width (px <| toFloat (properties.width - cumulatedBorderWidth))
+        [ width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
     ]
         |> appendIf (properties.editor == Nothing)
@@ -2517,10 +2341,3 @@ columnVisibleValues columnConfig state =
         |> List.sortWith columnConfig.comparator
         |> List.map columnConfig.toString
         |> unique
-
-
-{-| prevents header width to be automatically reduced
--}
-noShrink : Style
-noShrink =
-    flexShrink (num 0)

@@ -5862,116 +5862,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$List$appendIf = F3(
 var $Orange_OpenSource$elm_advanced_grid$Grid$UserClickedLine = function (a) {
 	return {$: 21, a: a};
 };
-var $rtfeldman$elm_css$Css$Preprocess$ApplyStyles = function (a) {
-	return {$: 6, a: a};
-};
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $rtfeldman$elm_css$Css$Preprocess$AppendProperty = function (a) {
-	return {$: 0, a: a};
-};
-var $rtfeldman$elm_css$Css$Internal$property = F2(
-	function (key, value) {
-		return $rtfeldman$elm_css$Css$Preprocess$AppendProperty(key + (':' + value));
-	});
-var $rtfeldman$elm_css$Css$Internal$getOverloadedProperty = F3(
-	function (functionName, desiredKey, style) {
-		getOverloadedProperty:
-		while (true) {
-			switch (style.$) {
-				case 0:
-					var str = style.a;
-					var key = A2(
-						$elm$core$Maybe$withDefault,
-						'',
-						$elm$core$List$head(
-							A2($elm$core$String$split, ':', str)));
-					return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, key);
-				case 1:
-					var selector = style.a;
-					return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-selector'));
-				case 2:
-					var combinator = style.a;
-					return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-combinator'));
-				case 3:
-					var pseudoElement = style.a;
-					return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-pseudo-element setter'));
-				case 4:
-					return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-media-query'));
-				case 5:
-					return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-keyframes'));
-				default:
-					if (!style.a.b) {
-						return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-empty-Style'));
-					} else {
-						if (!style.a.b.b) {
-							var _v1 = style.a;
-							var only = _v1.a;
-							var $temp$functionName = functionName,
-								$temp$desiredKey = desiredKey,
-								$temp$style = only;
-							functionName = $temp$functionName;
-							desiredKey = $temp$desiredKey;
-							style = $temp$style;
-							continue getOverloadedProperty;
-						} else {
-							var _v2 = style.a;
-							var first = _v2.a;
-							var rest = _v2.b;
-							var $temp$functionName = functionName,
-								$temp$desiredKey = desiredKey,
-								$temp$style = $rtfeldman$elm_css$Css$Preprocess$ApplyStyles(rest);
-							functionName = $temp$functionName;
-							desiredKey = $temp$desiredKey;
-							style = $temp$style;
-							continue getOverloadedProperty;
-						}
-					}
-			}
-		}
-	});
-var $rtfeldman$elm_css$Css$Internal$IncompatibleUnits = 0;
-var $rtfeldman$elm_css$Css$Structure$Compatible = 0;
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $rtfeldman$elm_css$Css$Internal$lengthConverter = F3(
-	function (units, unitLabel, numericValue) {
-		return {
-			cE: 0,
-			cP: 0,
-			aU: 0,
-			D: 0,
-			bi: 0,
-			aY: 0,
-			ak: 0,
-			aZ: 0,
-			a_: 0,
-			ay: 0,
-			az: 0,
-			aa: 0,
-			am: numericValue,
-			a4: 0,
-			a6: unitLabel,
-			bx: units,
-			dU: _Utils_ap(
-				$elm$core$String$fromFloat(numericValue),
-				unitLabel)
-		};
-	});
-var $rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty = A3($rtfeldman$elm_css$Css$Internal$lengthConverter, 0, '', 0);
-var $rtfeldman$elm_css$Css$alignItems = function (fn) {
-	return A3(
-		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
-		'alignItems',
-		'align-items',
-		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
-};
 var $rtfeldman$elm_css$VirtualDom$Styled$Attribute = F3(
 	function (a, b, c) {
 		return {$: 0, a: a, b: b, c: c};
@@ -5992,36 +5882,36 @@ var $rtfeldman$elm_css$VirtualDom$Styled$attribute = F2(
 			'');
 	});
 var $rtfeldman$elm_css$Html$Styled$Attributes$attribute = $rtfeldman$elm_css$VirtualDom$Styled$attribute;
-var $rtfeldman$elm_css$Css$property = F2(
-	function (key, value) {
-		return $rtfeldman$elm_css$Css$Preprocess$AppendProperty(key + (':' + value));
-	});
-var $rtfeldman$elm_css$Css$prop3 = F4(
-	function (key, argA, argB, argC) {
-		return A2(
-			$rtfeldman$elm_css$Css$property,
-			key,
-			A2(
-				$elm$core$String$join,
-				' ',
-				_List_fromArray(
-					[argA.dU, argB.dU, argC.dU])));
-	});
-var $rtfeldman$elm_css$Css$borderLeft3 = $rtfeldman$elm_css$Css$prop3('border-left');
-var $rtfeldman$elm_css$Css$borderRight3 = $rtfeldman$elm_css$Css$prop3('border-right');
-var $rtfeldman$elm_css$Css$prop1 = F2(
-	function (key, arg) {
-		return A2($rtfeldman$elm_css$Css$property, key, arg.dU);
-	});
-var $rtfeldman$elm_css$Css$boxSizing = $rtfeldman$elm_css$Css$prop1('box-sizing');
 var $Orange_OpenSource$elm_advanced_grid$Grid$cellId = F2(
 	function (columnProperties, item) {
 		return _Utils_ap(
 			columnProperties.o,
 			$elm$core$String$fromInt(item.dW));
 	});
-var $rtfeldman$elm_css$Css$center = $rtfeldman$elm_css$Css$prop1('center');
-var $rtfeldman$elm_css$Css$contentBox = {cj: 0, bF: 0, dU: 'content-box'};
+var $elm$virtual_dom$VirtualDom$property = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_property,
+			_VirtualDom_noInnerHtmlOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $rtfeldman$elm_css$VirtualDom$Styled$property = F2(
+	function (key, value) {
+		return A3(
+			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
+			A2($elm$virtual_dom$VirtualDom$property, key, value),
+			_List_Nil,
+			'');
+	});
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			$rtfeldman$elm_css$VirtualDom$Styled$property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $rtfeldman$elm_css$Html$Styled$Attributes$class = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('className');
 var $rtfeldman$elm_css$Css$Structure$UniversalSelectorSequence = function (a) {
 	return {$: 1, a: a};
 };
@@ -7041,6 +6931,15 @@ var $rtfeldman$elm_css$Hash$fromString = function (str) {
 		$rtfeldman$elm_hex$Hex$toString(
 			A2($Skinney$murmur3$Murmur3$hashString, $rtfeldman$elm_css$Hash$murmurSeed, str)));
 };
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $rtfeldman$elm_css$Css$Preprocess$Resolve$last = function (list) {
 	last:
 	while (true) {
@@ -7746,14 +7645,6 @@ var $rtfeldman$elm_css$VirtualDom$Styled$getClassname = function (styles) {
 									styles,
 									$rtfeldman$elm_css$Css$Structure$UniversalSelectorSequence(_List_Nil)))))))));
 };
-var $elm$virtual_dom$VirtualDom$property = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_property,
-			_VirtualDom_noInnerHtmlOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $rtfeldman$elm_css$Html$Styled$Internal$css = function (styles) {
 	var classname = $rtfeldman$elm_css$VirtualDom$Styled$getClassname(styles);
 	var classProperty = A2(
@@ -7764,468 +7655,7 @@ var $rtfeldman$elm_css$Html$Styled$Internal$css = function (styles) {
 };
 var $rtfeldman$elm_css$Html$Styled$Attributes$css = $rtfeldman$elm_css$Html$Styled$Internal$css;
 var $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth = 6;
-var $rtfeldman$elm_css$Css$Structure$Descendant = 3;
-var $rtfeldman$elm_css$Css$Preprocess$NestSnippet = F2(
-	function (a, b) {
-		return {$: 2, a: a, b: b};
-	});
-var $rtfeldman$elm_css$Css$Global$descendants = $rtfeldman$elm_css$Css$Preprocess$NestSnippet(3);
-var $rtfeldman$elm_css$Css$Preprocess$ExtendSelector = F2(
-	function (a, b) {
-		return {$: 1, a: a, b: b};
-	});
-var $rtfeldman$elm_css$Css$Structure$PseudoClassSelector = function (a) {
-	return {$: 2, a: a};
-};
-var $rtfeldman$elm_css$Css$pseudoClass = function (_class) {
-	return $rtfeldman$elm_css$Css$Preprocess$ExtendSelector(
-		$rtfeldman$elm_css$Css$Structure$PseudoClassSelector(_class));
-};
-var $rtfeldman$elm_css$Css$hover = $rtfeldman$elm_css$Css$pseudoClass('hover');
-var $rtfeldman$elm_css$Css$Structure$TypeSelector = $elm$core$Basics$identity;
-var $rtfeldman$elm_css$Css$Global$typeSelector = F2(
-	function (selectorStr, styles) {
-		var sequence = A2($rtfeldman$elm_css$Css$Structure$TypeSelectorSequence, selectorStr, _List_Nil);
-		var sel = A3($rtfeldman$elm_css$Css$Structure$Selector, sequence, _List_Nil, $elm$core$Maybe$Nothing);
-		return _List_fromArray(
-			[
-				$rtfeldman$elm_css$Css$Preprocess$StyleBlockDeclaration(
-				A3($rtfeldman$elm_css$Css$Preprocess$StyleBlock, sel, _List_Nil, styles))
-			]);
-	});
-var $rtfeldman$elm_css$Css$visibility = $rtfeldman$elm_css$Css$prop1('visibility');
-var $rtfeldman$elm_css$Css$visible = {a$: 0, V: 0, dU: 'visible', bD: 0};
-var $Orange_OpenSource$elm_advanced_grid$Grid$descendantsVisibleOnHover = $rtfeldman$elm_css$Css$hover(
-	_List_fromArray(
-		[
-			$rtfeldman$elm_css$Css$Global$descendants(
-			_List_fromArray(
-				[
-					A2(
-					$rtfeldman$elm_css$Css$Global$typeSelector,
-					'div',
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$visibility($rtfeldman$elm_css$Css$visible)
-						]))
-				]))
-		]));
-var $rtfeldman$elm_css$Css$display = $rtfeldman$elm_css$Css$prop1('display');
-var $rtfeldman$elm_css$Css$firstOfType = $rtfeldman$elm_css$Css$pseudoClass('first-of-type');
-var $rtfeldman$elm_css$Css$flexEnd = $rtfeldman$elm_css$Css$prop1('flex-end');
-var $rtfeldman$elm_css$Css$hidden = {H: 0, a$: 0, dU: 'hidden', bD: 0};
-var $rtfeldman$elm_css$VirtualDom$Styled$property = F2(
-	function (key, value) {
-		return A3(
-			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
-			A2($elm$virtual_dom$VirtualDom$property, key, value),
-			_List_Nil,
-			'');
-	});
-var $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			$rtfeldman$elm_css$VirtualDom$Styled$property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
 var $rtfeldman$elm_css$Html$Styled$Attributes$id = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('id');
-var $rtfeldman$elm_css$Css$inlineFlex = {p: 0, dU: 'inline-flex'};
-var $rtfeldman$elm_css$Css$justifyContent = function (fn) {
-	return A3(
-		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
-		'justifyContent',
-		'justify-content',
-		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
-};
-var $rtfeldman$elm_css$Css$withPrecedingHash = function (str) {
-	return A2($elm$core$String$startsWith, '#', str) ? str : A2($elm$core$String$cons, '#', str);
-};
-var $rtfeldman$elm_css$Css$erroneousHex = function (str) {
-	return {
-		aK: 1,
-		ck: 0,
-		X: 0,
-		cp: 0,
-		cx: 0,
-		dU: $rtfeldman$elm_css$Css$withPrecedingHash(str)
-	};
-};
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
-var $elm$core$String$fromChar = function (_char) {
-	return A2($elm$core$String$cons, _char, '');
-};
-var $elm$core$Basics$pow = _Basics_pow;
-var $rtfeldman$elm_hex$Hex$fromStringHelp = F3(
-	function (position, chars, accumulated) {
-		fromStringHelp:
-		while (true) {
-			if (!chars.b) {
-				return $elm$core$Result$Ok(accumulated);
-			} else {
-				var _char = chars.a;
-				var rest = chars.b;
-				switch (_char) {
-					case '0':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated;
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case '1':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + A2($elm$core$Basics$pow, 16, position);
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case '2':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (2 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case '3':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (3 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case '4':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (4 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case '5':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (5 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case '6':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (6 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case '7':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (7 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case '8':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (8 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case '9':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (9 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case 'a':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (10 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case 'b':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (11 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case 'c':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (12 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case 'd':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (13 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case 'e':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (14 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					case 'f':
-						var $temp$position = position - 1,
-							$temp$chars = rest,
-							$temp$accumulated = accumulated + (15 * A2($elm$core$Basics$pow, 16, position));
-						position = $temp$position;
-						chars = $temp$chars;
-						accumulated = $temp$accumulated;
-						continue fromStringHelp;
-					default:
-						var nonHex = _char;
-						return $elm$core$Result$Err(
-							$elm$core$String$fromChar(nonHex) + ' is not a valid hexadecimal character.');
-				}
-			}
-		}
-	});
-var $elm$core$Result$map = F2(
-	function (func, ra) {
-		if (!ra.$) {
-			var a = ra.a;
-			return $elm$core$Result$Ok(
-				func(a));
-		} else {
-			var e = ra.a;
-			return $elm$core$Result$Err(e);
-		}
-	});
-var $elm$core$Result$mapError = F2(
-	function (f, result) {
-		if (!result.$) {
-			var v = result.a;
-			return $elm$core$Result$Ok(v);
-		} else {
-			var e = result.a;
-			return $elm$core$Result$Err(
-				f(e));
-		}
-	});
-var $rtfeldman$elm_hex$Hex$fromString = function (str) {
-	if ($elm$core$String$isEmpty(str)) {
-		return $elm$core$Result$Err('Empty strings are not valid hexadecimal strings.');
-	} else {
-		var result = function () {
-			if (A2($elm$core$String$startsWith, '-', str)) {
-				var list = A2(
-					$elm$core$Maybe$withDefault,
-					_List_Nil,
-					$elm$core$List$tail(
-						$elm$core$String$toList(str)));
-				return A2(
-					$elm$core$Result$map,
-					$elm$core$Basics$negate,
-					A3(
-						$rtfeldman$elm_hex$Hex$fromStringHelp,
-						$elm$core$List$length(list) - 1,
-						list,
-						0));
-			} else {
-				return A3(
-					$rtfeldman$elm_hex$Hex$fromStringHelp,
-					$elm$core$String$length(str) - 1,
-					$elm$core$String$toList(str),
-					0);
-			}
-		}();
-		var formatError = function (err) {
-			return A2(
-				$elm$core$String$join,
-				' ',
-				_List_fromArray(
-					['\"' + (str + '\"'), 'is not a valid hexadecimal string because', err]));
-		};
-		return A2($elm$core$Result$mapError, formatError, result);
-	}
-};
-var $rtfeldman$elm_css$Css$validHex = F5(
-	function (str, _v0, _v1, _v2, _v3) {
-		var r1 = _v0.a;
-		var r2 = _v0.b;
-		var g1 = _v1.a;
-		var g2 = _v1.b;
-		var b1 = _v2.a;
-		var b2 = _v2.b;
-		var a1 = _v3.a;
-		var a2 = _v3.b;
-		var toResult = A2(
-			$elm$core$Basics$composeR,
-			$elm$core$String$fromList,
-			A2($elm$core$Basics$composeR, $elm$core$String$toLower, $rtfeldman$elm_hex$Hex$fromString));
-		var results = _Utils_Tuple2(
-			_Utils_Tuple2(
-				toResult(
-					_List_fromArray(
-						[r1, r2])),
-				toResult(
-					_List_fromArray(
-						[g1, g2]))),
-			_Utils_Tuple2(
-				toResult(
-					_List_fromArray(
-						[b1, b2])),
-				toResult(
-					_List_fromArray(
-						[a1, a2]))));
-		if ((((!results.a.a.$) && (!results.a.b.$)) && (!results.b.a.$)) && (!results.b.b.$)) {
-			var _v5 = results.a;
-			var red = _v5.a.a;
-			var green = _v5.b.a;
-			var _v6 = results.b;
-			var blue = _v6.a.a;
-			var alpha = _v6.b.a;
-			return {
-				aK: alpha / 255,
-				ck: blue,
-				X: 0,
-				cp: green,
-				cx: red,
-				dU: $rtfeldman$elm_css$Css$withPrecedingHash(str)
-			};
-		} else {
-			return $rtfeldman$elm_css$Css$erroneousHex(str);
-		}
-	});
-var $rtfeldman$elm_css$Css$hex = function (str) {
-	var withoutHash = A2($elm$core$String$startsWith, '#', str) ? A2($elm$core$String$dropLeft, 1, str) : str;
-	var _v0 = $elm$core$String$toList(withoutHash);
-	_v0$4:
-	while (true) {
-		if ((_v0.b && _v0.b.b) && _v0.b.b.b) {
-			if (!_v0.b.b.b.b) {
-				var r = _v0.a;
-				var _v1 = _v0.b;
-				var g = _v1.a;
-				var _v2 = _v1.b;
-				var b = _v2.a;
-				return A5(
-					$rtfeldman$elm_css$Css$validHex,
-					str,
-					_Utils_Tuple2(r, r),
-					_Utils_Tuple2(g, g),
-					_Utils_Tuple2(b, b),
-					_Utils_Tuple2('f', 'f'));
-			} else {
-				if (!_v0.b.b.b.b.b) {
-					var r = _v0.a;
-					var _v3 = _v0.b;
-					var g = _v3.a;
-					var _v4 = _v3.b;
-					var b = _v4.a;
-					var _v5 = _v4.b;
-					var a = _v5.a;
-					return A5(
-						$rtfeldman$elm_css$Css$validHex,
-						str,
-						_Utils_Tuple2(r, r),
-						_Utils_Tuple2(g, g),
-						_Utils_Tuple2(b, b),
-						_Utils_Tuple2(a, a));
-				} else {
-					if (_v0.b.b.b.b.b.b) {
-						if (!_v0.b.b.b.b.b.b.b) {
-							var r1 = _v0.a;
-							var _v6 = _v0.b;
-							var r2 = _v6.a;
-							var _v7 = _v6.b;
-							var g1 = _v7.a;
-							var _v8 = _v7.b;
-							var g2 = _v8.a;
-							var _v9 = _v8.b;
-							var b1 = _v9.a;
-							var _v10 = _v9.b;
-							var b2 = _v10.a;
-							return A5(
-								$rtfeldman$elm_css$Css$validHex,
-								str,
-								_Utils_Tuple2(r1, r2),
-								_Utils_Tuple2(g1, g2),
-								_Utils_Tuple2(b1, b2),
-								_Utils_Tuple2('f', 'f'));
-						} else {
-							if (_v0.b.b.b.b.b.b.b.b && (!_v0.b.b.b.b.b.b.b.b.b)) {
-								var r1 = _v0.a;
-								var _v11 = _v0.b;
-								var r2 = _v11.a;
-								var _v12 = _v11.b;
-								var g1 = _v12.a;
-								var _v13 = _v12.b;
-								var g2 = _v13.a;
-								var _v14 = _v13.b;
-								var b1 = _v14.a;
-								var _v15 = _v14.b;
-								var b2 = _v15.a;
-								var _v16 = _v15.b;
-								var a1 = _v16.a;
-								var _v17 = _v16.b;
-								var a2 = _v17.a;
-								return A5(
-									$rtfeldman$elm_css$Css$validHex,
-									str,
-									_Utils_Tuple2(r1, r2),
-									_Utils_Tuple2(g1, g2),
-									_Utils_Tuple2(b1, b2),
-									_Utils_Tuple2(a1, a2));
-							} else {
-								break _v0$4;
-							}
-						}
-					} else {
-						break _v0$4;
-					}
-				}
-			}
-		} else {
-			break _v0$4;
-		}
-	}
-	return $rtfeldman$elm_css$Css$erroneousHex(str);
-};
-var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey = $rtfeldman$elm_css$Css$hex('CCC');
-var $rtfeldman$elm_css$Css$minHeight = $rtfeldman$elm_css$Css$prop1('min-height');
-var $rtfeldman$elm_css$Css$flexShrink = $rtfeldman$elm_css$Css$prop1('flex-shrink');
-var $rtfeldman$elm_css$Css$UnitlessFloat = 0;
-var $rtfeldman$elm_css$Css$num = function (val) {
-	return {
-		az: 0,
-		aa: 0,
-		bl: 0,
-		b0: 0,
-		am: val,
-		a6: '',
-		bx: 0,
-		dU: $elm$core$String$fromFloat(val)
-	};
-};
-var $Orange_OpenSource$elm_advanced_grid$Grid$noShrink = $rtfeldman$elm_css$Css$flexShrink(
-	$rtfeldman$elm_css$Css$num(0));
-var $rtfeldman$elm_css$Css$noWrap = {bf: 0, bT: 0, dU: 'nowrap', as: 0};
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 0, a: a};
 };
@@ -8251,16 +7681,45 @@ var $rtfeldman$elm_css$Html$Styled$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $rtfeldman$elm_css$Css$overflow = $rtfeldman$elm_css$Css$prop1('overflow');
-var $rtfeldman$elm_css$Css$paddingLeft = $rtfeldman$elm_css$Css$prop1('padding-left');
-var $rtfeldman$elm_css$Css$paddingRight = $rtfeldman$elm_css$Css$prop1('padding-right');
-var $rtfeldman$elm_css$Css$PercentageUnits = 0;
-var $rtfeldman$elm_css$Css$pct = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, 0, '%');
 var $rtfeldman$elm_css$Css$PxUnits = 0;
+var $rtfeldman$elm_css$Css$Structure$Compatible = 0;
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $rtfeldman$elm_css$Css$Internal$lengthConverter = F3(
+	function (units, unitLabel, numericValue) {
+		return {
+			cE: 0,
+			cP: 0,
+			aU: 0,
+			D: 0,
+			bi: 0,
+			aY: 0,
+			ak: 0,
+			aZ: 0,
+			a_: 0,
+			ay: 0,
+			az: 0,
+			aa: 0,
+			am: numericValue,
+			a4: 0,
+			a6: unitLabel,
+			bx: units,
+			dU: _Utils_ap(
+				$elm$core$String$fromFloat(numericValue),
+				unitLabel)
+		};
+	});
 var $rtfeldman$elm_css$Css$px = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, 0, 'px');
-var $rtfeldman$elm_css$Css$solid = {H: 0, aF: 0, dU: 'solid'};
-var $rtfeldman$elm_css$Css$spaceBetween = $rtfeldman$elm_css$Css$prop1('space-between');
-var $rtfeldman$elm_css$Css$whiteSpace = $rtfeldman$elm_css$Css$prop1('white-space');
+var $rtfeldman$elm_css$Css$Preprocess$AppendProperty = function (a) {
+	return {$: 0, a: a};
+};
+var $rtfeldman$elm_css$Css$property = F2(
+	function (key, value) {
+		return $rtfeldman$elm_css$Css$Preprocess$AppendProperty(key + (':' + value));
+	});
+var $rtfeldman$elm_css$Css$prop1 = F2(
+	function (key, arg) {
+		return A2($rtfeldman$elm_css$Css$property, key, arg.dU);
+	});
 var $rtfeldman$elm_css$Css$width = $rtfeldman$elm_css$Css$prop1('width');
 var $Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes = F2(
 	function (properties, item) {
@@ -8277,38 +7736,10 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes = F2(
 					$rtfeldman$elm_css$Html$Styled$Attributes$id(
 					A2($Orange_OpenSource$elm_advanced_grid$Grid$cellId, properties, item)),
 					A2($rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', properties.o),
+					$rtfeldman$elm_css$Html$Styled$Attributes$class('cell'),
 					$rtfeldman$elm_css$Html$Styled$Attributes$css(
 					_List_fromArray(
 						[
-							$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
-							$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineFlex),
-							$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
-							$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$spaceBetween),
-							A3(
-							$rtfeldman$elm_css$Css$borderLeft3,
-							$rtfeldman$elm_css$Css$px(1),
-							$rtfeldman$elm_css$Css$solid,
-							$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
-							A3(
-							$rtfeldman$elm_css$Css$borderRight3,
-							$rtfeldman$elm_css$Css$px(1),
-							$rtfeldman$elm_css$Css$solid,
-							$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
-							$rtfeldman$elm_css$Css$firstOfType(
-							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$flexEnd)
-								])),
-							$rtfeldman$elm_css$Css$boxSizing($rtfeldman$elm_css$Css$contentBox),
-							$rtfeldman$elm_css$Css$minHeight(
-							$rtfeldman$elm_css$Css$pct(100)),
-							$rtfeldman$elm_css$Css$paddingLeft(
-							$rtfeldman$elm_css$Css$px(2)),
-							$rtfeldman$elm_css$Css$paddingRight(
-							$rtfeldman$elm_css$Css$px(2)),
-							$Orange_OpenSource$elm_advanced_grid$Grid$descendantsVisibleOnHover,
-							$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$hidden),
-							$rtfeldman$elm_css$Css$whiteSpace($rtfeldman$elm_css$Css$noWrap),
 							$rtfeldman$elm_css$Css$width(
 							$rtfeldman$elm_css$Css$px(properties.z - $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth))
 						]))
@@ -8752,15 +8183,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$floatColumnConfig = function (prop
 		aH: A2($elm$core$Basics$composeR, nestedDataGetter, $elm$core$String$fromFloat)
 	};
 };
-var $rtfeldman$elm_css$Css$backgroundColor = function (c) {
-	return A2($rtfeldman$elm_css$Css$property, 'background-color', c.dU);
-};
-var $rtfeldman$elm_css$Css$border3 = $rtfeldman$elm_css$Css$prop3('border');
-var $rtfeldman$elm_css$Css$borderRadius = $rtfeldman$elm_css$Css$prop1('border-radius');
-var $rtfeldman$elm_css$Css$displayFlex = A2($rtfeldman$elm_css$Css$property, 'display', 'flex');
 var $rtfeldman$elm_css$Css$height = $rtfeldman$elm_css$Css$prop1('height');
-var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGreen = $rtfeldman$elm_css$Css$hex('4d4');
-var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$white = $rtfeldman$elm_css$Css$hex('FFF');
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewProgressBar = F4(
 	function (barHeight, getter, properties, item) {
 		var nestedDataGetter = A2(
@@ -8775,24 +8198,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewProgressBar = F4(
 			$rtfeldman$elm_css$Html$Styled$div,
 			_List_fromArray(
 				[
-					$rtfeldman$elm_css$Html$Styled$Attributes$css(
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$displayFlex,
-							$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
-							A3(
-							$rtfeldman$elm_css$Css$border3,
-							$rtfeldman$elm_css$Css$px(1),
-							$rtfeldman$elm_css$Css$solid,
-							$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
-							$rtfeldman$elm_css$Css$boxSizing($rtfeldman$elm_css$Css$contentBox),
-							$rtfeldman$elm_css$Css$height(
-							$rtfeldman$elm_css$Css$pct(100)),
-							$rtfeldman$elm_css$Css$paddingLeft(
-							$rtfeldman$elm_css$Css$px(5)),
-							$rtfeldman$elm_css$Css$paddingRight(
-							$rtfeldman$elm_css$Css$px(5))
-						]))
+					$rtfeldman$elm_css$Html$Styled$Attributes$class('progress-bar-container')
 				]),
 			_List_fromArray(
 				[
@@ -8800,18 +8206,10 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewProgressBar = F4(
 					$rtfeldman$elm_css$Html$Styled$div,
 					_List_fromArray(
 						[
+							$rtfeldman$elm_css$Html$Styled$Attributes$class('progress-bar-background'),
 							$rtfeldman$elm_css$Html$Styled$Attributes$css(
 							_List_fromArray(
 								[
-									$rtfeldman$elm_css$Css$displayFlex,
-									$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$white),
-									$rtfeldman$elm_css$Css$borderRadius(
-									$rtfeldman$elm_css$Css$px(5)),
-									A3(
-									$rtfeldman$elm_css$Css$border3,
-									$rtfeldman$elm_css$Css$px(1),
-									$rtfeldman$elm_css$Css$solid,
-									$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
 									$rtfeldman$elm_css$Css$width(
 									$rtfeldman$elm_css$Css$px(maxWidth))
 								]))
@@ -8822,17 +8220,14 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewProgressBar = F4(
 							$rtfeldman$elm_css$Html$Styled$div,
 							_List_fromArray(
 								[
+									$rtfeldman$elm_css$Html$Styled$Attributes$class('progress-bar-foreground'),
 									$rtfeldman$elm_css$Html$Styled$Attributes$css(
 									_List_fromArray(
 										[
-											$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGreen),
 											$rtfeldman$elm_css$Css$width(
 											$rtfeldman$elm_css$Css$px(actualWidth)),
 											$rtfeldman$elm_css$Css$height(
-											$rtfeldman$elm_css$Css$px(barHeight)),
-											$rtfeldman$elm_css$Css$borderRadius(
-											$rtfeldman$elm_css$Css$px(5)),
-											$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$visible)
+											$rtfeldman$elm_css$Css$px(barHeight))
 										]))
 								]),
 							_List_Nil)
@@ -9754,8 +9149,6 @@ var $FabienHenon$elm_infinite_list_view$InfiniteList$defaultContainer = F2(
 var $FabienHenon$elm_infinite_list_view$InfiniteList$config = function (conf) {
 	return {bH: $elm$core$Maybe$Nothing, eb: conf.eb, bd: $FabienHenon$elm_infinite_list_view$InfiniteList$defaultContainer, o: $elm$core$Maybe$Nothing, eE: conf.eE, eG: conf.eG, bm: 200, cg: _List_Nil};
 };
-var $rtfeldman$elm_css$Css$borderBottom3 = $rtfeldman$elm_css$Css$prop3('border-bottom');
-var $rtfeldman$elm_css$Html$Styled$Attributes$class = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('className');
 var $Orange_OpenSource$elm_advanced_grid$Grid$gridWidth = function (state) {
 	return A3(
 		$elm$core$List$foldl,
@@ -10261,21 +9654,15 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewRow = F4(
 						A2($rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', 'row'),
 						$rtfeldman$elm_css$Html$Styled$Attributes$class(
 						state.g.fb(item)),
+						$rtfeldman$elm_css$Html$Styled$Attributes$class('row'),
 						$rtfeldman$elm_css$Html$Styled$Attributes$css(
 						_List_fromArray(
 							[
-								$rtfeldman$elm_css$Css$displayFlex,
 								$rtfeldman$elm_css$Css$height(
 								$rtfeldman$elm_css$Css$px(state.g.eL)),
 								$rtfeldman$elm_css$Css$width(
 								$rtfeldman$elm_css$Css$px(
-									$Orange_OpenSource$elm_advanced_grid$Grid$gridWidth(state))),
-								A3(
-								$rtfeldman$elm_css$Css$borderBottom3,
-								$rtfeldman$elm_css$Css$px(1),
-								$rtfeldman$elm_css$Css$solid,
-								$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
-								A2($rtfeldman$elm_css$Css$property, 'direction', 'ltr')
+									$Orange_OpenSource$elm_advanced_grid$Grid$gridWidth(state)))
 							]))
 					])),
 			A2(
@@ -10601,6 +9988,17 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$findFirstOK = function (re
 		}
 	}
 };
+var $elm$core$Result$map = F2(
+	function (func, ra) {
+		if (!ra.$) {
+			var a = ra.a;
+			return $elm$core$Result$Ok(
+				func(a));
+		} else {
+			var e = ra.a;
+			return $elm$core$Result$Err(e);
+		}
+	});
 var $elm$parser$Parser$DeadEnd = F3(
 	function (row, col, problem) {
 		return {cT: col, dv: problem, dE: row};
@@ -12042,7 +11440,1033 @@ var $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$update = F2(
 	});
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
+var $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode = $rtfeldman$elm_css$VirtualDom$Styled$Unstyled;
+var $rtfeldman$elm_css$Css$Global$global = function (snippets) {
+	return $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode(
+		A3(
+			$elm$virtual_dom$VirtualDom$node,
+			'style',
+			_List_Nil,
+			$elm$core$List$singleton(
+				$elm$virtual_dom$VirtualDom$text(
+					$rtfeldman$elm_css$Css$Preprocess$Resolve$compile(
+						$elm$core$List$singleton(
+							$rtfeldman$elm_css$Css$Preprocess$stylesheet(snippets)))))));
+};
+var $rtfeldman$elm_css$Css$absolute = {b9: 0, dU: 'absolute'};
+var $rtfeldman$elm_css$Css$Preprocess$ApplyStyles = function (a) {
+	return {$: 6, a: a};
+};
+var $rtfeldman$elm_css$Css$Internal$property = F2(
+	function (key, value) {
+		return $rtfeldman$elm_css$Css$Preprocess$AppendProperty(key + (':' + value));
+	});
+var $rtfeldman$elm_css$Css$Internal$getOverloadedProperty = F3(
+	function (functionName, desiredKey, style) {
+		getOverloadedProperty:
+		while (true) {
+			switch (style.$) {
+				case 0:
+					var str = style.a;
+					var key = A2(
+						$elm$core$Maybe$withDefault,
+						'',
+						$elm$core$List$head(
+							A2($elm$core$String$split, ':', str)));
+					return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, key);
+				case 1:
+					var selector = style.a;
+					return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-selector'));
+				case 2:
+					var combinator = style.a;
+					return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-combinator'));
+				case 3:
+					var pseudoElement = style.a;
+					return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-pseudo-element setter'));
+				case 4:
+					return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-media-query'));
+				case 5:
+					return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-keyframes'));
+				default:
+					if (!style.a.b) {
+						return A2($rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-empty-Style'));
+					} else {
+						if (!style.a.b.b) {
+							var _v1 = style.a;
+							var only = _v1.a;
+							var $temp$functionName = functionName,
+								$temp$desiredKey = desiredKey,
+								$temp$style = only;
+							functionName = $temp$functionName;
+							desiredKey = $temp$desiredKey;
+							style = $temp$style;
+							continue getOverloadedProperty;
+						} else {
+							var _v2 = style.a;
+							var first = _v2.a;
+							var rest = _v2.b;
+							var $temp$functionName = functionName,
+								$temp$desiredKey = desiredKey,
+								$temp$style = $rtfeldman$elm_css$Css$Preprocess$ApplyStyles(rest);
+							functionName = $temp$functionName;
+							desiredKey = $temp$desiredKey;
+							style = $temp$style;
+							continue getOverloadedProperty;
+						}
+					}
+			}
+		}
+	});
+var $rtfeldman$elm_css$Css$Internal$IncompatibleUnits = 0;
+var $rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty = A3($rtfeldman$elm_css$Css$Internal$lengthConverter, 0, '', 0);
+var $rtfeldman$elm_css$Css$alignItems = function (fn) {
+	return A3(
+		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
+		'alignItems',
+		'align-items',
+		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
+};
+var $rtfeldman$elm_css$Css$alignSelf = function (fn) {
+	return A3(
+		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
+		'alignSelf',
+		'align-self',
+		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
+};
 var $rtfeldman$elm_css$Css$auto = {dZ: 0, c: 0, aU: 0, bW: 0, eI: 0, aY: 0, ak: 0, aa: 0, a$: 0, V: 0, ch: 0, a5: 0, M: 0, dU: 'auto'};
+var $rtfeldman$elm_css$Css$backgroundColor = function (c) {
+	return A2($rtfeldman$elm_css$Css$property, 'background-color', c.dU);
+};
+var $rtfeldman$elm_css$Css$backgroundImage = $rtfeldman$elm_css$Css$prop1('background-image');
+var $rtfeldman$elm_css$Css$border = $rtfeldman$elm_css$Css$prop1('border');
+var $rtfeldman$elm_css$Css$prop3 = F4(
+	function (key, argA, argB, argC) {
+		return A2(
+			$rtfeldman$elm_css$Css$property,
+			key,
+			A2(
+				$elm$core$String$join,
+				' ',
+				_List_fromArray(
+					[argA.dU, argB.dU, argC.dU])));
+	});
+var $rtfeldman$elm_css$Css$border3 = $rtfeldman$elm_css$Css$prop3('border');
+var $rtfeldman$elm_css$Css$borderBottom3 = $rtfeldman$elm_css$Css$prop3('border-bottom');
+var $rtfeldman$elm_css$Css$borderLeft3 = $rtfeldman$elm_css$Css$prop3('border-left');
+var $rtfeldman$elm_css$Css$borderRadius = $rtfeldman$elm_css$Css$prop1('border-radius');
+var $rtfeldman$elm_css$Css$borderRight3 = $rtfeldman$elm_css$Css$prop3('border-right');
+var $rtfeldman$elm_css$Css$boxSizing = $rtfeldman$elm_css$Css$prop1('box-sizing');
+var $rtfeldman$elm_css$Css$center = $rtfeldman$elm_css$Css$prop1('center');
+var $rtfeldman$elm_css$Css$Global$class = F2(
+	function (str, styles) {
+		return A2(
+			$rtfeldman$elm_css$VirtualDom$Styled$makeSnippet,
+			styles,
+			$rtfeldman$elm_css$Css$Structure$UniversalSelectorSequence(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Css$Structure$ClassSelector(str)
+					])));
+	});
+var $rtfeldman$elm_css$Css$colResize = {c: 0, dU: 'col-resize'};
+var $rtfeldman$elm_css$Css$row = {co: 0, bf: 0, dU: 'row'};
+var $rtfeldman$elm_css$Css$column = _Utils_update(
+	$rtfeldman$elm_css$Css$row,
+	{dU: 'column'});
+var $rtfeldman$elm_css$Css$contentBox = {cj: 0, bF: 0, dU: 'content-box'};
+var $rtfeldman$elm_css$Css$cursor = $rtfeldman$elm_css$Css$prop1('cursor');
+var $rtfeldman$elm_css$Css$withPrecedingHash = function (str) {
+	return A2($elm$core$String$startsWith, '#', str) ? str : A2($elm$core$String$cons, '#', str);
+};
+var $rtfeldman$elm_css$Css$erroneousHex = function (str) {
+	return {
+		aK: 1,
+		ck: 0,
+		X: 0,
+		cp: 0,
+		cx: 0,
+		dU: $rtfeldman$elm_css$Css$withPrecedingHash(str)
+	};
+};
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$core$Basics$pow = _Basics_pow;
+var $rtfeldman$elm_hex$Hex$fromStringHelp = F3(
+	function (position, chars, accumulated) {
+		fromStringHelp:
+		while (true) {
+			if (!chars.b) {
+				return $elm$core$Result$Ok(accumulated);
+			} else {
+				var _char = chars.a;
+				var rest = chars.b;
+				switch (_char) {
+					case '0':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated;
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '1':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + A2($elm$core$Basics$pow, 16, position);
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '2':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (2 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '3':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (3 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '4':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (4 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '5':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (5 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '6':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (6 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '7':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (7 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '8':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (8 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case '9':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (9 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case 'a':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (10 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case 'b':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (11 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case 'c':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (12 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case 'd':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (13 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case 'e':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (14 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					case 'f':
+						var $temp$position = position - 1,
+							$temp$chars = rest,
+							$temp$accumulated = accumulated + (15 * A2($elm$core$Basics$pow, 16, position));
+						position = $temp$position;
+						chars = $temp$chars;
+						accumulated = $temp$accumulated;
+						continue fromStringHelp;
+					default:
+						var nonHex = _char;
+						return $elm$core$Result$Err(
+							$elm$core$String$fromChar(nonHex) + ' is not a valid hexadecimal character.');
+				}
+			}
+		}
+	});
+var $elm$core$Result$mapError = F2(
+	function (f, result) {
+		if (!result.$) {
+			var v = result.a;
+			return $elm$core$Result$Ok(v);
+		} else {
+			var e = result.a;
+			return $elm$core$Result$Err(
+				f(e));
+		}
+	});
+var $rtfeldman$elm_hex$Hex$fromString = function (str) {
+	if ($elm$core$String$isEmpty(str)) {
+		return $elm$core$Result$Err('Empty strings are not valid hexadecimal strings.');
+	} else {
+		var result = function () {
+			if (A2($elm$core$String$startsWith, '-', str)) {
+				var list = A2(
+					$elm$core$Maybe$withDefault,
+					_List_Nil,
+					$elm$core$List$tail(
+						$elm$core$String$toList(str)));
+				return A2(
+					$elm$core$Result$map,
+					$elm$core$Basics$negate,
+					A3(
+						$rtfeldman$elm_hex$Hex$fromStringHelp,
+						$elm$core$List$length(list) - 1,
+						list,
+						0));
+			} else {
+				return A3(
+					$rtfeldman$elm_hex$Hex$fromStringHelp,
+					$elm$core$String$length(str) - 1,
+					$elm$core$String$toList(str),
+					0);
+			}
+		}();
+		var formatError = function (err) {
+			return A2(
+				$elm$core$String$join,
+				' ',
+				_List_fromArray(
+					['\"' + (str + '\"'), 'is not a valid hexadecimal string because', err]));
+		};
+		return A2($elm$core$Result$mapError, formatError, result);
+	}
+};
+var $rtfeldman$elm_css$Css$validHex = F5(
+	function (str, _v0, _v1, _v2, _v3) {
+		var r1 = _v0.a;
+		var r2 = _v0.b;
+		var g1 = _v1.a;
+		var g2 = _v1.b;
+		var b1 = _v2.a;
+		var b2 = _v2.b;
+		var a1 = _v3.a;
+		var a2 = _v3.b;
+		var toResult = A2(
+			$elm$core$Basics$composeR,
+			$elm$core$String$fromList,
+			A2($elm$core$Basics$composeR, $elm$core$String$toLower, $rtfeldman$elm_hex$Hex$fromString));
+		var results = _Utils_Tuple2(
+			_Utils_Tuple2(
+				toResult(
+					_List_fromArray(
+						[r1, r2])),
+				toResult(
+					_List_fromArray(
+						[g1, g2]))),
+			_Utils_Tuple2(
+				toResult(
+					_List_fromArray(
+						[b1, b2])),
+				toResult(
+					_List_fromArray(
+						[a1, a2]))));
+		if ((((!results.a.a.$) && (!results.a.b.$)) && (!results.b.a.$)) && (!results.b.b.$)) {
+			var _v5 = results.a;
+			var red = _v5.a.a;
+			var green = _v5.b.a;
+			var _v6 = results.b;
+			var blue = _v6.a.a;
+			var alpha = _v6.b.a;
+			return {
+				aK: alpha / 255,
+				ck: blue,
+				X: 0,
+				cp: green,
+				cx: red,
+				dU: $rtfeldman$elm_css$Css$withPrecedingHash(str)
+			};
+		} else {
+			return $rtfeldman$elm_css$Css$erroneousHex(str);
+		}
+	});
+var $rtfeldman$elm_css$Css$hex = function (str) {
+	var withoutHash = A2($elm$core$String$startsWith, '#', str) ? A2($elm$core$String$dropLeft, 1, str) : str;
+	var _v0 = $elm$core$String$toList(withoutHash);
+	_v0$4:
+	while (true) {
+		if ((_v0.b && _v0.b.b) && _v0.b.b.b) {
+			if (!_v0.b.b.b.b) {
+				var r = _v0.a;
+				var _v1 = _v0.b;
+				var g = _v1.a;
+				var _v2 = _v1.b;
+				var b = _v2.a;
+				return A5(
+					$rtfeldman$elm_css$Css$validHex,
+					str,
+					_Utils_Tuple2(r, r),
+					_Utils_Tuple2(g, g),
+					_Utils_Tuple2(b, b),
+					_Utils_Tuple2('f', 'f'));
+			} else {
+				if (!_v0.b.b.b.b.b) {
+					var r = _v0.a;
+					var _v3 = _v0.b;
+					var g = _v3.a;
+					var _v4 = _v3.b;
+					var b = _v4.a;
+					var _v5 = _v4.b;
+					var a = _v5.a;
+					return A5(
+						$rtfeldman$elm_css$Css$validHex,
+						str,
+						_Utils_Tuple2(r, r),
+						_Utils_Tuple2(g, g),
+						_Utils_Tuple2(b, b),
+						_Utils_Tuple2(a, a));
+				} else {
+					if (_v0.b.b.b.b.b.b) {
+						if (!_v0.b.b.b.b.b.b.b) {
+							var r1 = _v0.a;
+							var _v6 = _v0.b;
+							var r2 = _v6.a;
+							var _v7 = _v6.b;
+							var g1 = _v7.a;
+							var _v8 = _v7.b;
+							var g2 = _v8.a;
+							var _v9 = _v8.b;
+							var b1 = _v9.a;
+							var _v10 = _v9.b;
+							var b2 = _v10.a;
+							return A5(
+								$rtfeldman$elm_css$Css$validHex,
+								str,
+								_Utils_Tuple2(r1, r2),
+								_Utils_Tuple2(g1, g2),
+								_Utils_Tuple2(b1, b2),
+								_Utils_Tuple2('f', 'f'));
+						} else {
+							if (_v0.b.b.b.b.b.b.b.b && (!_v0.b.b.b.b.b.b.b.b.b)) {
+								var r1 = _v0.a;
+								var _v11 = _v0.b;
+								var r2 = _v11.a;
+								var _v12 = _v11.b;
+								var g1 = _v12.a;
+								var _v13 = _v12.b;
+								var g2 = _v13.a;
+								var _v14 = _v13.b;
+								var b1 = _v14.a;
+								var _v15 = _v14.b;
+								var b2 = _v15.a;
+								var _v16 = _v15.b;
+								var a1 = _v16.a;
+								var _v17 = _v16.b;
+								var a2 = _v17.a;
+								return A5(
+									$rtfeldman$elm_css$Css$validHex,
+									str,
+									_Utils_Tuple2(r1, r2),
+									_Utils_Tuple2(g1, g2),
+									_Utils_Tuple2(b1, b2),
+									_Utils_Tuple2(a1, a2));
+							} else {
+								break _v0$4;
+							}
+						}
+					} else {
+						break _v0$4;
+					}
+				}
+			}
+		} else {
+			break _v0$4;
+		}
+	}
+	return $rtfeldman$elm_css$Css$erroneousHex(str);
+};
+var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey = $rtfeldman$elm_css$Css$hex('666');
+var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey2 = $rtfeldman$elm_css$Css$hex('888');
+var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey3 = $rtfeldman$elm_css$Css$hex('AAA');
+var $rtfeldman$elm_css$Css$Structure$Descendant = 3;
+var $rtfeldman$elm_css$Css$Preprocess$NestSnippet = F2(
+	function (a, b) {
+		return {$: 2, a: a, b: b};
+	});
+var $rtfeldman$elm_css$Css$Global$descendants = $rtfeldman$elm_css$Css$Preprocess$NestSnippet(3);
+var $rtfeldman$elm_css$Css$Preprocess$ExtendSelector = F2(
+	function (a, b) {
+		return {$: 1, a: a, b: b};
+	});
+var $rtfeldman$elm_css$Css$Structure$PseudoClassSelector = function (a) {
+	return {$: 2, a: a};
+};
+var $rtfeldman$elm_css$Css$pseudoClass = function (_class) {
+	return $rtfeldman$elm_css$Css$Preprocess$ExtendSelector(
+		$rtfeldman$elm_css$Css$Structure$PseudoClassSelector(_class));
+};
+var $rtfeldman$elm_css$Css$hover = $rtfeldman$elm_css$Css$pseudoClass('hover');
+var $rtfeldman$elm_css$Css$Structure$TypeSelector = $elm$core$Basics$identity;
+var $rtfeldman$elm_css$Css$Global$typeSelector = F2(
+	function (selectorStr, styles) {
+		var sequence = A2($rtfeldman$elm_css$Css$Structure$TypeSelectorSequence, selectorStr, _List_Nil);
+		var sel = A3($rtfeldman$elm_css$Css$Structure$Selector, sequence, _List_Nil, $elm$core$Maybe$Nothing);
+		return _List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$Preprocess$StyleBlockDeclaration(
+				A3($rtfeldman$elm_css$Css$Preprocess$StyleBlock, sel, _List_Nil, styles))
+			]);
+	});
+var $rtfeldman$elm_css$Css$visibility = $rtfeldman$elm_css$Css$prop1('visibility');
+var $rtfeldman$elm_css$Css$visible = {a$: 0, V: 0, dU: 'visible', bD: 0};
+var $Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$descendantsVisibleOnHover = $rtfeldman$elm_css$Css$hover(
+	_List_fromArray(
+		[
+			$rtfeldman$elm_css$Css$Global$descendants(
+			_List_fromArray(
+				[
+					A2(
+					$rtfeldman$elm_css$Css$Global$typeSelector,
+					'div',
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Css$visibility($rtfeldman$elm_css$Css$visible)
+						]))
+				]))
+		]));
+var $rtfeldman$elm_css$Css$display = $rtfeldman$elm_css$Css$prop1('display');
+var $rtfeldman$elm_css$Css$displayFlex = A2($rtfeldman$elm_css$Css$property, 'display', 'flex');
+var $rtfeldman$elm_css$Css$firstOfType = $rtfeldman$elm_css$Css$pseudoClass('first-of-type');
+var $rtfeldman$elm_css$Css$flexDirection = $rtfeldman$elm_css$Css$prop1('flex-direction');
+var $rtfeldman$elm_css$Css$flexEnd = $rtfeldman$elm_css$Css$prop1('flex-end');
+var $rtfeldman$elm_css$Css$flexGrow = $rtfeldman$elm_css$Css$prop1('flex-grow');
+var $rtfeldman$elm_css$Css$flexStart = $rtfeldman$elm_css$Css$prop1('flex-start');
+var $rtfeldman$elm_css$Css$fontSize = $rtfeldman$elm_css$Css$prop1('font-size');
+var $rtfeldman$elm_css$Css$hidden = {H: 0, a$: 0, dU: 'hidden', bD: 0};
+var $rtfeldman$elm_css$Css$inlineFlex = {p: 0, dU: 'inline-flex'};
+var $rtfeldman$elm_css$Css$UnitlessInteger = 0;
+var $rtfeldman$elm_css$Css$int = function (val) {
+	return {
+		aj: 0,
+		bW: 0,
+		az: 0,
+		aa: 0,
+		bl: 0,
+		b0: 0,
+		am: val,
+		a6: '',
+		bx: 0,
+		dU: $elm$core$String$fromInt(val)
+	};
+};
+var $rtfeldman$elm_css$Css$justifyContent = function (fn) {
+	return A3(
+		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
+		'justifyContent',
+		'justify-content',
+		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
+};
+var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGreen = $rtfeldman$elm_css$Css$hex('4d4');
+var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey = $rtfeldman$elm_css$Css$hex('CCC');
+var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey2 = $rtfeldman$elm_css$Css$hex('BBB');
+var $rtfeldman$elm_css$Css$lineHeight = $rtfeldman$elm_css$Css$prop1('line-height');
+var $rtfeldman$elm_css$Css$collectStops = $elm$core$List$map(
+	function (_v0) {
+		var c = _v0.a;
+		var len = _v0.b;
+		return A2(
+			$elm$core$String$append,
+			c.dU,
+			A2(
+				$elm$core$Maybe$withDefault,
+				'',
+				A2(
+					$elm$core$Maybe$map,
+					A2(
+						$elm$core$Basics$composeL,
+						$elm$core$String$cons(' '),
+						function ($) {
+							return $.dU;
+						}),
+					len)));
+	});
+var $rtfeldman$elm_css$Css$cssFunction = F2(
+	function (funcName, args) {
+		return funcName + ('(' + (A2($elm$core$String$join, ', ', args) + ')'));
+	});
+var $rtfeldman$elm_css$Css$linearGradient = F3(
+	function (firstStop, secondStop, otherStops) {
+		return {
+			aL: 0,
+			d: 0,
+			dU: A2(
+				$rtfeldman$elm_css$Css$cssFunction,
+				'linear-gradient',
+				$rtfeldman$elm_css$Css$collectStops(
+					_Utils_ap(
+						_List_fromArray(
+							[firstStop, secondStop]),
+						otherStops)))
+		};
+	});
+var $rtfeldman$elm_css$Css$margin = $rtfeldman$elm_css$Css$prop1('margin');
+var $rtfeldman$elm_css$Css$marginBottom = $rtfeldman$elm_css$Css$prop1('margin-bottom');
+var $rtfeldman$elm_css$Css$marginLeft = $rtfeldman$elm_css$Css$prop1('margin-left');
+var $rtfeldman$elm_css$Css$marginRight = $rtfeldman$elm_css$Css$prop1('margin-right');
+var $rtfeldman$elm_css$Css$minHeight = $rtfeldman$elm_css$Css$prop1('min-height');
+var $rtfeldman$elm_css$Css$move = {c: 0, dU: 'move'};
+var $rtfeldman$elm_css$Css$flexShrink = $rtfeldman$elm_css$Css$prop1('flex-shrink');
+var $rtfeldman$elm_css$Css$UnitlessFloat = 0;
+var $rtfeldman$elm_css$Css$num = function (val) {
+	return {
+		az: 0,
+		aa: 0,
+		bl: 0,
+		b0: 0,
+		am: val,
+		a6: '',
+		bx: 0,
+		dU: $elm$core$String$fromFloat(val)
+	};
+};
+var $Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$noShrink = $rtfeldman$elm_css$Css$flexShrink(
+	$rtfeldman$elm_css$Css$num(0));
+var $rtfeldman$elm_css$Css$noWrap = {bf: 0, bT: 0, dU: 'nowrap', as: 0};
+var $rtfeldman$elm_css$Css$none = {aL: 0, cM: 0, H: 0, c: 0, p: 0, ey: 0, db: 0, cq: 0, a_: 0, ay: 0, aa: 0, e: 0, d: 0, ct: 0, b7: 0, e4: 0, V: 0, cb: 0, fd: 0, a3: 0, aG: 0, M: 0, k: 0, fp: 0, dU: 'none'};
+var $rtfeldman$elm_css$Css$opacity = $rtfeldman$elm_css$Css$prop1('opacity');
+var $rtfeldman$elm_css$Css$overflow = $rtfeldman$elm_css$Css$prop1('overflow');
+var $rtfeldman$elm_css$Css$overflowX = $rtfeldman$elm_css$Css$prop1('overflow-x');
+var $rtfeldman$elm_css$Css$overflowY = $rtfeldman$elm_css$Css$prop1('overflow-y');
+var $rtfeldman$elm_css$Css$padding = $rtfeldman$elm_css$Css$prop1('padding');
+var $rtfeldman$elm_css$Css$paddingLeft = $rtfeldman$elm_css$Css$prop1('padding-left');
+var $rtfeldman$elm_css$Css$paddingRight = $rtfeldman$elm_css$Css$prop1('padding-right');
+var $rtfeldman$elm_css$Css$paddingTop = $rtfeldman$elm_css$Css$prop1('padding-top');
+var $rtfeldman$elm_css$Css$PercentageUnits = 0;
+var $rtfeldman$elm_css$Css$pct = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, 0, '%');
+var $rtfeldman$elm_css$Css$pointer = {c: 0, dU: 'pointer'};
+var $rtfeldman$elm_css$Css$pointerEvents = $rtfeldman$elm_css$Css$prop1('pointer-events');
+var $rtfeldman$elm_css$Css$position = $rtfeldman$elm_css$Css$prop1('position');
+var $rtfeldman$elm_css$Css$relative = {b9: 0, dU: 'relative'};
+var $Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$resizingHandleWidth = 5;
+var $rtfeldman$elm_css$Css$solid = {H: 0, aF: 0, dU: 'solid'};
+var $rtfeldman$elm_css$Css$spaceAround = $rtfeldman$elm_css$Css$prop1('space-around');
+var $rtfeldman$elm_css$Css$spaceBetween = $rtfeldman$elm_css$Css$prop1('space-between');
+var $rtfeldman$elm_css$Css$stop = function (c) {
+	return _Utils_Tuple2(c, $elm$core$Maybe$Nothing);
+};
+var $rtfeldman$elm_css$Css$stretch = $rtfeldman$elm_css$Css$prop1('stretch');
+var $rtfeldman$elm_css$Css$top = $rtfeldman$elm_css$Css$prop1('top');
+var $rtfeldman$elm_css$Css$transparent = {X: 0, dU: 'transparent'};
+var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$white = $rtfeldman$elm_css$Css$hex('FFF');
+var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$white2 = $rtfeldman$elm_css$Css$hex('EEE');
+var $rtfeldman$elm_css$Css$whiteSpace = $rtfeldman$elm_css$Css$prop1('white-space');
+var $rtfeldman$elm_css$Css$zIndex = $rtfeldman$elm_css$Css$prop1('z-index');
+var $Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$gridStyles = _List_fromArray(
+	[
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'cell',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
+				$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineFlex),
+				$Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$noShrink,
+				$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$spaceBetween),
+				A3(
+				$rtfeldman$elm_css$Css$borderLeft3,
+				$rtfeldman$elm_css$Css$px(1),
+				$rtfeldman$elm_css$Css$solid,
+				$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
+				A3(
+				$rtfeldman$elm_css$Css$borderRight3,
+				$rtfeldman$elm_css$Css$px(1),
+				$rtfeldman$elm_css$Css$solid,
+				$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
+				$rtfeldman$elm_css$Css$firstOfType(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$flexEnd)
+					])),
+				$rtfeldman$elm_css$Css$boxSizing($rtfeldman$elm_css$Css$contentBox),
+				$rtfeldman$elm_css$Css$minHeight(
+				$rtfeldman$elm_css$Css$pct(100)),
+				$rtfeldman$elm_css$Css$paddingLeft(
+				$rtfeldman$elm_css$Css$px(2)),
+				$rtfeldman$elm_css$Css$paddingRight(
+				$rtfeldman$elm_css$Css$px(2)),
+				$Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$descendantsVisibleOnHover,
+				$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$hidden),
+				$rtfeldman$elm_css$Css$whiteSpace($rtfeldman$elm_css$Css$noWrap)
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'drag-handle',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$displayFlex,
+				$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row),
+				$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$move),
+				$rtfeldman$elm_css$Css$fontSize(
+				$rtfeldman$elm_css$Css$px(0.1)),
+				$rtfeldman$elm_css$Css$height(
+				$rtfeldman$elm_css$Css$pct(100)),
+				$rtfeldman$elm_css$Css$visibility($rtfeldman$elm_css$Css$hidden),
+				$rtfeldman$elm_css$Css$width(
+				$rtfeldman$elm_css$Css$px(10)),
+				$rtfeldman$elm_css$Css$zIndex(
+				$rtfeldman$elm_css$Css$int(5))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'flex-row',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$displayFlex,
+				$Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$noShrink,
+				$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row),
+				$rtfeldman$elm_css$Css$flexGrow(
+				$rtfeldman$elm_css$Css$num(1)),
+				$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$flexStart)
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'flex-column',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$displayFlex,
+				$Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$noShrink,
+				$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$column),
+				$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$flexStart),
+				$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$hidden)
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'ghost-header',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$absolute),
+				$rtfeldman$elm_css$Css$top(
+				$rtfeldman$elm_css$Css$px(2)),
+				$rtfeldman$elm_css$Css$pointerEvents($rtfeldman$elm_css$Css$none)
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'grid',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$auto),
+				$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
+				$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$relative)
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'headers',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$auto),
+				$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
+				$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$relative)
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'header',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$backgroundImage(
+				A3(
+					$rtfeldman$elm_css$Css$linearGradient,
+					$rtfeldman$elm_css$Css$stop($Orange_OpenSource$elm_advanced_grid$Grid$Colors$white2),
+					$rtfeldman$elm_css$Css$stop($Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
+					_List_Nil)),
+				$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineFlex),
+				$Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$noShrink,
+				$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row),
+				A3(
+				$rtfeldman$elm_css$Css$border3,
+				$rtfeldman$elm_css$Css$px(1),
+				$rtfeldman$elm_css$Css$solid,
+				$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey2),
+				$rtfeldman$elm_css$Css$boxSizing($rtfeldman$elm_css$Css$contentBox),
+				$Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$descendantsVisibleOnHover,
+				$rtfeldman$elm_css$Css$padding(
+				$rtfeldman$elm_css$Css$px(2)),
+				$rtfeldman$elm_css$Css$zIndex(
+				$rtfeldman$elm_css$Css$int(10))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'header-container',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey),
+				$rtfeldman$elm_css$Css$displayFlex,
+				$Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$noShrink
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'header-title',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$lineHeight(
+				$rtfeldman$elm_css$Css$num(1.2))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'input-filter',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$border(
+				$rtfeldman$elm_css$Css$px(0)),
+				$rtfeldman$elm_css$Css$paddingLeft(
+				$rtfeldman$elm_css$Css$px(2)),
+				$rtfeldman$elm_css$Css$paddingRight(
+				$rtfeldman$elm_css$Css$px(2)),
+				$rtfeldman$elm_css$Css$marginLeft(
+				$rtfeldman$elm_css$Css$px($Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$resizingHandleWidth))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'input-filter-container',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$displayFlex,
+				$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row),
+				$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$spaceBetween),
+				$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
+				$rtfeldman$elm_css$Css$alignSelf($rtfeldman$elm_css$Css$stretch),
+				$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$white),
+				$rtfeldman$elm_css$Css$borderRadius(
+				$rtfeldman$elm_css$Css$px(3)),
+				$rtfeldman$elm_css$Css$marginLeft(
+				$rtfeldman$elm_css$Css$px(4))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'invisible',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$opacity(
+				$rtfeldman$elm_css$Css$num(0))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'margin-Left-XS',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$marginLeft(
+				$rtfeldman$elm_css$Css$px(5))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'progress-bar-background',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$displayFlex,
+				$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$white),
+				$rtfeldman$elm_css$Css$borderRadius(
+				$rtfeldman$elm_css$Css$px(5)),
+				A3(
+				$rtfeldman$elm_css$Css$border3,
+				$rtfeldman$elm_css$Css$px(1),
+				$rtfeldman$elm_css$Css$solid,
+				$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey)
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'progress-bar-container',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$displayFlex,
+				$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
+				A3(
+				$rtfeldman$elm_css$Css$border3,
+				$rtfeldman$elm_css$Css$px(1),
+				$rtfeldman$elm_css$Css$solid,
+				$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
+				$rtfeldman$elm_css$Css$boxSizing($rtfeldman$elm_css$Css$contentBox),
+				$rtfeldman$elm_css$Css$height(
+				$rtfeldman$elm_css$Css$pct(100)),
+				$rtfeldman$elm_css$Css$paddingLeft(
+				$rtfeldman$elm_css$Css$px(5)),
+				$rtfeldman$elm_css$Css$paddingRight(
+				$rtfeldman$elm_css$Css$px(5))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'progress-bar-foreground',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGreen),
+				$rtfeldman$elm_css$Css$borderRadius(
+				$rtfeldman$elm_css$Css$px(5)),
+				$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$visible)
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'quick-filter-button',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$pointer),
+				$rtfeldman$elm_css$Css$padding(
+				$rtfeldman$elm_css$Css$px(2)),
+				$rtfeldman$elm_css$Css$paddingTop(
+				$rtfeldman$elm_css$Css$px(6))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'resize-handle',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$colResize),
+				$rtfeldman$elm_css$Css$displayFlex,
+				$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$spaceAround),
+				$rtfeldman$elm_css$Css$height(
+				$rtfeldman$elm_css$Css$pct(100)),
+				$rtfeldman$elm_css$Css$visibility($rtfeldman$elm_css$Css$hidden),
+				$rtfeldman$elm_css$Css$width(
+				$rtfeldman$elm_css$Css$px($Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$resizingHandleWidth))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'root',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$hidden),
+				$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
+				$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$relative)
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'row',
+		_List_fromArray(
+			[
+				A3(
+				$rtfeldman$elm_css$Css$borderBottom3,
+				$rtfeldman$elm_css$Css$px(1),
+				$rtfeldman$elm_css$Css$solid,
+				$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
+				$rtfeldman$elm_css$Css$displayFlex,
+				A2($rtfeldman$elm_css$Css$property, 'direction', 'ltr')
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'rows',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$overflowX($rtfeldman$elm_css$Css$hidden),
+				$rtfeldman$elm_css$Css$overflowY($rtfeldman$elm_css$Css$auto),
+				A2($rtfeldman$elm_css$Css$property, 'direction', 'rtl')
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'selection-header',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$displayFlex,
+				$Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$noShrink,
+				$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
+				$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center)
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'small-square',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey2),
+				$rtfeldman$elm_css$Css$borderRadius(
+				$rtfeldman$elm_css$Css$pct(50)),
+				$rtfeldman$elm_css$Css$height(
+				$rtfeldman$elm_css$Css$px(3)),
+				$rtfeldman$elm_css$Css$width(
+				$rtfeldman$elm_css$Css$px(3)),
+				$rtfeldman$elm_css$Css$marginRight(
+				$rtfeldman$elm_css$Css$px(1)),
+				$rtfeldman$elm_css$Css$marginBottom(
+				$rtfeldman$elm_css$Css$px(2))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'arrow-head',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$width(
+				$rtfeldman$elm_css$Css$px(0)),
+				$rtfeldman$elm_css$Css$height(
+				$rtfeldman$elm_css$Css$px(0)),
+				A3(
+				$rtfeldman$elm_css$Css$borderLeft3,
+				$rtfeldman$elm_css$Css$px(5),
+				$rtfeldman$elm_css$Css$solid,
+				$rtfeldman$elm_css$Css$transparent),
+				A3(
+				$rtfeldman$elm_css$Css$borderRight3,
+				$rtfeldman$elm_css$Css$px(5),
+				$rtfeldman$elm_css$Css$solid,
+				$rtfeldman$elm_css$Css$transparent),
+				$rtfeldman$elm_css$Css$margin(
+				$rtfeldman$elm_css$Css$px(5))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'vertical-bar',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$width(
+				$rtfeldman$elm_css$Css$px(1)),
+				$rtfeldman$elm_css$Css$height(
+				$rtfeldman$elm_css$Css$px(10)),
+				$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey3)
+			]))
+	]);
+var $Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$grid = $rtfeldman$elm_css$Css$Global$global($Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$gridStyles);
 var $elm$virtual_dom$VirtualDom$lazy2 = _VirtualDom_lazy2;
 var $rtfeldman$elm_css$VirtualDom$Styled$lazyHelp = F2(
 	function (fn, arg) {
@@ -12067,9 +12491,6 @@ var $rtfeldman$elm_css$VirtualDom$Styled$lazy2 = F3(
 			A4($elm$virtual_dom$VirtualDom$lazy3, $rtfeldman$elm_css$VirtualDom$Styled$lazyHelp2, fn, arg1, arg2));
 	});
 var $rtfeldman$elm_css$Html$Styled$Lazy$lazy2 = $rtfeldman$elm_css$VirtualDom$Styled$lazy2;
-var $rtfeldman$elm_css$Css$margin = $rtfeldman$elm_css$Css$prop1('margin');
-var $rtfeldman$elm_css$Css$position = $rtfeldman$elm_css$Css$prop1('position');
-var $rtfeldman$elm_css$Css$relative = {b9: 0, dU: 'relative'};
 var $Orange_OpenSource$elm_advanced_grid$Grid$OnScrolled = function (a) {
 	return {$: 8, a: a};
 };
@@ -12212,121 +12633,21 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$onScroll = function (msg) {
 		'scroll',
 		A2($elm$json$Json$Decode$map, msg, $Orange_OpenSource$elm_advanced_grid$Grid$scrollInfoDecoder));
 };
-var $rtfeldman$elm_css$Css$absolute = {b9: 0, dU: 'absolute'};
-var $rtfeldman$elm_css$Css$backgroundImage = $rtfeldman$elm_css$Css$prop1('background-image');
-var $rtfeldman$elm_css$Css$flexDirection = $rtfeldman$elm_css$Css$prop1('flex-direction');
-var $rtfeldman$elm_css$Css$UnitlessInteger = 0;
-var $rtfeldman$elm_css$Css$int = function (val) {
-	return {
-		aj: 0,
-		bW: 0,
-		az: 0,
-		aa: 0,
-		bl: 0,
-		b0: 0,
-		am: val,
-		a6: '',
-		bx: 0,
-		dU: $elm$core$String$fromInt(val)
-	};
-};
-var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey2 = $rtfeldman$elm_css$Css$hex('BBB');
-var $rtfeldman$elm_css$Css$collectStops = $elm$core$List$map(
-	function (_v0) {
-		var c = _v0.a;
-		var len = _v0.b;
-		return A2(
-			$elm$core$String$append,
-			c.dU,
-			A2(
-				$elm$core$Maybe$withDefault,
-				'',
-				A2(
-					$elm$core$Maybe$map,
-					A2(
-						$elm$core$Basics$composeL,
-						$elm$core$String$cons(' '),
-						function ($) {
-							return $.dU;
-						}),
-					len)));
-	});
-var $rtfeldman$elm_css$Css$cssFunction = F2(
-	function (funcName, args) {
-		return funcName + ('(' + (A2($elm$core$String$join, ', ', args) + ')'));
-	});
-var $rtfeldman$elm_css$Css$linearGradient = F3(
-	function (firstStop, secondStop, otherStops) {
-		return {
-			aL: 0,
-			d: 0,
-			dU: A2(
-				$rtfeldman$elm_css$Css$cssFunction,
-				'linear-gradient',
-				$rtfeldman$elm_css$Css$collectStops(
-					_Utils_ap(
-						_List_fromArray(
-							[firstStop, secondStop]),
-						otherStops)))
-		};
-	});
-var $rtfeldman$elm_css$Css$padding = $rtfeldman$elm_css$Css$prop1('padding');
-var $rtfeldman$elm_css$Css$row = {co: 0, bf: 0, dU: 'row'};
-var $rtfeldman$elm_css$Css$stop = function (c) {
-	return _Utils_Tuple2(c, $elm$core$Maybe$Nothing);
-};
-var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$white2 = $rtfeldman$elm_css$Css$hex('EEE');
-var $rtfeldman$elm_css$Css$zIndex = $rtfeldman$elm_css$Css$prop1('z-index');
 var $Orange_OpenSource$elm_advanced_grid$Grid$headerStyles = function (state) {
 	return $rtfeldman$elm_css$Html$Styled$Attributes$css(
 		_List_fromArray(
 			[
-				$rtfeldman$elm_css$Css$backgroundImage(
-				A3(
-					$rtfeldman$elm_css$Css$linearGradient,
-					$rtfeldman$elm_css$Css$stop($Orange_OpenSource$elm_advanced_grid$Grid$Colors$white2),
-					$rtfeldman$elm_css$Css$stop($Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
-					_List_Nil)),
-				$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineFlex),
-				$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
-				$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row),
-				A3(
-				$rtfeldman$elm_css$Css$border3,
-				$rtfeldman$elm_css$Css$px(1),
-				$rtfeldman$elm_css$Css$solid,
-				$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey2),
-				$rtfeldman$elm_css$Css$boxSizing($rtfeldman$elm_css$Css$contentBox),
 				$rtfeldman$elm_css$Css$height(
-				$rtfeldman$elm_css$Css$px(state.g.ev - $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth)),
-				$Orange_OpenSource$elm_advanced_grid$Grid$descendantsVisibleOnHover,
-				$rtfeldman$elm_css$Css$padding(
-				$rtfeldman$elm_css$Css$px(2)),
-				$rtfeldman$elm_css$Css$zIndex(
-				$rtfeldman$elm_css$Css$int(10))
+				$rtfeldman$elm_css$Css$px(state.g.ev - $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth))
 			]));
 };
 var $rtfeldman$elm_css$Css$left = $rtfeldman$elm_css$Css$prop1('left');
 var $Orange_OpenSource$elm_advanced_grid$Grid$Html$noContent = $rtfeldman$elm_css$Html$Styled$text('');
-var $rtfeldman$elm_css$Css$none = {aL: 0, cM: 0, H: 0, c: 0, p: 0, ey: 0, db: 0, cq: 0, a_: 0, ay: 0, aa: 0, e: 0, d: 0, ct: 0, b7: 0, e4: 0, V: 0, cb: 0, fd: 0, a3: 0, aG: 0, M: 0, k: 0, fp: 0, dU: 'none'};
-var $rtfeldman$elm_css$Css$pointerEvents = $rtfeldman$elm_css$Css$prop1('pointer-events');
-var $rtfeldman$elm_css$Css$top = $rtfeldman$elm_css$Css$prop1('top');
-var $rtfeldman$elm_css$Css$column = _Utils_update(
-	$rtfeldman$elm_css$Css$row,
-	{dU: 'column'});
-var $rtfeldman$elm_css$Css$flexGrow = $rtfeldman$elm_css$Css$prop1('flex-grow');
-var $rtfeldman$elm_css$Css$flexStart = $rtfeldman$elm_css$Css$prop1('flex-start');
-var $Orange_OpenSource$elm_advanced_grid$Grid$resizingHandleWidth = 5;
 var $Orange_OpenSource$elm_advanced_grid$Grid$UserClickedDragHandle = F2(
 	function (a, b) {
 		return {$: 22, a: a, b: b};
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$UserHoveredDragHandle = {$: 28};
-var $rtfeldman$elm_css$Css$cursor = $rtfeldman$elm_css$Css$prop1('cursor');
-var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey2 = $rtfeldman$elm_css$Css$hex('888');
-var $rtfeldman$elm_css$Css$fontSize = $rtfeldman$elm_css$Css$prop1('font-size');
-var $rtfeldman$elm_css$Css$marginBottom = $rtfeldman$elm_css$Css$prop1('margin-bottom');
-var $rtfeldman$elm_css$Css$marginRight = $rtfeldman$elm_css$Css$prop1('margin-right');
-var $rtfeldman$elm_css$Css$move = {c: 0, dU: 'move'};
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown = A2($mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mousedown', $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onOver = A2($mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mouseover', $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onUp = A2($mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mouseup', $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
@@ -12363,22 +12684,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewDragHandle = function (columnC
 		$rtfeldman$elm_css$Html$Styled$div,
 		_List_fromArray(
 			[
-				$rtfeldman$elm_css$Html$Styled$Attributes$css(
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Css$displayFlex,
-						$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row),
-						$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$move),
-						$rtfeldman$elm_css$Css$fontSize(
-						$rtfeldman$elm_css$Css$px(0.1)),
-						$rtfeldman$elm_css$Css$height(
-						$rtfeldman$elm_css$Css$pct(100)),
-						$rtfeldman$elm_css$Css$visibility($rtfeldman$elm_css$Css$hidden),
-						$rtfeldman$elm_css$Css$width(
-						$rtfeldman$elm_css$Css$px(10)),
-						$rtfeldman$elm_css$Css$zIndex(
-						$rtfeldman$elm_css$Css$int(5))
-					])),
+				$rtfeldman$elm_css$Html$Styled$Attributes$class('drag-handle'),
 				$rtfeldman$elm_css$Html$Styled$Attributes$fromUnstyled(
 				$mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onOver(
 					function (_v0) {
@@ -12412,21 +12718,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewDragHandle = function (columnC
 						$rtfeldman$elm_css$Html$Styled$div,
 						_List_fromArray(
 							[
-								$rtfeldman$elm_css$Html$Styled$Attributes$css(
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey2),
-										$rtfeldman$elm_css$Css$borderRadius(
-										$rtfeldman$elm_css$Css$pct(50)),
-										$rtfeldman$elm_css$Css$height(
-										$rtfeldman$elm_css$Css$px(3)),
-										$rtfeldman$elm_css$Css$width(
-										$rtfeldman$elm_css$Css$px(3)),
-										$rtfeldman$elm_css$Css$marginRight(
-										$rtfeldman$elm_css$Css$px(1)),
-										$rtfeldman$elm_css$Css$marginBottom(
-										$rtfeldman$elm_css$Css$px(2))
-									]))
+								$rtfeldman$elm_css$Html$Styled$Attributes$class('small-square')
 							]),
 						_List_Nil)))));
 };
@@ -12436,19 +12728,10 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$FilterModified = F2(
 		return {$: 3, a: a, b: b};
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$UserClickedFilter = {$: 20};
-var $rtfeldman$elm_css$Css$alignSelf = function (fn) {
-	return A3(
-		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
-		'alignSelf',
-		'align-self',
-		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
-};
-var $rtfeldman$elm_css$Css$border = $rtfeldman$elm_css$Css$prop1('border');
 var $Orange_OpenSource$elm_advanced_grid$Grid$filterInputWidth = function (columnConfig) {
 	return $rtfeldman$elm_css$Css$px(
 		(columnConfig.b.z - ($Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth * 2)) - (columnConfig.ax ? 30 : 0));
 };
-var $rtfeldman$elm_css$Css$marginLeft = $rtfeldman$elm_css$Css$prop1('margin-left');
 var $rtfeldman$elm_css$Html$Styled$Events$onBlur = function (msg) {
 	return A2(
 		$rtfeldman$elm_css$Html$Styled$Events$on,
@@ -12473,7 +12756,6 @@ var $rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
 			$rtfeldman$elm_css$Html$Styled$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $rtfeldman$elm_css$Html$Styled$Events$targetValue)));
 };
-var $rtfeldman$elm_css$Css$stretch = $rtfeldman$elm_css$Css$prop1('stretch');
 var $rtfeldman$elm_css$Html$Styled$Attributes$value = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('value');
 var $Orange_OpenSource$elm_advanced_grid$Grid$UserClickedQuickFilterButton = function (a) {
 	return {$: 19, a: a};
@@ -12527,7 +12809,6 @@ var $elm_community$typed_svg$TypedSvg$Attributes$fill = A2(
 	$elm$core$Basics$composeL,
 	$elm_community$typed_svg$TypedSvg$Core$attribute('fill'),
 	$elm_community$typed_svg$TypedSvg$TypesToStrings$fillToString);
-var $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode = $rtfeldman$elm_css$VirtualDom$Styled$Unstyled;
 var $rtfeldman$elm_css$Svg$Styled$fromUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode;
 var $elm_community$typed_svg$TypedSvg$Core$node = $elm$virtual_dom$VirtualDom$nodeNS('http://www.w3.org/2000/svg');
 var $elm_community$typed_svg$TypedSvg$g = $elm_community$typed_svg$TypedSvg$Core$node('g');
@@ -12658,8 +12939,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$Icons$drawSvg = F3(
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$Icons$filterIcon = 'M 0 0 L 15 0 L 9 6 L 9 12 L 6 12 L 6 6 Z';
 var $Orange_OpenSource$elm_advanced_grid$Grid$Labels$openQuickFilter = 'Open quick filter';
-var $rtfeldman$elm_css$Css$paddingTop = $rtfeldman$elm_css$Css$prop1('padding-top');
-var $rtfeldman$elm_css$Css$pointer = {c: 0, dU: 'pointer'};
 var $Orange_OpenSource$elm_advanced_grid$Grid$Icons$width = 15;
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewQuickFilterButton = F2(
 	function (state, columnConfig) {
@@ -12668,19 +12947,8 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewQuickFilterButton = F2(
 			$rtfeldman$elm_css$Html$Styled$div,
 			_List_fromArray(
 				[
-					$rtfeldman$elm_css$Html$Styled$Attributes$css(
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$pointer),
-							$rtfeldman$elm_css$Css$displayFlex,
-							$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
-							$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row),
-							$rtfeldman$elm_css$Css$padding(
-							$rtfeldman$elm_css$Css$px(2)),
-							$rtfeldman$elm_css$Css$paddingTop(
-							$rtfeldman$elm_css$Css$px(6))
-						])),
 					A2($rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', htmlId),
+					$rtfeldman$elm_css$Html$Styled$Attributes$class('quick-filter-button'),
 					$rtfeldman$elm_css$Html$Styled$Attributes$id(htmlId),
 					$rtfeldman$elm_css$Html$Styled$Events$onClick($Orange_OpenSource$elm_advanced_grid$Grid$UserClickedFilter),
 					$rtfeldman$elm_css$Html$Styled$Attributes$title(
@@ -12701,20 +12969,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewFilter = F2(
 			$rtfeldman$elm_css$Html$Styled$div,
 			_List_fromArray(
 				[
-					$rtfeldman$elm_css$Html$Styled$Attributes$css(
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$displayFlex,
-							$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row),
-							$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$spaceBetween),
-							$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
-							$rtfeldman$elm_css$Css$alignSelf($rtfeldman$elm_css$Css$stretch),
-							$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$white),
-							$rtfeldman$elm_css$Css$borderRadius(
-							$rtfeldman$elm_css$Css$px(3)),
-							$rtfeldman$elm_css$Css$marginLeft(
-							$rtfeldman$elm_css$Css$px(4))
-						]))
+					$rtfeldman$elm_css$Html$Styled$Attributes$class('input-filter-container')
 				]),
 			_List_fromArray(
 				[
@@ -12723,19 +12978,12 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewFilter = F2(
 					_List_fromArray(
 						[
 							A2($rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', 'filter-' + columnConfig.b.o),
+							$rtfeldman$elm_css$Html$Styled$Attributes$class('input-filter'),
 							$rtfeldman$elm_css$Html$Styled$Attributes$css(
 							_List_fromArray(
 								[
-									$rtfeldman$elm_css$Css$border(
-									$rtfeldman$elm_css$Css$px(0)),
 									$rtfeldman$elm_css$Css$height(
 									$rtfeldman$elm_css$Css$px(state.g.eL)),
-									$rtfeldman$elm_css$Css$paddingLeft(
-									$rtfeldman$elm_css$Css$px(2)),
-									$rtfeldman$elm_css$Css$paddingRight(
-									$rtfeldman$elm_css$Css$px(2)),
-									$rtfeldman$elm_css$Css$marginLeft(
-									$rtfeldman$elm_css$Css$px($Orange_OpenSource$elm_advanced_grid$Grid$resizingHandleWidth)),
 									$rtfeldman$elm_css$Css$width(
 									$Orange_OpenSource$elm_advanced_grid$Grid$filterInputWidth(columnConfig))
 								])),
@@ -12758,22 +13006,11 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$UserClickedResizeHandle = F2(
 	function (a, b) {
 		return {$: 24, a: a, b: b};
 	});
-var $rtfeldman$elm_css$Css$colResize = {c: 0, dU: 'col-resize'};
-var $rtfeldman$elm_css$Css$spaceAround = $rtfeldman$elm_css$Css$prop1('space-around');
-var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey3 = $rtfeldman$elm_css$Css$hex('AAA');
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewVerticalBar = A2(
 	$rtfeldman$elm_css$Html$Styled$div,
 	_List_fromArray(
 		[
-			$rtfeldman$elm_css$Html$Styled$Attributes$css(
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Css$width(
-					$rtfeldman$elm_css$Css$px(1)),
-					$rtfeldman$elm_css$Css$height(
-					$rtfeldman$elm_css$Css$px(10)),
-					$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey3)
-				]))
+			$rtfeldman$elm_css$Html$Styled$Attributes$class('vertical-bar')
 		]),
 	_List_Nil);
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewResizeHandle = function (columnConfig) {
@@ -12781,18 +13018,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewResizeHandle = function (colum
 		$rtfeldman$elm_css$Html$Styled$div,
 		_List_fromArray(
 			[
-				$rtfeldman$elm_css$Html$Styled$Attributes$css(
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$colResize),
-						$rtfeldman$elm_css$Css$displayFlex,
-						$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$spaceAround),
-						$rtfeldman$elm_css$Css$height(
-						$rtfeldman$elm_css$Css$pct(100)),
-						$rtfeldman$elm_css$Css$visibility($rtfeldman$elm_css$Css$hidden),
-						$rtfeldman$elm_css$Css$width(
-						$rtfeldman$elm_css$Css$px($Orange_OpenSource$elm_advanced_grid$Grid$resizingHandleWidth))
-					])),
+				$rtfeldman$elm_css$Html$Styled$Attributes$class('resize-handle'),
 				$rtfeldman$elm_css$Html$Styled$Attributes$fromUnstyled(
 				$mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown(
 					function (event) {
@@ -12808,36 +13034,20 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewResizeHandle = function (colum
 };
 var $rtfeldman$elm_css$Css$borderTop3 = $rtfeldman$elm_css$Css$prop3('border-top');
 var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$black = $rtfeldman$elm_css$Css$hex('000');
-var $rtfeldman$elm_css$Css$transparent = {X: 0, dU: 'transparent'};
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewArrow = function (horizontalBorder) {
 	return A2(
 		$rtfeldman$elm_css$Html$Styled$div,
 		_List_fromArray(
 			[
+				$rtfeldman$elm_css$Html$Styled$Attributes$class('arrow-head'),
 				$rtfeldman$elm_css$Html$Styled$Attributes$css(
 				_List_fromArray(
 					[
-						$rtfeldman$elm_css$Css$width(
-						$rtfeldman$elm_css$Css$px(0)),
-						$rtfeldman$elm_css$Css$height(
-						$rtfeldman$elm_css$Css$px(0)),
-						A3(
-						$rtfeldman$elm_css$Css$borderLeft3,
-						$rtfeldman$elm_css$Css$px(5),
-						$rtfeldman$elm_css$Css$solid,
-						$rtfeldman$elm_css$Css$transparent),
-						A3(
-						$rtfeldman$elm_css$Css$borderRight3,
-						$rtfeldman$elm_css$Css$px(5),
-						$rtfeldman$elm_css$Css$solid,
-						$rtfeldman$elm_css$Css$transparent),
 						A3(
 						horizontalBorder,
 						$rtfeldman$elm_css$Css$px(5),
 						$rtfeldman$elm_css$Css$solid,
-						$Orange_OpenSource$elm_advanced_grid$Grid$Colors$black),
-						$rtfeldman$elm_css$Css$margin(
-						$rtfeldman$elm_css$Css$px(5))
+						$Orange_OpenSource$elm_advanced_grid$Grid$Colors$black)
 					]))
 			]),
 		_List_Nil);
@@ -12856,7 +13066,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewSortingSymbol = F2(
 	});
 var $rtfeldman$elm_css$Css$fontStyle = $rtfeldman$elm_css$Css$prop1('font-style');
 var $rtfeldman$elm_css$Css$italic = {aV: 0, dU: 'italic'};
-var $rtfeldman$elm_css$Css$lineHeight = $rtfeldman$elm_css$Css$prop1('line-height');
 var $rtfeldman$elm_css$Css$normal = {cn: 0, aV: 0, aj: 0, cv: 0, dU: 'normal', as: 0};
 var $rtfeldman$elm_css$Html$Styled$span = $rtfeldman$elm_css$Html$Styled$node('span');
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewTitle = F2(
@@ -12874,13 +13083,10 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewTitle = F2(
 			$rtfeldman$elm_css$Html$Styled$span,
 			_List_fromArray(
 				[
+					$rtfeldman$elm_css$Html$Styled$Attributes$class('header-title'),
 					$rtfeldman$elm_css$Html$Styled$Attributes$css(
 					_List_fromArray(
-						[
-							titleFontStyle,
-							$rtfeldman$elm_css$Css$lineHeight(
-							$rtfeldman$elm_css$Css$num(1.2))
-						]))
+						[titleFontStyle]))
 				]),
 			_List_fromArray(
 				[
@@ -12889,19 +13095,12 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewTitle = F2(
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewDataHeader = F3(
 	function (state, columnConfig, conditionalAttributes) {
-		var attributes = _List_fromArray(
-			[
-				$rtfeldman$elm_css$Html$Styled$Attributes$css(
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Css$displayFlex,
-						$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
-						$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row)
-					]))
-			]);
 		return A2(
 			$rtfeldman$elm_css$Html$Styled$div,
-			attributes,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Attributes$class('flex-row')
+				]),
 			_List_fromArray(
 				[
 					A2(
@@ -12909,16 +13108,12 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewDataHeader = F3(
 					_Utils_ap(
 						_List_fromArray(
 							[
+								$rtfeldman$elm_css$Html$Styled$Attributes$class('flex-column'),
 								$rtfeldman$elm_css$Html$Styled$Attributes$css(
 								_List_fromArray(
 									[
-										$rtfeldman$elm_css$Css$displayFlex,
-										$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
-										$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$column),
-										$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$flexStart),
-										$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$hidden),
 										$rtfeldman$elm_css$Css$width(
-										$rtfeldman$elm_css$Css$px((columnConfig.b.z - $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth) - $Orange_OpenSource$elm_advanced_grid$Grid$resizingHandleWidth))
+										$rtfeldman$elm_css$Css$px((columnConfig.b.z - $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth) - $Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$resizingHandleWidth))
 									]))
 							]),
 						conditionalAttributes),
@@ -12928,16 +13123,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewDataHeader = F3(
 							$rtfeldman$elm_css$Html$Styled$div,
 							_List_fromArray(
 								[
-									$rtfeldman$elm_css$Html$Styled$Attributes$css(
-									_List_fromArray(
-										[
-											$rtfeldman$elm_css$Css$displayFlex,
-											$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
-											$rtfeldman$elm_css$Css$flexDirection($rtfeldman$elm_css$Css$row),
-											$rtfeldman$elm_css$Css$flexGrow(
-											$rtfeldman$elm_css$Css$num(1)),
-											$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$flexStart)
-										]))
+									$rtfeldman$elm_css$Html$Styled$Attributes$class('flex-row')
 								]),
 							_List_fromArray(
 								[
@@ -12961,15 +13147,12 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewGhostHeader = function (state)
 				$Orange_OpenSource$elm_advanced_grid$Grid$headerStyles(state),
 				_List_fromArray(
 					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$class('ghost-header'),
 						$rtfeldman$elm_css$Html$Styled$Attributes$css(
 						_List_fromArray(
 							[
-								$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$absolute),
 								$rtfeldman$elm_css$Css$left(
-								$rtfeldman$elm_css$Css$px(draggedColumn.n - state.bU.n)),
-								$rtfeldman$elm_css$Css$top(
-								$rtfeldman$elm_css$Css$px(2)),
-								$rtfeldman$elm_css$Css$pointerEvents($rtfeldman$elm_css$Css$none)
+								$rtfeldman$elm_css$Css$px(draggedColumn.n - state.bU.n))
 							]))
 					])),
 			_List_fromArray(
@@ -12983,7 +13166,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewGhostHeader = function (state)
 var $Orange_OpenSource$elm_advanced_grid$Grid$UserMovedResizeHandle = function (a) {
 	return {$: 29, a: a};
 };
-var $Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey = $rtfeldman$elm_css$Css$hex('666');
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onMove = A2($mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mousemove', $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var $Orange_OpenSource$elm_advanced_grid$Grid$UserClickedHeader = function (a) {
 	return {$: 18, a: a};
@@ -12996,7 +13178,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$UserSwappedColumns = F2(
 		return {$: 30, a: a, b: b};
 	});
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onEnter = A2($mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mouseenter', $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
-var $rtfeldman$elm_css$Css$opacity = $rtfeldman$elm_css$Css$prop1('opacity');
 var $Orange_OpenSource$elm_advanced_grid$Grid$draggingAttributes = F2(
 	function (state, currentColumn) {
 		var _v0 = state.R;
@@ -13014,12 +13195,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$draggingAttributes = F2(
 					]),
 				A2($Orange_OpenSource$elm_advanced_grid$Grid$isColumn, currentColumn, draggedColumn.bb) ? _List_fromArray(
 					[
-						$rtfeldman$elm_css$Html$Styled$Attributes$css(
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Css$opacity(
-								$rtfeldman$elm_css$Css$num(0))
-							]))
+						$rtfeldman$elm_css$Html$Styled$Attributes$class('invisible')
 					]) : _List_fromArray(
 					[
 						$rtfeldman$elm_css$Html$Styled$Attributes$fromUnstyled(
@@ -13044,15 +13220,12 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewSelectionHeader = F2(
 			$rtfeldman$elm_css$Html$Styled$div,
 			_List_fromArray(
 				[
+					$rtfeldman$elm_css$Html$Styled$Attributes$class('selection-header'),
 					$rtfeldman$elm_css$Html$Styled$Attributes$css(
 					_List_fromArray(
 						[
 							$rtfeldman$elm_css$Css$width(
-							$rtfeldman$elm_css$Css$px($Orange_OpenSource$elm_advanced_grid$Grid$selectionColumn.b.z - $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth)),
-							$rtfeldman$elm_css$Css$displayFlex,
-							$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
-							$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
-							$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center)
+							$rtfeldman$elm_css$Css$px($Orange_OpenSource$elm_advanced_grid$Grid$selectionColumn.b.z - $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth))
 						]))
 				]),
 			_List_fromArray(
@@ -13076,6 +13249,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewHeader = F3(
 		var attributes = _List_fromArray(
 			[
 				A2($rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', headerId),
+				$rtfeldman$elm_css$Html$Styled$Attributes$class('header'),
 				$rtfeldman$elm_css$Html$Styled$Attributes$id(headerId),
 				$Orange_OpenSource$elm_advanced_grid$Grid$headerStyles(state),
 				$rtfeldman$elm_css$Html$Styled$Attributes$title(columnConfig.b.y)
@@ -13113,12 +13287,10 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewHeaderContainer = function (st
 	var isResizing = !_Utils_eq(state.ap, $elm$core$Maybe$Nothing);
 	var attributes = _List_fromArray(
 		[
+			$rtfeldman$elm_css$Html$Styled$Attributes$class('header-container'),
 			$rtfeldman$elm_css$Html$Styled$Attributes$css(
 			_List_fromArray(
 				[
-					$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey),
-					$rtfeldman$elm_css$Css$displayFlex,
-					$Orange_OpenSource$elm_advanced_grid$Grid$noShrink,
 					$rtfeldman$elm_css$Css$height(
 					$rtfeldman$elm_css$Css$px(state.g.ev))
 				])),
@@ -13174,8 +13346,6 @@ var $FabienHenon$elm_infinite_list_view$InfiniteList$onScroll = function (scroll
 		'scroll',
 		$FabienHenon$elm_infinite_list_view$InfiniteList$decodeScroll(scrollMsg));
 };
-var $rtfeldman$elm_css$Css$overflowX = $rtfeldman$elm_css$Css$prop1('overflow-x');
-var $rtfeldman$elm_css$Css$overflowY = $rtfeldman$elm_css$Css$prop1('overflow-y');
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $FabienHenon$elm_infinite_list_view$InfiniteList$addAttribute = F3(
 	function (f, value, newAttributes) {
@@ -13286,6 +13456,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewRows = function (state) {
 				]),
 			_List_fromArray(
 				[
+					$rtfeldman$elm_css$Html$Styled$Attributes$class('rows'),
 					$rtfeldman$elm_css$Html$Styled$Attributes$css(
 					_List_fromArray(
 						[
@@ -13293,10 +13464,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewRows = function (state) {
 							$rtfeldman$elm_css$Css$px(state.g.eb)),
 							$rtfeldman$elm_css$Css$width(
 							$rtfeldman$elm_css$Css$px(
-								$Orange_OpenSource$elm_advanced_grid$Grid$gridWidth(state))),
-							$rtfeldman$elm_css$Css$overflowX($rtfeldman$elm_css$Css$hidden),
-							$rtfeldman$elm_css$Css$overflowY($rtfeldman$elm_css$Css$auto),
-							A2($rtfeldman$elm_css$Css$property, 'direction', 'rtl')
+								$Orange_OpenSource$elm_advanced_grid$Grid$gridWidth(state)))
 						])),
 					$rtfeldman$elm_css$Html$Styled$Attributes$fromUnstyled(
 					$FabienHenon$elm_infinite_list_view$InfiniteList$onScroll($Orange_OpenSource$elm_advanced_grid$Grid$InfiniteListMsg)),
@@ -13315,18 +13483,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewRows = function (state) {
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewGrid = function (state) {
 	var editionInProgress = !_Utils_eq(state.aS, $elm$core$Maybe$Nothing);
 	var columnIsResizedOrDragged = (!_Utils_eq(state.ap, $elm$core$Maybe$Nothing)) || (!_Utils_eq(state.R, $elm$core$Maybe$Nothing));
-	var attributes = _List_fromArray(
-		[
-			$rtfeldman$elm_css$Html$Styled$Attributes$css(
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Css$width(
-					$rtfeldman$elm_css$Css$px(state.g.ec + $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth)),
-					$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$auto),
-					$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
-					$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$relative)
-				]))
-		]);
 	return A2(
 		$rtfeldman$elm_css$Html$Styled$div,
 		A3(
@@ -13348,13 +13504,23 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewGrid = function (state) {
 								return $Orange_OpenSource$elm_advanced_grid$Grid$UserEndedMouseInteraction;
 							}))
 					]),
-				attributes)),
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$class('grid'),
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Css$width(
+								$rtfeldman$elm_css$Css$px(state.g.ec + $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth))
+							]))
+					]))),
 		state.g.eu ? _List_fromArray(
 			[
 				A2(
 				$rtfeldman$elm_css$Html$Styled$div,
 				_List_fromArray(
 					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$class('headers'),
 						$rtfeldman$elm_css$Html$Styled$Attributes$css(
 						_List_fromArray(
 							[
@@ -13438,63 +13604,84 @@ var $rtfeldman$elm_css$Css$transform = function (only) {
 		_List_fromArray(
 			[only]));
 };
+var $Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$preferencesStyles = _List_fromArray(
+	[
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'bordered',
+		_List_fromArray(
+			[
+				A3(
+				$rtfeldman$elm_css$Css$border3,
+				$rtfeldman$elm_css$Css$px(1),
+				$rtfeldman$elm_css$Css$solid,
+				$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey2),
+				$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
+				$rtfeldman$elm_css$Css$padding(
+				$rtfeldman$elm_css$Css$px(5))
+			])),
+		A2(
+		$rtfeldman$elm_css$Css$Global$class,
+		'close-button',
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$pointer),
+				$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$relative),
+				$rtfeldman$elm_css$Css$float($rtfeldman$elm_css$Css$right),
+				$rtfeldman$elm_css$Css$width(
+				$rtfeldman$elm_css$Css$px(16)),
+				$rtfeldman$elm_css$Css$height(
+				$rtfeldman$elm_css$Css$px(16)),
+				$rtfeldman$elm_css$Css$opacity(
+				$rtfeldman$elm_css$Css$num(0.3)),
+				$rtfeldman$elm_css$Css$hover(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Css$opacity(
+						$rtfeldman$elm_css$Css$num(1))
+					])),
+				$rtfeldman$elm_css$Css$before(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$absolute),
+						$rtfeldman$elm_css$Css$left(
+						$rtfeldman$elm_css$Css$px(7)),
+						A2($rtfeldman$elm_css$Css$property, 'content', '\' \''),
+						$rtfeldman$elm_css$Css$height(
+						$rtfeldman$elm_css$Css$px(17)),
+						$rtfeldman$elm_css$Css$width(
+						$rtfeldman$elm_css$Css$px(2)),
+						$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$black),
+						$rtfeldman$elm_css$Css$transform(
+						$rtfeldman$elm_css$Css$rotate(
+							$rtfeldman$elm_css$Css$deg(45)))
+					])),
+				$rtfeldman$elm_css$Css$after(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$absolute),
+						$rtfeldman$elm_css$Css$left(
+						$rtfeldman$elm_css$Css$px(7)),
+						A2($rtfeldman$elm_css$Css$property, 'content', '\' \''),
+						$rtfeldman$elm_css$Css$height(
+						$rtfeldman$elm_css$Css$px(17)),
+						$rtfeldman$elm_css$Css$width(
+						$rtfeldman$elm_css$Css$px(2)),
+						$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$black),
+						$rtfeldman$elm_css$Css$transform(
+						$rtfeldman$elm_css$Css$rotate(
+							$rtfeldman$elm_css$Css$deg(-45)))
+					]))
+			]))
+	]);
+var $Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$preferences = $rtfeldman$elm_css$Css$Global$global($Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$preferencesStyles);
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewClosebutton = A2(
 	$rtfeldman$elm_css$Html$Styled$div,
 	_List_fromArray(
 		[
-			$rtfeldman$elm_css$Html$Styled$Attributes$css(
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$pointer),
-					$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$relative),
-					$rtfeldman$elm_css$Css$float($rtfeldman$elm_css$Css$right),
-					$rtfeldman$elm_css$Css$width(
-					$rtfeldman$elm_css$Css$px(16)),
-					$rtfeldman$elm_css$Css$height(
-					$rtfeldman$elm_css$Css$px(16)),
-					$rtfeldman$elm_css$Css$opacity(
-					$rtfeldman$elm_css$Css$num(0.3)),
-					$rtfeldman$elm_css$Css$hover(
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$opacity(
-							$rtfeldman$elm_css$Css$num(1))
-						])),
-					$rtfeldman$elm_css$Css$before(
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$absolute),
-							$rtfeldman$elm_css$Css$left(
-							$rtfeldman$elm_css$Css$px(7)),
-							A2($rtfeldman$elm_css$Css$property, 'content', '\' \''),
-							$rtfeldman$elm_css$Css$height(
-							$rtfeldman$elm_css$Css$px(17)),
-							$rtfeldman$elm_css$Css$width(
-							$rtfeldman$elm_css$Css$px(2)),
-							$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$black),
-							$rtfeldman$elm_css$Css$transform(
-							$rtfeldman$elm_css$Css$rotate(
-								$rtfeldman$elm_css$Css$deg(45)))
-						])),
-					$rtfeldman$elm_css$Css$after(
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$absolute),
-							$rtfeldman$elm_css$Css$left(
-							$rtfeldman$elm_css$Css$px(7)),
-							A2($rtfeldman$elm_css$Css$property, 'content', '\' \''),
-							$rtfeldman$elm_css$Css$height(
-							$rtfeldman$elm_css$Css$px(17)),
-							$rtfeldman$elm_css$Css$width(
-							$rtfeldman$elm_css$Css$px(2)),
-							$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$black),
-							$rtfeldman$elm_css$Css$transform(
-							$rtfeldman$elm_css$Css$rotate(
-								$rtfeldman$elm_css$Css$deg(-45)))
-						]))
-				])),
-			$rtfeldman$elm_css$Html$Styled$Events$onClick($Orange_OpenSource$elm_advanced_grid$Grid$UserClickedPreferenceCloseButton),
-			A2($rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', 'configureDisplayCloseCross')
+			A2($rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', 'configureDisplayCloseCross'),
+			$rtfeldman$elm_css$Html$Styled$Attributes$class('close-button'),
+			$rtfeldman$elm_css$Html$Styled$Events$onClick($Orange_OpenSource$elm_advanced_grid$Grid$UserClickedPreferenceCloseButton)
 		]),
 	_List_Nil);
 var $Orange_OpenSource$elm_advanced_grid$Grid$UserToggledColumnVisibility = function (a) {
@@ -13523,12 +13710,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewColumnVisibilitySelector = fun
 				$rtfeldman$elm_css$Html$Styled$label,
 				_List_fromArray(
 					[
-						$rtfeldman$elm_css$Html$Styled$Attributes$css(
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Css$marginLeft(
-								$rtfeldman$elm_css$Css$px(5))
-							])),
+						$rtfeldman$elm_css$Html$Styled$Attributes$class('margin-Left-XS'),
 						$rtfeldman$elm_css$Html$Styled$Attributes$for(columnConfig.b.o)
 					]),
 				_List_fromArray(
@@ -13546,24 +13728,17 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewPreferences = function (state)
 		$rtfeldman$elm_css$Html$Styled$div,
 		_List_fromArray(
 			[
+				$rtfeldman$elm_css$Html$Styled$Attributes$class('bordered'),
 				$rtfeldman$elm_css$Html$Styled$Attributes$css(
 				_List_fromArray(
 					[
-						A3(
-						$rtfeldman$elm_css$Css$border3,
-						$rtfeldman$elm_css$Css$px(1),
-						$rtfeldman$elm_css$Css$solid,
-						$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey2),
-						$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
-						$rtfeldman$elm_css$Css$padding(
-						$rtfeldman$elm_css$Css$px(5)),
 						$rtfeldman$elm_css$Css$width(
 						$rtfeldman$elm_css$Css$px(state.g.ec * 0.6))
 					]))
 			]),
-		A2(
-			$elm$core$List$cons,
-			$Orange_OpenSource$elm_advanced_grid$Grid$viewClosebutton,
+		_Utils_ap(
+			_List_fromArray(
+				[$Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$preferences, $Orange_OpenSource$elm_advanced_grid$Grid$viewClosebutton]),
 			A2($elm$core$List$map, $Orange_OpenSource$elm_advanced_grid$Grid$viewColumnVisibilitySelector, dataColumns)));
 };
 var $Orange_OpenSource$elm_advanced_grid$Grid$QuickFilterMsg = function (a) {
@@ -14125,18 +14300,17 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$view = function (model) {
 			_List_fromArray(
 				[
 					$rtfeldman$elm_css$Html$Styled$Attributes$id($Orange_OpenSource$elm_advanced_grid$Grid$rootContainerId),
+					$rtfeldman$elm_css$Html$Styled$Attributes$class('root'),
 					$rtfeldman$elm_css$Html$Styled$Attributes$css(
 					_List_fromArray(
 						[
 							$rtfeldman$elm_css$Css$width(
-							$rtfeldman$elm_css$Css$px(state.g.ec + $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth)),
-							$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$hidden),
-							$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
-							$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$relative)
+							$rtfeldman$elm_css$Css$px(state.g.ec + $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth))
 						]))
 				]),
 			_List_fromArray(
 				[
+					$Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$grid,
 					A2($rtfeldman$elm_css$Html$Styled$Lazy$lazy, $Orange_OpenSource$elm_advanced_grid$Grid$viewGrid, state),
 					A3($rtfeldman$elm_css$Html$Styled$Lazy$lazy2, $Orange_OpenSource$elm_advanced_grid$Grid$viewStringEditor, state.aS, stringEditorModel),
 					A3($rtfeldman$elm_css$Html$Styled$Lazy$lazy2, $Orange_OpenSource$elm_advanced_grid$Grid$viewQuickFilter, state.a0, quickFilterModel)
