@@ -2101,7 +2101,7 @@ viewGhostHeader state =
         Just draggedColumn ->
             div
                 (headerStyles state
-                    :: [ class "ghost-header"
+                    :: [ class "header ghost-header"
                        , css
                             [ left (px <| draggedColumn.x - state.headerContainerPosition.x)
                             ]
