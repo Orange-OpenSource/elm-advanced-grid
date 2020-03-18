@@ -80,7 +80,7 @@ import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, i, input, label, span, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
 import Html.Styled.Events exposing (on, onBlur, onClick, onDoubleClick, onInput, onMouseUp, stopPropagationOn)
-import Html.Styled.Lazy exposing (lazy, lazy2)
+import Html.Styled.Lazy exposing (lazy, lazy2, lazy3)
 import InfiniteList as IL
 import Json.Decode as Decode
 import List
@@ -2009,10 +2009,10 @@ viewHeader state columnConfig index =
             |> appendIf headerIsClickable [ onClick (UserClickedHeader columnConfig) ]
         )
         [ if isSelectionColumn columnConfig then
-            viewSelectionHeader state columnConfig
+            lazy2 viewSelectionHeader state columnConfig
 
           else
-            viewDataHeader state columnConfig (draggingAttributes state columnConfig)
+            lazy3 viewDataHeader state columnConfig (draggingAttributes state columnConfig)
         ]
 
 
