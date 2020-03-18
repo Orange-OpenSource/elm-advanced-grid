@@ -2065,13 +2065,13 @@ viewDataHeader state columnConfig conditionalAttributes =
             [ div
                 [ class "flex-row"
                 ]
-                [ viewDragHandle columnConfig
-                , viewTitle state columnConfig
-                , viewSortingSymbol state columnConfig
+                [ lazy viewDragHandle columnConfig
+                , lazy2 viewTitle state columnConfig
+                , lazy2 viewSortingSymbol state columnConfig
                 ]
-            , viewFilter state columnConfig
+            , lazy2 viewFilter state columnConfig
             ]
-        , viewResizeHandle columnConfig
+        , lazy viewResizeHandle columnConfig
         ]
 
 

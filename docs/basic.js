@@ -12830,13 +12830,13 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewDataHeader = F3(
 								]),
 							_List_fromArray(
 								[
-									$Orange_OpenSource$elm_advanced_grid$Grid$viewDragHandle(columnConfig),
-									A2($Orange_OpenSource$elm_advanced_grid$Grid$viewTitle, state, columnConfig),
-									A2($Orange_OpenSource$elm_advanced_grid$Grid$viewSortingSymbol, state, columnConfig)
+									A2($rtfeldman$elm_css$Html$Styled$Lazy$lazy, $Orange_OpenSource$elm_advanced_grid$Grid$viewDragHandle, columnConfig),
+									A3($rtfeldman$elm_css$Html$Styled$Lazy$lazy2, $Orange_OpenSource$elm_advanced_grid$Grid$viewTitle, state, columnConfig),
+									A3($rtfeldman$elm_css$Html$Styled$Lazy$lazy2, $Orange_OpenSource$elm_advanced_grid$Grid$viewSortingSymbol, state, columnConfig)
 								])),
-							A2($Orange_OpenSource$elm_advanced_grid$Grid$viewFilter, state, columnConfig)
+							A3($rtfeldman$elm_css$Html$Styled$Lazy$lazy2, $Orange_OpenSource$elm_advanced_grid$Grid$viewFilter, state, columnConfig)
 						])),
-					$Orange_OpenSource$elm_advanced_grid$Grid$viewResizeHandle(columnConfig)
+					A2($rtfeldman$elm_css$Html$Styled$Lazy$lazy, $Orange_OpenSource$elm_advanced_grid$Grid$viewResizeHandle, columnConfig)
 				]));
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewGhostHeader = function (state) {
@@ -12850,7 +12850,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewGhostHeader = function (state)
 				$Orange_OpenSource$elm_advanced_grid$Grid$headerStyles(state),
 				_List_fromArray(
 					[
-						$rtfeldman$elm_css$Html$Styled$Attributes$class('ghost-header'),
+						$rtfeldman$elm_css$Html$Styled$Attributes$class('header ghost-header'),
 						$rtfeldman$elm_css$Html$Styled$Attributes$css(
 						_List_fromArray(
 							[
