@@ -67,7 +67,7 @@ import Css exposing (..)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
-import Grid.Html exposing (noContent)
+import Grid.Html exposing (noContent, viewIf)
 import Grid.Icons as Icons exposing (drawSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
@@ -330,7 +330,8 @@ type Model a
 
 
 type alias State a =
-    { clickedItem : Maybe (Item a)
+    { areFilterVisible : Bool
+    , clickedItem : Maybe (Item a)
     , config : Config a
 
     -- TODO: seems to be written but never read. Confirm and delete if this is true
@@ -536,7 +537,8 @@ init config data =
             List.indexedMap (\index value -> Item.create value index) data
 
         initialState =
-            { clickedItem = Nothing
+            { areFilterVisible = config.hasFilters
+            , clickedItem = Nothing
             , columnsX = []
             , config = sanitizedConfig
             , content = data
@@ -1435,25 +1437,10 @@ viewGrid state =
                 ]
             |> appendIf editionInProgress [ onScroll OnScrolled ]
         )
-    -- TODO check if this if is still relevant
-    <|
-        if state.config.hasFilters then
-            [ div
-                [ class "headers"
-                , css
-                    [ width (px <| toFloat <| gridWidth state) ]
-                ]
-                [ viewHeaderContainer state
-                ]
-            , viewGhostHeader state
-            , viewRows state
-            ]
-
-        else
-            [ viewHeaderContainer state
-            , viewRows state
-            , viewGhostHeader state
-            ]
+        [ viewHeaderContainer state
+        , viewRows state
+        , viewGhostHeader state
+        ]
 
 
 viewStringEditor : Maybe (Item a) -> StringEditor.Model -> Html (Msg a)
@@ -2069,7 +2056,7 @@ viewDataHeader state columnConfig conditionalAttributes =
                 , lazy2 viewTitle state columnConfig
                 , lazy2 viewSortingSymbol state columnConfig
                 ]
-            , lazy2 viewFilter state columnConfig
+            , viewIf state.areFilterVisible (lazy2 viewFilter state columnConfig)
             ]
         , lazy viewResizeHandle columnConfig
         ]

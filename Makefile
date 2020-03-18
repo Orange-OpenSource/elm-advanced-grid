@@ -18,7 +18,7 @@ test:		## Runs unit tests
 run:		## Runs a Python web server, for GUI tests
 	python -m SimpleHTTPServer 9999
 
-test_gui: build 
+test_gui: build
 test_gui: 	## Runs GUI tests, using Cypress
 	./node_modules/.bin/cypress open
 
@@ -28,9 +28,13 @@ build:		## Compiles the basic example in project root dir, for GUI tests
 live:		## Compiles using elm live
 	elm-live src/Examples/Basic.elm -- --output=example.js --debug
 
+live_large_list:		## Compiles large list using elm live
+	elm-live src/Examples/LargeList.elm --dir docs --start-page LargeList.html -- --output=docs/largelist.js    --debug
+
 doc:		## Compiles the examples
-	elm make src/Examples/Basic.elm --output=docs/basic.js --optimize
-	elm make src/Examples/LargeList.elm --output=docs/largelist.js --optimize
+#	elm make src/Examples/Basic.elm --output=docs/basic.js --optimize
+#	elm make src/Examples/LargeList.elm --output=docs/largelist.js --optimize
+	elm make src/Examples/LargeList.elm --output=docs/largelist.js
 	#elm make --docs=docs.json
 
 .PHONY: doc

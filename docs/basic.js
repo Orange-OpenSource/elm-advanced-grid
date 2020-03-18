@@ -11905,7 +11905,6 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$gridStyles = _List_from
 		'grid',
 		_List_fromArray(
 			[
-				$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$auto),
 				$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
 				$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$relative)
 			])),
@@ -11914,8 +11913,8 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$gridStyles = _List_from
 		'headers',
 		_List_fromArray(
 			[
-				$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$auto),
 				$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
+				$rtfeldman$elm_css$Css$overflow($rtfeldman$elm_css$Css$auto),
 				$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$relative)
 			])),
 		A2(
@@ -12911,6 +12910,18 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$draggingAttributes = F2(
 			return _List_Nil;
 		}
 	});
+var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
+var $rtfeldman$elm_css$VirtualDom$Styled$lazyHelp3 = F4(
+	function (fn, arg1, arg2, arg3) {
+		return $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled(
+			A3(fn, arg1, arg2, arg3));
+	});
+var $rtfeldman$elm_css$VirtualDom$Styled$lazy3 = F4(
+	function (fn, arg1, arg2, arg3) {
+		return $rtfeldman$elm_css$VirtualDom$Styled$Unstyled(
+			A5($elm$virtual_dom$VirtualDom$lazy4, $rtfeldman$elm_css$VirtualDom$Styled$lazyHelp3, fn, arg1, arg2, arg3));
+	});
+var $rtfeldman$elm_css$Html$Styled$Lazy$lazy3 = $rtfeldman$elm_css$VirtualDom$Styled$lazy3;
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewSelectionHeader = F2(
 	function (state, _v0) {
 		var areAllItemsChecked = A2(
@@ -12970,7 +12981,8 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewHeader = F3(
 				attributes),
 			_List_fromArray(
 				[
-					$Orange_OpenSource$elm_advanced_grid$Grid$isSelectionColumn(columnConfig) ? A2($Orange_OpenSource$elm_advanced_grid$Grid$viewSelectionHeader, state, columnConfig) : A3(
+					$Orange_OpenSource$elm_advanced_grid$Grid$isSelectionColumn(columnConfig) ? A3($rtfeldman$elm_css$Html$Styled$Lazy$lazy2, $Orange_OpenSource$elm_advanced_grid$Grid$viewSelectionHeader, state, columnConfig) : A4(
+					$rtfeldman$elm_css$Html$Styled$Lazy$lazy3,
 					$Orange_OpenSource$elm_advanced_grid$Grid$viewDataHeader,
 					state,
 					columnConfig,
@@ -13228,8 +13240,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewGrid = function (state) {
 						_List_fromArray(
 							[
 								$rtfeldman$elm_css$Css$width(
-								$rtfeldman$elm_css$Css$px(
-									$Orange_OpenSource$elm_advanced_grid$Grid$gridWidth(state)))
+								$rtfeldman$elm_css$Css$px(state.g.d5 + $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth))
 							]))
 					]),
 				_List_fromArray(

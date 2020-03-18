@@ -60,14 +60,7 @@ gridStyles =
         , pointerEvents none
         ]
     , class "grid"
-        [ overflow auto
-        , margin auto
-        , position relative
-        ]
-    , class
-        "headers"
-        [ overflow auto
-        , margin auto
+        [ margin auto
         , position relative
         ]
     , class "header"
