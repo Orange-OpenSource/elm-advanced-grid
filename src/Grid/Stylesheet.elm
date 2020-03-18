@@ -78,6 +78,7 @@ gridStyles =
         [ backgroundColor darkGrey
         , displayFlex
         , noShrink
+        , overflowX auto
         ]
     , class "header-title"
         [ lineHeight (num 1.2)
@@ -145,16 +146,10 @@ gridStyles =
     , class "row"
         [ borderBottom3 (px 1) solid lightGrey
         , displayFlex
-
-        -- restore reading order, while preserving the left position of the scrollbar
-        , property "direction" "ltr"
         ]
     , class "rows"
         [ overflowX hidden
         , overflowY auto
-
-        -- displays the vertical scrollbar to the left. https://stackoverflow.com/questions/7347532/how-to-position-a-div-scrollbar-on-the-left-hand-side
-        , property "direction" "rtl"
         ]
     , class "selection-header"
         [ displayFlex

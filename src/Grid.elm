@@ -73,16 +73,18 @@ import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
 import Grid.List exposing (appendIf)
 import Grid.QuickFilter as QuickFilter exposing (openedQuickFilterHtmlId)
+import Grid.Scroll exposing (HorizontalScrollInfo, VerticalScrollInfo, onHorizontalScroll, onVerticalScroll)
 import Grid.StringEditor as StringEditor
 import Grid.Stylesheet as Stylesheet exposing (resizingHandleWidth)
 import Html
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, i, input, label, span, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
-import Html.Styled.Events exposing (on, onBlur, onClick, onDoubleClick, onInput, onMouseUp, stopPropagationOn)
+import Html.Styled.Events exposing (onBlur, onClick, onDoubleClick, onInput, onMouseUp, stopPropagationOn)
 import Html.Styled.Lazy exposing (lazy, lazy2, lazy3)
 import InfiniteList as IL
 import Json.Decode as Decode
+import Json.Encode
 import List
 import List.Extra exposing (findIndex, unique)
 import String
@@ -187,7 +189,8 @@ type Msg a
     | GotHeaderContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | GotRootContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | GotQuickFilterButtonInfo (Result Browser.Dom.Error Browser.Dom.Element)
-    | OnScrolled ScrollInfo
+    | OnHeadersScrolled HorizontalScrollInfo
+    | OnRowsVerticallyScrolled VerticalScrollInfo
     | NoOp
     | QuickFilterMsg QuickFilter.Msg
     | SetFilters (Dict String String) -- column ID, filter value
@@ -353,6 +356,7 @@ type alias State a =
 
     -- TODO: order and sortedBy can have incompatible values. It would be better to join them in a single Maybe
     , order : Sorting
+    , originX : Float
     , resizedColumn : Maybe (ColumnConfig a)
     , showPreferences : Bool
     , sortedBy : Maybe (ColumnConfig a)
@@ -556,6 +560,7 @@ init config data =
             , labels = config.labels
             , quickFilteredColumn = Nothing
             , order = Unsorted
+            , originX = 0
             , resizedColumn = Nothing
             , showPreferences = False
             , sortedBy = Nothing
@@ -633,7 +638,7 @@ update msg model =
         GotRootContainerInfo (Err _) ->
             ( model, Cmd.none )
 
-        OnScrolled _ ->
+        OnRowsVerticallyScrolled _ ->
             ( model, getElementInfo state.editedCellId GotCellInfo )
 
         QuickFilterMsg quickFilterMsg ->
@@ -962,8 +967,11 @@ updateState msg state =
             in
             { state | visibleItems = newItems }
 
-        OnScrolled _ ->
+        OnRowsVerticallyScrolled _ ->
             state
+
+        OnHeadersScrolled info ->
+            { state | originX = info.scrollLeft }
 
 
 applyFilter : State a -> ColumnConfig a -> Maybe String -> State a
@@ -1435,7 +1443,7 @@ viewGrid state =
                 [ onMouseUp UserEndedMouseInteraction
                 , fromUnstyled <| Mouse.onLeave (\_ -> UserEndedMouseInteraction)
                 ]
-            |> appendIf editionInProgress [ onScroll OnScrolled ]
+            |> appendIf editionInProgress [ onVerticalScroll OnRowsVerticallyScrolled ]
         )
         [ viewHeaderContainer state
         , viewRows state
@@ -1484,27 +1492,16 @@ viewRows state =
          , css
             [ height (px <| toFloat state.config.containerHeight)
             , width (px <| toFloat <| gridWidth state)
+            , transform <| translate (px -state.originX)
             ]
+
+         --, Html.Styled.Attributes.property "scrollLeft" (Debug.log "scrollLeft" <| Json.Encode.string <| String.fromFloat state.originX)
          , fromUnstyled <| IL.onScroll InfiniteListMsg
          , id gridHtmlId
          ]
-            |> appendIf editionInProgress [ onScroll OnScrolled ]
+            |> appendIf editionInProgress [ onVerticalScroll OnRowsVerticallyScrolled ]
         )
         [ Html.Styled.fromUnstyled <| IL.view (infiniteListConfig state) state.infList state.visibleItems ]
-
-
-type alias ScrollInfo =
-    { scrollTop : Float
-    }
-
-
-scrollInfoDecoder =
-    Decode.map ScrollInfo
-        (Decode.at [ "target", "scrollTop" ] Decode.float)
-
-
-onScroll msg =
-    on "scroll" (Decode.map msg scrollInfoDecoder)
 
 
 {-| Valid filters
@@ -1947,20 +1944,20 @@ visibleColumns_ state =
 viewHeaderContainer : State a -> Html (Msg a)
 viewHeaderContainer state =
     let
+        isResizing =
+            state.resizedColumn /= Nothing
+
         attributes =
             [ class "header-container"
             , css
                 [ height (px <| toFloat state.config.headerHeight) ]
             , id headerContainerId
+            , onHorizontalScroll OnHeadersScrolled
             ]
-
-        isResizing =
-            state.resizedColumn /= Nothing
+                |> appendIf isResizing [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle (event |> toPosition)) ]
     in
     div
-        (attributes
-            |> appendIf isResizing [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle (event |> toPosition)) ]
-        )
+        attributes
         (viewHeaders state)
 
 
