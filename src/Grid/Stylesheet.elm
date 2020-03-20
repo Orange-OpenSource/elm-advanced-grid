@@ -14,7 +14,7 @@ grid =
 
 gridStyles : List Snippet
 gridStyles =
-    [ class "cell"
+    [ class "eag-cell"
         [ alignItems center
         , display inlineFlex
         , noShrink
@@ -30,7 +30,7 @@ gridStyles =
         , overflow hidden
         , whiteSpace noWrap
         ]
-    , class "drag-handle"
+    , class "eag-drag-handle"
         [ displayFlex
         , flexDirection row
         , cursor move
@@ -40,30 +40,32 @@ gridStyles =
         , width (px 10)
         , zIndex (int 5)
         ]
-    , class "flex-row"
+    , class "eag-flex-row"
         [ displayFlex
         , noShrink
         , flexDirection row
         , flexGrow (num 1)
         , justifyContent flexStart
         ]
-    , class "flex-column"
+    , class "eag-flex-column"
         [ displayFlex
         , noShrink
         , flexDirection column
         , alignItems flexStart
         , overflow hidden
         ]
-    , class "ghost-header"
+    , class "eag-ghost-header"
         [ position absolute
         , top (px 2)
         , pointerEvents none
         ]
-    , class "grid"
-        [ margin auto
+    , class "eag-grid"
+        [ displayFlex
+        , flexDirection column
+        , margin auto
         , position relative
         ]
-    , class "header"
+    , class "eag-header"
         [ backgroundImage <| linearGradient (stop white2) (stop lightGrey) []
         , display inlineFlex
         , noShrink
@@ -74,22 +76,22 @@ gridStyles =
         , padding (px 2)
         , zIndex (int 10)
         ]
-    , class "header-container"
+    , class "eag-header-container"
         [ backgroundColor darkGrey
         , displayFlex
         , noShrink
         , overflowX auto
         ]
-    , class "header-title"
+    , class "eag-header-title"
         [ lineHeight (num 1.2)
         ]
-    , class "input-filter"
+    , class "eag-input-filter"
         [ border (px 0)
         , paddingLeft (px 2)
         , paddingRight (px 2)
         , marginLeft (px resizingHandleWidth) -- for visual centering in the header
         ]
-    , class "input-filter-container"
+    , class "eag-input-filter-container"
         [ displayFlex
         , flexDirection row
         , justifyContent spaceBetween
@@ -99,19 +101,19 @@ gridStyles =
         , borderRadius (px 3)
         , marginLeft (px 4)
         ]
-    , class "invisible"
+    , class "eag-invisible"
         [ opacity (num 0)
         ]
-    , class "margin-Left-XS"
+    , class "eag-margin-Left-XS"
         [ marginLeft (px 5)
         ]
-    , class "progress-bar-background"
+    , class "eag-progress-bar-background"
         [ displayFlex
         , backgroundColor white
         , borderRadius (px 5)
         , border3 (px 1) solid lightGrey
         ]
-    , class "progress-bar-container"
+    , class "eag-progress-bar-container"
         [ displayFlex
         , alignItems center
         , border3 (px 1) solid lightGrey
@@ -120,17 +122,17 @@ gridStyles =
         , paddingLeft (px 5)
         , paddingRight (px 5)
         ]
-    , class "progress-bar-foreground"
+    , class "eag-progress-bar-foreground"
         [ backgroundColor lightGreen
         , borderRadius (px 5)
         , overflow visible
         ]
-    , class "quick-filter-button"
+    , class "eag-quick-filter-button"
         [ cursor pointer
         , padding (px 2)
         , paddingTop (px 6)
         ]
-    , class "resize-handle"
+    , class "eag-resize-handle"
         [ cursor colResize
         , displayFlex
         , justifyContent spaceAround
@@ -138,26 +140,30 @@ gridStyles =
         , visibility hidden
         , width (px resizingHandleWidth)
         ]
-    , class "root"
-        [ overflow hidden
+    , class "eag-root"
+        [ displayFlex
+        , alignItems stretch
+        , overflow hidden
         , margin auto
         , position relative
         ]
-    , class "row"
+    , class "eag-row"
         [ borderBottom3 (px 1) solid lightGrey
         , displayFlex
         ]
-    , class "rows"
-        [ overflowX hidden
+    , class "eag-rows"
+        [ displayFlex
+        , alignSelf stretch
+        , overflowX hidden
         , overflowY auto
         ]
-    , class "selection-header"
+    , class "eag-selection-header"
         [ displayFlex
         , noShrink
         , justifyContent center
         , alignItems center
         ]
-    , class "small-square"
+    , class "eag-small-square"
         [ backgroundColor darkGrey2
         , borderRadius (pct 50)
         , height (px 3)
@@ -165,14 +171,14 @@ gridStyles =
         , marginRight (px 1)
         , marginBottom (px 2)
         ]
-    , class "arrow-head"
+    , class "eag-arrow-head"
         [ width (px 0)
         , height (px 0)
         , borderLeft3 (px 5) solid transparent
         , borderRight3 (px 5) solid transparent
         , margin (px 5)
         ]
-    , class "vertical-bar"
+    , class "eag-vertical-bar"
         [ width (px 1)
         , height (px 10)
         , backgroundColor darkGrey3
@@ -211,12 +217,12 @@ preferences =
 
 preferencesStyles : List Snippet
 preferencesStyles =
-    [ class "bordered"
+    [ class "eag-bordered"
         [ border3 (px 1) solid lightGrey2
         , margin auto
         , padding (px 5)
         ]
-    , class "close-button"
+    , class "eag-close-button"
         [ cursor pointer
         , position relative
         , float right

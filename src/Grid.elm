@@ -84,7 +84,6 @@ import Html.Styled.Events exposing (onBlur, onClick, onDoubleClick, onInput, onM
 import Html.Styled.Lazy exposing (lazy, lazy2, lazy3)
 import InfiniteList as IL
 import Json.Decode as Decode
-import Json.Encode
 import List
 import List.Extra exposing (findIndex, unique)
 import String
@@ -1400,7 +1399,7 @@ view model =
         else
             div
                 [ id rootContainerId
-                , class "root"
+                , class "eag-root"
                 , css [ width (px <| toFloat (state.config.containerWidth + cumulatedBorderWidth)) ]
                 ]
                 [ Stylesheet.grid
@@ -1434,7 +1433,7 @@ viewGrid state =
             state.editedItem /= Nothing
     in
     div
-        ([ class "grid"
+        ([ class "eag-grid"
          , css
             [ width (px <| toFloat (state.config.containerWidth + cumulatedBorderWidth))
             ]
@@ -1488,10 +1487,11 @@ viewRows state =
             state.editedItem /= Nothing
     in
     div
-        ([ class "rows"
+        ([ class "eag-rows"
          , css
-            [ height (px <| toFloat state.config.containerHeight)
-            , width (px <| toFloat <| gridWidth state)
+            [ --height (px <| toFloat state.config.containerHeight)
+              --,
+              width (px <| toFloat <| gridWidth state)
             , transform <| translate (px -state.originX)
             ]
 
@@ -1530,7 +1530,7 @@ viewRow state idx listIdx item =
         << div
             [ attribute "data-testid" "row"
             , class (state.config.rowClass item)
-            , class "row"
+            , class "eag-row"
             , css
                 [ height (px <| toFloat state.config.lineHeight)
                 , width (px <| toFloat <| gridWidth state)
@@ -1820,14 +1820,14 @@ viewProgressBar barHeight getter properties item =
             (nestedDataGetter item / toFloat 100) * toFloat maxWidth
     in
     div
-        [ class "progress-bar-container"
+        [ class "eag-progress-bar-container"
         ]
         [ div
-            [ class "progress-bar-background"
+            [ class "eag-progress-bar-background"
             , css [ width (px <| toFloat maxWidth) ]
             ]
             [ div
-                [ class "progress-bar-foreground"
+                [ class "eag-progress-bar-foreground"
                 , css
                     [ width (px actualWidth)
                     , height (px <| toFloat barHeight)
@@ -1847,7 +1847,7 @@ viewPreferences state =
             List.filter (not << isSelectionColumn) state.config.columns
     in
     div
-        [ class "bordered"
+        [ class "eag-bordered"
         , css
             [ width (px <| toFloat state.config.containerWidth * 0.6) ]
         ]
@@ -1862,7 +1862,7 @@ viewClosebutton : Html (Msg a)
 viewClosebutton =
     div
         [ attribute "data-testid" "configureDisplayCloseCross"
-        , class "close-button"
+        , class "eag-close-button"
         , onClick UserClickedPreferenceCloseButton
         ]
         []
@@ -1880,7 +1880,7 @@ viewColumnVisibilitySelector columnConfig =
             ]
             []
         , label
-            [ class "margin-Left-XS"
+            [ class "eag-margin-Left-XS"
             , for columnConfig.properties.id
             ]
             [ text columnConfig.properties.title ]
@@ -1948,7 +1948,7 @@ viewHeaderContainer state =
             state.resizedColumn /= Nothing
 
         attributes =
-            [ class "header-container"
+            [ class "eag-header-container"
             , css
                 [ height (px <| toFloat state.config.headerHeight) ]
             , id headerContainerId
@@ -1979,7 +1979,7 @@ viewHeader state columnConfig index =
 
         attributes =
             [ attribute "data-testid" headerId
-            , class "header"
+            , class "eag-header"
             , id headerId
             , headerStyles state
             , title columnConfig.properties.tooltip
@@ -2016,7 +2016,7 @@ viewSelectionHeader state _ =
             List.all .selected state.visibleItems
     in
     div
-        [ class "selection-header"
+        [ class "eag-selection-header"
         , css
             [ width <| px <| toFloat <| selectionColumn.properties.width - cumulatedBorderWidth
             ]
@@ -2036,10 +2036,10 @@ viewSelectionHeader state _ =
 viewDataHeader : State a -> ColumnConfig a -> List (Attribute (Msg a)) -> Html (Msg a)
 viewDataHeader state columnConfig conditionalAttributes =
     div
-        [ class "flex-row"
+        [ class "eag-flex-row"
         ]
         [ div
-            ([ class "flex-column"
+            ([ class "eag-flex-column"
              , css
                 [ width <| px <| (toFloat <| columnConfig.properties.width - cumulatedBorderWidth) - resizingHandleWidth
                 ]
@@ -2047,7 +2047,7 @@ viewDataHeader state columnConfig conditionalAttributes =
                 ++ conditionalAttributes
             )
             [ div
-                [ class "flex-row"
+                [ class "eag-flex-row"
                 ]
                 [ lazy viewDragHandle columnConfig
                 , lazy2 viewTitle state columnConfig
@@ -2065,7 +2065,7 @@ draggingAttributes state currentColumn =
         Just draggedColumn ->
             [ fromUnstyled <| Mouse.onMove (\event -> UserDraggedColumn (event |> toPosition)) ]
                 ++ (if isColumn currentColumn draggedColumn.column then
-                        [ class "invisible" ]
+                        [ class "eag-invisible" ]
 
                     else
                         [ fromUnstyled <|
@@ -2085,7 +2085,7 @@ viewGhostHeader state =
         Just draggedColumn ->
             div
                 (headerStyles state
-                    :: [ class "header ghost-header"
+                    :: [ class "eag-header ghost-header"
                        , css
                             [ left (px <| draggedColumn.x - state.headerContainerPosition.x)
                             ]
@@ -2131,7 +2131,7 @@ viewTitle state columnConfig =
                     fontStyle normal
     in
     span
-        [ class "header-title"
+        [ class "eag-header-title"
         , css
             [ titleFontStyle
             ]
@@ -2161,7 +2161,7 @@ viewSortingSymbol state columnConfig =
 viewDragHandle : ColumnConfig a -> Html (Msg a)
 viewDragHandle columnConfig =
     div
-        [ class "drag-handle"
+        [ class "eag-drag-handle"
         , fromUnstyled <| Mouse.onOver (\_ -> UserHoveredDragHandle)
         , fromUnstyled <| Mouse.onDown (\event -> UserClickedDragHandle columnConfig (event |> toPosition))
         , fromUnstyled <| Mouse.onUp (\_ -> UserEndedMouseInteraction)
@@ -2172,7 +2172,7 @@ viewDragHandle columnConfig =
             div [] <|
                 List.repeat 4 <|
                     div
-                        [ class "small-square"
+                        [ class "eag-small-square"
                         ]
                         []
         )
@@ -2186,7 +2186,7 @@ toPosition event =
 viewResizeHandle : ColumnConfig a -> Html (Msg a)
 viewResizeHandle columnConfig =
     div
-        [ class "resize-handle"
+        [ class "eag-resize-handle"
         , fromUnstyled <| Mouse.onDown (\event -> UserClickedResizeHandle columnConfig (event |> toPosition))
         , onBlur UserEndedMouseInteraction
         ]
@@ -2196,7 +2196,7 @@ viewResizeHandle columnConfig =
 viewVerticalBar : Html msg
 viewVerticalBar =
     div
-        [ class "vertical-bar" ]
+        [ class "eag-vertical-bar" ]
         []
 
 
@@ -2213,7 +2213,7 @@ viewArrowDown =
 viewArrow : (Px -> BorderStyle (TextDecorationStyle {}) -> Color -> Style) -> Html msg
 viewArrow horizontalBorder =
     div
-        [ class "arrow-head"
+        [ class "eag-arrow-head"
         , css [ horizontalBorder (px 5) solid black ]
         ]
         []
@@ -2238,11 +2238,11 @@ filterInputWidth columnConfig =
 viewFilter : State a -> ColumnConfig a -> Html (Msg a)
 viewFilter state columnConfig =
     div
-        [ class "input-filter-container"
+        [ class "eag-input-filter-container"
         ]
         [ input
             [ attribute "data-testid" <| "filter-" ++ columnConfig.properties.id
-            , class "input-filter"
+            , class "eag-input-filter"
             , css
                 [ height (px <| toFloat <| state.config.lineHeight)
                 , width <| filterInputWidth columnConfig
@@ -2266,7 +2266,7 @@ viewQuickFilterButton state columnConfig =
     in
     div
         [ attribute "data-testid" htmlId
-        , class "quick-filter-button"
+        , class "eag-quick-filter-button"
         , id htmlId
         , onClick UserClickedFilter
         , title <| localize Label.openQuickFilter state.labels
@@ -2294,7 +2294,7 @@ cellAttributes : ColumnProperties a -> Item a -> List (Html.Styled.Attribute (Ms
 cellAttributes properties item =
     [ id (cellId properties item)
     , attribute "data-testid" properties.id
-    , class "cell"
+    , class "eag-cell"
     , css
         [ width (px <| toFloat (properties.width - cumulatedBorderWidth))
         ]
