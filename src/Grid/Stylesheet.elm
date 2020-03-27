@@ -1,6 +1,6 @@
 module Grid.Stylesheet exposing (grid, preferences, resizingHandleWidth)
 
-import Css exposing (Style, absolute, after, alignItems, alignSelf, auto, backgroundColor, backgroundImage, before, border, border3, borderBottom3, borderLeft3, borderRadius, borderRight3, boxSizing, center, colResize, column, contentBox, cursor, deg, display, displayFlex, firstOfType, flexDirection, flexEnd, flexGrow, flexShrink, flexStart, float, fontSize, height, hidden, hover, inlineFlex, int, justifyContent, left, lineHeight, linearGradient, margin, marginBottom, marginLeft, marginRight, maxWidth, minHeight, move, noWrap, none, num, opacity, overflow, overflowX, overflowY, padding, paddingLeft, paddingRight, paddingTop, pct, pointer, pointerEvents, position, property, px, relative, right, rotate, row, solid, spaceAround, spaceBetween, stop, stretch, top, transform, transparent, visibility, visible, whiteSpace, width, zIndex)
+import Css exposing (Style, absolute, after, alignItems, alignSelf, auto, backgroundColor, backgroundImage, before, border, border3, borderBottom3, borderLeft3, borderRadius, borderRight3, boxSizing, center, colResize, column, contentBox, cursor, deg, display, displayFlex, firstOfType, flex, flexDirection, flexEnd, flexGrow, flexShrink, flexStart, float, fontSize, height, hidden, hover, inlineFlex, int, justifyContent, left, lineHeight, linearGradient, margin, marginBottom, marginLeft, marginRight, maxWidth, minHeight, move, noWrap, none, num, opacity, overflow, overflowX, overflowY, padding, paddingLeft, paddingRight, paddingTop, pct, pointer, pointerEvents, position, property, px, relative, right, rotate, row, solid, spaceAround, spaceBetween, stop, stretch, top, transform, transparent, visibility, visible, whiteSpace, width, zIndex)
 import Css.Global exposing (Snippet, class, descendants, global, typeSelector)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, white, white2)
 import Html.Styled
@@ -60,9 +60,8 @@ gridStyles =
         , pointerEvents none
         ]
     , class "eag-grid"
-        [ displayFlex
-        , flexDirection column
-        , margin auto
+        [ marginLeft auto
+        , marginRight auto
         , position relative
         ]
     , class "eag-header"
@@ -80,7 +79,6 @@ gridStyles =
         [ backgroundColor darkGrey
         , displayFlex
         , noShrink
-        , overflowX auto
         ]
     , class "eag-header-title"
         [ lineHeight (num 1.2)
@@ -141,21 +139,25 @@ gridStyles =
         , width (px resizingHandleWidth)
         ]
     , class "eag-root"
-        [ displayFlex
-        , alignItems stretch
-        , overflow hidden
-        , margin auto
+        [ marginLeft auto
+        , marginRight auto
+        , overflowX auto
+        , overflowY hidden
         , position relative
         ]
     , class "eag-row"
         [ borderBottom3 (px 1) solid lightGrey
         , displayFlex
+
+        -- restore reading order, while preserving the left position of the scrollbar
+        , property "direction" "ltr"
         ]
     , class "eag-rows"
-        [ displayFlex
-        , alignSelf stretch
-        , overflowX hidden
+        [ overflowX hidden
         , overflowY auto
+
+        -- displays the vertical scrollbar to the left. https://stackoverflow.com/questions/7347532/how-to-position-a-div-scrollbar-on-the-left-hand-side
+        , property "direction" "rtl"
         ]
     , class "eag-selection-header"
         [ displayFlex

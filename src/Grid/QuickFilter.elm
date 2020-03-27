@@ -3,6 +3,7 @@ module Grid.QuickFilter exposing (..)
 import Css exposing (..)
 import Dict exposing (Dict)
 import Grid.Colors exposing (darkGrey2, lightGrey3, white)
+import Grid.Html exposing (focusOn)
 import Grid.Labels as Label exposing (localize)
 import Html.Styled exposing (Attribute, Html, div, hr, span, text)
 import Html.Styled.Attributes exposing (css, id, tabindex)
@@ -31,10 +32,11 @@ type QuickFilterState
 
 
 type Msg
-    = UserClosedQuickFilter
-    | FocusLost
+    = FocusLost
+    | NoOp
     | SetOrigin Position
     | SetPosition Position
+    | UserClosedQuickFilter
     | UserOpenedQuickFilter
     | UserSelectedEntry (Maybe String)
 
@@ -90,26 +92,43 @@ init allValuesInColumn filteringValue labels columnWidth =
 -- UPDATE --
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserClosedQuickFilter ->
-            { model | state = Closed }
+            ( { model | state = Closed }
+            , Cmd.none
+            )
 
         FocusLost ->
-            { model | state = Closed }
+            ( { model | state = Closed }
+            , Cmd.none
+            )
+
+        NoOp ->
+            ( model
+            , Cmd.none
+            )
 
         SetOrigin position ->
-            { model | origin = position }
+            ( { model | origin = position }
+            , focusOn openedQuickFilterHtmlId NoOp
+            )
 
         SetPosition position ->
-            { model | position = position }
+            ( { model | position = position }
+            , focusOn openedQuickFilterHtmlId NoOp
+            )
 
         UserOpenedQuickFilter ->
-            { model | state = Open }
+            ( { model | state = Open }
+            , Cmd.none
+            )
 
         UserSelectedEntry maybeString ->
-            model
+            ( model
+            , Cmd.none
+            )
 
 
 

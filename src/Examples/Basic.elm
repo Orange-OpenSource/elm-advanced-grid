@@ -16,7 +16,7 @@ import Dict exposing (Dict)
 import Grid exposing (ColumnConfig, Msg(..), Sorting(..), floatColumnConfig, intColumnConfig, selectedAndVisibleItems, stringColumnConfig, viewProgressBar)
 import Grid.Item exposing (Item)
 import Html exposing (Html, button, div, input, label, li, text, ul)
-import Html.Attributes exposing (attribute, style)
+import Html.Attributes exposing (attribute, id, style)
 import Html.Events exposing (onClick, onInput)
 import List.Extra
 
@@ -72,10 +72,12 @@ view model =
 viewGrid : Model -> Html Msg
 viewGrid model =
     div
-        [ style "background-color" "white"
+        [ id "grid-container"
+        , style "background-color" "white"
         , style "margin-left" "auto"
         , style "margin-right" "auto"
         , style "color" "#555555"
+        , style "width" "691px"
         ]
         [ Html.map GridMsg <| Grid.view model.gridModel ]
 
@@ -337,11 +339,15 @@ items =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { gridModel = Grid.init gridConfig items
+    let
+        ( initialGridModel, gridCmd ) =
+            Grid.init gridConfig items
+    in
+    ( { gridModel = initialGridModel
       , clickedItem = Nothing
       , arePreferencesVisible = False
       }
-    , Cmd.none
+    , Cmd.map GridMsg gridCmd
     )
 
 
@@ -349,9 +355,9 @@ gridConfig : Grid.Config Data
 gridConfig =
     { canSelectRows = True
     , columns = columns Dict.empty
-    , containerHeight = 500
-    , containerWidth = 676
+    , containerId = "grid-container"
     , hasFilters = True
+    , footerHeight = 240 -- defines the distance from the bottom of the window
     , headerHeight = 60
     , labels = translations -- use default texts, which are in English; you could use "translations", which is provided below as an example
     , lineHeight = 25

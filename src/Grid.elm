@@ -67,7 +67,7 @@ import Css exposing (..)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
-import Grid.Html exposing (noContent, viewIf)
+import Grid.Html exposing (focusOn, noContent, viewIf)
 import Grid.Icons as Icons exposing (drawSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
@@ -77,6 +77,7 @@ import Grid.Scroll exposing (HorizontalScrollInfo, VerticalScrollInfo, onHorizon
 import Grid.StringEditor as StringEditor
 import Grid.Stylesheet as Stylesheet exposing (resizingHandleWidth)
 import Html
+import Html.Attributes
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, i, input, label, span, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
@@ -99,8 +100,7 @@ if you define some behaviour to be triggered when the user clicks a line.
     gridConfig =
         { canSelectRows = True
         , columns = columnList
-        , containerHeight = 500
-        , containerWidth = 700
+        , containerId = "my-main-container"
         , hasFilters = True
         , lineHeight = 20
         , rowClass = cssClassname
@@ -118,8 +118,8 @@ if you define some behaviour to be triggered when the user clicks a line.
 type alias Config a =
     { canSelectRows : Bool
     , columns : List (ColumnConfig a)
-    , containerHeight : Int
-    , containerWidth : Int
+    , containerId : String
+    , footerHeight : Int
     , hasFilters : Bool
     , headerHeight : Int
     , labels : Dict String String
@@ -186,10 +186,9 @@ type Msg a
     | FilterModified (ColumnConfig a) (Maybe String)
     | GotCellInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | GotHeaderContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
-    | GotRootContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
+    | GotParentContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | GotQuickFilterButtonInfo (Result Browser.Dom.Error Browser.Dom.Element)
-    | OnHeadersScrolled HorizontalScrollInfo
-    | OnRowsVerticallyScrolled VerticalScrollInfo
+    | GotRowsContainerInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | NoOp
     | QuickFilterMsg QuickFilter.Msg
     | SetFilters (Dict String String) -- column ID, filter value
@@ -211,6 +210,8 @@ type Msg a
     | UserEndedMouseInteraction
     | UserHoveredDragHandle
     | UserMovedResizeHandle Position
+    | UserResizedWindow
+    | UserScrolledRowsVertically VerticalScrollInfo
     | UserSwappedColumns (ColumnConfig a) (ColumnConfig a)
     | UserToggledAllItemSelection
     | UserToggledColumnVisibility (ColumnConfig a)
@@ -338,6 +339,8 @@ type alias State a =
 
     -- TODO: seems to be written but never read. Confirm and delete if this is true
     , columnsX : List Int
+    , containerHeight : Float
+    , containerWidth : Float
     , content : List a -- all data, visible or not
     , draggedColumn : Maybe (DraggedColumn a)
     , dragStartX : Float
@@ -355,7 +358,6 @@ type alias State a =
 
     -- TODO: order and sortedBy can have incompatible values. It would be better to join them in a single Maybe
     , order : Sorting
-    , originX : Float
     , resizedColumn : Maybe (ColumnConfig a)
     , showPreferences : Bool
     , sortedBy : Maybe (ColumnConfig a)
@@ -510,7 +512,7 @@ and content.
          )
 
 -}
-init : Config a -> List a -> Model a
+init : Config a -> List a -> ( Model a, Cmd (Msg a) )
 init config data =
     let
         hasSelectionColumn : List (ColumnConfig a) -> Bool
@@ -544,6 +546,8 @@ init config data =
             , clickedItem = Nothing
             , columnsX = []
             , config = sanitizedConfig
+            , containerHeight = 0
+            , containerWidth = 0
             , content = data
             , draggedColumn = Nothing
             , dragStartX = 0
@@ -559,7 +563,6 @@ init config data =
             , labels = config.labels
             , quickFilteredColumn = Nothing
             , order = Unsorted
-            , originX = 0
             , resizedColumn = Nothing
             , showPreferences = False
             , sortedBy = Nothing
@@ -572,7 +575,9 @@ init config data =
         quickFilterModel =
             QuickFilter.init [] Nothing config.labels 0
     in
-    Model { initialState | columnsX = columnsX initialState } stringEditorModel quickFilterModel
+    ( Model { initialState | columnsX = columnsX initialState } stringEditorModel quickFilterModel
+    , getElementInfo config.containerId GotParentContainerInfo
+    )
 
 
 {-| The list of X coordinates of columns; coordinates are expressed in pixels. The first one is at 0.
@@ -600,10 +605,10 @@ update msg model =
                 dimensions =
                     { width = info.element.width, height = info.element.height }
 
-                updatedStringEditorModel =
+                ( updatedStringEditorModel, cmd ) =
                     StringEditor.update (StringEditor.SetPositionAndDimensions position dimensions) stringEditorModel
             in
-            ( Model state updatedStringEditorModel quickFilterModel, Cmd.none )
+            ( Model state updatedStringEditorModel quickFilterModel, Cmd.map StringEditorMsg cmd )
 
         GotCellInfo (Err _) ->
             ( model, Cmd.none )
@@ -611,39 +616,48 @@ update msg model =
         GotQuickFilterButtonInfo (Ok info) ->
             let
                 position =
-                    { x = info.element.x, y = info.element.y }
+                    { x = info.element.x
+                    , y = info.element.y
+                    }
 
-                updatedQuickFilterModel =
+                ( updatedQuickFilterModel, cmd ) =
                     QuickFilter.update (QuickFilter.SetPosition position) quickFilterModel
             in
-            ( Model state stringEditorModel updatedQuickFilterModel, Cmd.none )
+            ( Model state stringEditorModel updatedQuickFilterModel
+            , Cmd.map QuickFilterMsg cmd
+            )
 
         GotQuickFilterButtonInfo (Err _) ->
             ( model, Cmd.none )
 
-        GotRootContainerInfo (Ok info) ->
+        GotRowsContainerInfo (Ok info) ->
             let
                 position =
-                    { x = info.element.x, y = info.element.y }
+                    { x = info.element.x
+                    , y = info.element.y - toFloat state.config.headerHeight
+                    }
 
-                updatedStringEditorModel =
+                ( updatedStringEditorModel, stringEditorCmd ) =
                     StringEditor.update (StringEditor.SetOrigin position) stringEditorModel
 
-                updatedQuickFilterModel =
+                ( updatedQuickFilterModel, quickFilterCommand ) =
                     QuickFilter.update (QuickFilter.SetOrigin position) quickFilterModel
             in
-            ( Model state updatedStringEditorModel updatedQuickFilterModel, Cmd.none )
+            ( Model state updatedStringEditorModel updatedQuickFilterModel
+            , Cmd.batch
+                [ Cmd.map StringEditorMsg stringEditorCmd
+                , Cmd.map QuickFilterMsg quickFilterCommand
+                ]
+            )
 
-        GotRootContainerInfo (Err _) ->
+        GotRowsContainerInfo (Err _) ->
             ( model, Cmd.none )
 
-        OnRowsVerticallyScrolled _ ->
+        UserScrolledRowsVertically _ ->
             ( model, getElementInfo state.editedCellId GotCellInfo )
 
         QuickFilterMsg quickFilterMsg ->
-            ( updateQuickFilter quickFilterMsg model
-            , Cmd.none
-            )
+            updateQuickFilter quickFilterMsg model
 
         ScrollTo isTargetItem ->
             let
@@ -653,7 +667,7 @@ update msg model =
             ( Model state stringEditorModel quickFilterModel
             , IL.scrollToNthItem
                 { postScrollMessage = NoOp
-                , listHtmlId = gridHtmlId
+                , listHtmlId = rowsHtmlId
                 , itemIndex = targetItemIndex
                 , configValue = infiniteListConfig state
                 , items = state.visibleItems
@@ -661,7 +675,7 @@ update msg model =
             )
 
         StringEditorMsg stringEditorMsg ->
-            ( updateStringEditor stringEditorMsg model, Cmd.none )
+            updateStringEditor stringEditorMsg model
 
         UserClickedQuickFilterButton columnConfig ->
             -- the focus must be put on opened filter div, so that the blur event will be launched when we leave it
@@ -686,18 +700,21 @@ update msg model =
                 stringEditorModel
                 updatedQuickFilterModel
             , Cmd.batch
-                [ focusOn openedQuickFilterHtmlId
-                , getElementInfo rootContainerId GotRootContainerInfo
+                [ getElementInfo rowsHtmlId GotRowsContainerInfo
                 , getElementInfo (quickFilterButtonId columnConfig) GotQuickFilterButtonInfo
                 ]
             )
 
         UserDoubleClickedEditableCell itemToBeEdited fieldToString columnId editableCellId ->
-            ( openEditor model columnId editableCellId itemToBeEdited fieldToString
+            let
+                ( updatedStringEditorModel, cmd ) =
+                    openEditor model columnId editableCellId itemToBeEdited fieldToString
+            in
+            ( updatedStringEditorModel
             , Cmd.batch
-                [ focusOn StringEditor.editorId
-                , getElementInfo rootContainerId GotRootContainerInfo
+                [ getElementInfo rowsHtmlId GotRowsContainerInfo
                 , getElementInfo editableCellId GotCellInfo
+                , cmd
                 ]
             )
 
@@ -707,18 +724,15 @@ update msg model =
             , getElementInfo headerContainerId GotHeaderContainerInfo
             )
 
+        UserResizedWindow ->
+            ( model
+            , getElementInfo state.config.containerId GotParentContainerInfo
+            )
+
         _ ->
             ( Model (updateState msg state) stringEditorModel quickFilterModel
             , Cmd.none
             )
-
-
-{-| focus on an HTML element.
-No callback is called (even if focus fails)
--}
-focusOn : String -> Cmd (Msg a)
-focusOn elementId =
-    Browser.Dom.focus elementId |> Task.attempt (\result -> NoOp)
 
 
 {-| creates a command to get the absolute position of a given dom element
@@ -764,11 +778,20 @@ updateState msg state =
         GotHeaderContainerInfo (Err _) ->
             state
 
+        GotParentContainerInfo (Ok info) ->
+            { state
+                | containerWidth = info.element.width
+                , containerHeight = info.viewport.height - info.element.y - toFloat state.config.footerHeight
+            }
+
+        GotParentContainerInfo (Err _) ->
+            state
+
         GotQuickFilterButtonInfo _ ->
             state
 
         -- processed by update
-        GotRootContainerInfo _ ->
+        GotRowsContainerInfo _ ->
             state
 
         InfiniteListMsg infList ->
@@ -911,6 +934,10 @@ updateState msg state =
         UserMovedResizeHandle position ->
             resizeColumn state position.x
 
+        UserResizedWindow ->
+            -- This message is handled in the `update` function
+            state
+
         UserSwappedColumns columnConfig draggedColumnConfig ->
             case state.draggedColumn of
                 Just draggedColumn ->
@@ -966,11 +993,8 @@ updateState msg state =
             in
             { state | visibleItems = newItems }
 
-        OnRowsVerticallyScrolled _ ->
+        UserScrolledRowsVertically _ ->
             state
-
-        OnHeadersScrolled info ->
-            { state | originX = info.scrollLeft }
 
 
 applyFilter : State a -> ColumnConfig a -> Maybe String -> State a
@@ -988,13 +1012,13 @@ applyFilter state columnConfig filteringValue =
     updateVisibleItems newState |> closeQuickFilter
 
 
-updateQuickFilter : QuickFilter.Msg -> Model a -> Model a
+updateQuickFilter : QuickFilter.Msg -> Model a -> ( Model a, Cmd (Msg a) )
 updateQuickFilter msg model =
     let
         (Model state stringEditorModel quickFilterModel) =
             model
 
-        updatedQuickFilterModel =
+        ( updatedQuickFilterModel, cmd ) =
             QuickFilter.update msg quickFilterModel
     in
     case msg of
@@ -1005,16 +1029,22 @@ updateQuickFilter msg model =
                         updatedState =
                             applyFilter state column filteringValue
                     in
-                    Model updatedState stringEditorModel quickFilterModel
+                    ( Model updatedState stringEditorModel quickFilterModel
+                    , Cmd.map QuickFilterMsg cmd
+                    )
 
                 Nothing ->
-                    model
+                    ( model
+                    , Cmd.map QuickFilterMsg cmd
+                    )
 
         _ ->
-            Model state stringEditorModel updatedQuickFilterModel
+            ( Model state stringEditorModel updatedQuickFilterModel
+            , Cmd.map QuickFilterMsg cmd
+            )
 
 
-updateStringEditor : StringEditor.Msg a -> Model a -> Model a
+updateStringEditor : StringEditor.Msg a -> Model a -> ( Model a, Cmd (Msg a) )
 updateStringEditor msg model =
     let
         (Model state stringEditorModel quickFilterModel) =
@@ -1022,27 +1052,39 @@ updateStringEditor msg model =
     in
     case msg of
         StringEditor.EditorLostFocus editedItem ->
-            applyStringEdition editedItem model
+            ( applyStringEdition editedItem model
+            , Cmd.none
+            )
 
         StringEditor.UserClickedCancel ->
-            Model (closeEditor state) (StringEditor.init state.labels) quickFilterModel
+            ( Model (closeEditor state) (StringEditor.init state.labels) quickFilterModel
+            , Cmd.none
+            )
 
         StringEditor.OnKeyUp keyCode ->
             if keyCode == escapeKeyCode then
-                Model (closeEditor state) (StringEditor.init state.labels) quickFilterModel
+                ( Model (closeEditor state) (StringEditor.init state.labels) quickFilterModel
+                , Cmd.none
+                )
 
             else
-                model
+                ( model
+                , Cmd.none
+                )
 
         StringEditor.UserSubmittedForm editedItem ->
-            applyStringEdition editedItem model
+            ( applyStringEdition editedItem model
+            , Cmd.none
+            )
 
         stringEditorMsg ->
             let
-                updatedStringEditorModel =
+                ( updatedStringEditorModel, cmd ) =
                     StringEditor.update stringEditorMsg stringEditorModel
             in
-            Model state updatedStringEditorModel quickFilterModel
+            ( Model state updatedStringEditorModel quickFilterModel
+            , Cmd.map StringEditorMsg cmd
+            )
 
 
 applyStringEdition : Item a -> Model a -> Model a
@@ -1083,7 +1125,7 @@ applyStringEdition editedItem model =
     Model updatedState (StringEditor.init state.labels) quickFilterModel
 
 
-openEditor : Model a -> String -> String -> Item a -> (Item a -> String) -> Model a
+openEditor : Model a -> String -> String -> Item a -> (Item a -> String) -> ( Model a, Cmd (Msg a) )
 openEditor model columnId editedCellId itemToBeEdited fieldToString =
     let
         (Model state stringEditorModel quickFilterModel) =
@@ -1107,12 +1149,14 @@ openEditor model columnId editedCellId itemToBeEdited fieldToString =
                 Nothing ->
                     0
 
-        updatedStringEditorModel =
+        ( updatedStringEditorModel, cmd ) =
             stringEditorModel
                 |> StringEditor.withMaxLength maxLength
                 |> StringEditor.update (StringEditor.SetEditedValue (fieldToString itemToBeEdited))
     in
-    Model updatedState updatedStringEditorModel quickFilterModel
+    ( Model updatedState updatedStringEditorModel quickFilterModel
+    , Cmd.map StringEditorMsg cmd
+    )
 
 
 editedColumnConfig : State a -> ColumnConfig a
@@ -1379,12 +1423,12 @@ infiniteListConfig state =
     IL.config
         { itemView = viewRow state
         , itemHeight = IL.withConstantHeight state.config.lineHeight
-        , containerHeight = state.config.containerHeight
+        , containerHeight = Basics.round state.containerHeight
         }
         |> IL.withOffset 300
 
 
-{-| Renders the grid
+{-| Renders the whole grid, including headers, rows, preferences, filters, editor...
 -}
 view : Model a -> Html.Html (Msg a)
 view model =
@@ -1400,7 +1444,10 @@ view model =
             div
                 [ id rootContainerId
                 , class "eag-root"
-                , css [ width (px <| toFloat (state.config.containerWidth + cumulatedBorderWidth)) ]
+                , css
+                    [ width (px (state.containerWidth + toFloat cumulatedBorderWidth))
+                    , height (px state.containerHeight)
+                    ]
                 ]
                 [ Stylesheet.grid
                 , lazy viewGrid state
@@ -1411,17 +1458,17 @@ view model =
 
 rootContainerId : String.String
 rootContainerId =
-    "grid-root-container"
+    "eag-root-container"
 
 
-{-| the id of the Html node containing the grid
+{-| the id of the Html node containing the rows
 -}
-gridHtmlId : String
-gridHtmlId =
-    "_grid_"
+rowsHtmlId : String
+rowsHtmlId =
+    "eag-rows"
 
 
-{-| Renders the grid
+{-| Renders headers and rows
 -}
 viewGrid : State a -> Html (Msg a)
 viewGrid state =
@@ -1435,14 +1482,14 @@ viewGrid state =
     div
         ([ class "eag-grid"
          , css
-            [ width (px <| toFloat (state.config.containerWidth + cumulatedBorderWidth))
+            [ width (px <| (state.containerWidth + toFloat cumulatedBorderWidth))
             ]
          ]
             |> appendIf columnIsResizedOrDragged
                 [ onMouseUp UserEndedMouseInteraction
                 , fromUnstyled <| Mouse.onLeave (\_ -> UserEndedMouseInteraction)
                 ]
-            |> appendIf editionInProgress [ onVerticalScroll OnRowsVerticallyScrolled ]
+            |> appendIf editionInProgress [ onVerticalScroll UserScrolledRowsVertically ]
         )
         [ viewHeaderContainer state
         , viewRows state
@@ -1489,19 +1536,20 @@ viewRows state =
     div
         ([ class "eag-rows"
          , css
-            [ --height (px <| toFloat state.config.containerHeight)
-              --,
-              width (px <| toFloat <| gridWidth state)
-            , transform <| translate (px -state.originX)
+            [ height (px <| state.containerHeight - toFloat state.config.headerHeight - horizontalScrollbarHeight)
+            , width (px <| toFloat <| gridWidth state)
             ]
-
-         --, Html.Styled.Attributes.property "scrollLeft" (Debug.log "scrollLeft" <| Json.Encode.string <| String.fromFloat state.originX)
          , fromUnstyled <| IL.onScroll InfiniteListMsg
-         , id gridHtmlId
+         , id rowsHtmlId
          ]
-            |> appendIf editionInProgress [ onVerticalScroll OnRowsVerticallyScrolled ]
+            |> appendIf editionInProgress [ onVerticalScroll UserScrolledRowsVertically ]
         )
         [ Html.Styled.fromUnstyled <| IL.view (infiniteListConfig state) state.infList state.visibleItems ]
+
+
+horizontalScrollbarHeight : Float
+horizontalScrollbarHeight =
+    20
 
 
 {-| Valid filters
@@ -1849,7 +1897,7 @@ viewPreferences state =
     div
         [ class "eag-bordered"
         , css
-            [ width (px <| toFloat state.config.containerWidth * 0.6) ]
+            [ width (px <| state.containerWidth * 0.6) ]
         ]
     <|
         [ Stylesheet.preferences
@@ -1950,9 +1998,9 @@ viewHeaderContainer state =
         attributes =
             [ class "eag-header-container"
             , css
-                [ height (px <| toFloat state.config.headerHeight) ]
+                [ height (px <| toFloat state.config.headerHeight)
+                ]
             , id headerContainerId
-            , onHorizontalScroll OnHeadersScrolled
             ]
                 |> appendIf isResizing [ fromUnstyled <| Mouse.onMove (\event -> UserMovedResizeHandle (event |> toPosition)) ]
     in

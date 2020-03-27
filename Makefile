@@ -28,13 +28,15 @@ build:		## Compiles the basic example in project root dir, for GUI tests
 live:		## Compiles using elm live
 	elm-live src/Examples/Basic.elm -- --output=example.js --debug
 
-live_large_list:		## Compiles large list using elm live
-	elm-live src/Examples/LargeList.elm --dir docs --start-page LargeList.html -- --output=docs/largelist.js    --debug
+live_basic:	## Compiles basic example using elm live
+	elm-live src/Examples/Basic.elm --dir docs --start-page Basic.html -- --output=docs/basic.js    --debug
+
+live_large_list:## Compiles large list example using elm live
+	elm-live src/Examples/LargeList.elm --dir docs --start-page LargeList.html -- --output=docs/largelist.js
 
 doc:		## Compiles the examples
-#	elm make src/Examples/Basic.elm --output=docs/basic.js --optimize
-#	elm make src/Examples/LargeList.elm --output=docs/largelist.js --optimize
-	elm make src/Examples/LargeList.elm --output=docs/largelist.js
+	elm make src/Examples/Basic.elm --output=docs/basic.js --optimize
+	elm make src/Examples/LargeList.elm --output=docs/largelist.js --optimize
 	#elm make --docs=docs.json
 
 .PHONY: doc

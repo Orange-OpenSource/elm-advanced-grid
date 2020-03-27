@@ -16,7 +16,7 @@ import Dict exposing (Dict)
 import Grid exposing (ColumnConfig, Msg(..), Sorting(..), floatColumnConfig, intColumnConfig, selectedAndVisibleItems, stringColumnConfig, viewProgressBar)
 import Grid.Item exposing (Item)
 import Html exposing (Html, button, div, input, label, li, text, ul)
-import Html.Attributes exposing (attribute, style)
+import Html.Attributes exposing (attribute, id, style)
 import Html.Events exposing (onClick, onInput)
 import List.Extra
 
@@ -77,12 +77,19 @@ view model =
 viewGrid : Model -> Html Msg
 viewGrid model =
     div
-        [ style "background-color" "white"
+        [ id gridContainerId
+        , style "background-color" "white"
         , style "margin-left" "auto"
         , style "margin-right" "auto"
         , style "color" "#555555"
+        , style "width" "100%"
         ]
         [ Html.map GridMsg <| Grid.view model.gridModel ]
+
+
+gridContainerId : String
+gridContainerId =
+    "grid-container"
 
 
 viewMenu : Model -> Html Msg
@@ -353,11 +360,15 @@ items =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { gridModel = Grid.init gridConfig items
+    let
+        ( gridModel, gridCmd ) =
+            Grid.init gridConfig items
+    in
+    ( { gridModel = gridModel
       , clickedItem = Nothing
       , arePreferencesVisible = False
       }
-    , Cmd.none
+    , Cmd.map GridMsg gridCmd
     )
 
 
@@ -365,8 +376,8 @@ gridConfig : Grid.Config Data
 gridConfig =
     { canSelectRows = True
     , columns = columns Dict.empty
-    , containerHeight = 500
-    , containerWidth = 950
+    , containerId = gridContainerId
+    , footerHeight = 20
     , hasFilters = True
     , headerHeight = 60
     , labels = Dict.empty

@@ -182,8 +182,8 @@ gridConfig : Grid.Config Data
 gridConfig =
     { canSelectRows = True
     , columns = columns
-    , containerHeight = 500
-    , containerWidth = 700
+    , containerId = "grid-container"
+    , footerHeight = 20
     , hasFilters = True
     , headerHeight = 60
     , lineHeight = 20
@@ -203,9 +203,17 @@ rowClass item =
 
 model : Model Data
 model =
-    Grid.init gridConfig data
+    let
+        ( gridModel, _ ) =
+            Grid.init gridConfig data
+    in
+    gridModel
 
 
 modelWithOneEmptyTitle : Model Data
 modelWithOneEmptyTitle =
-    Grid.init gridConfig dataWithOneEmptyCell
+    let
+        ( gridModel, _ ) =
+            Grid.init gridConfig dataWithOneEmptyCell
+    in
+    gridModel

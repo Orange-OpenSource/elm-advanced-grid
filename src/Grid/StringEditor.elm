@@ -9,11 +9,12 @@
 -}
 
 
-module Grid.StringEditor exposing (Model, Msg(..), editorId, init, update, view, withMaxLength)
+module Grid.StringEditor exposing (Model, Msg(..), init, update, view, withMaxLength)
 
 import Css exposing (absolute, backgroundColor, bold, border3, borderColor, borderRadius, column, cursor, displayFlex, flexDirection, flexEnd, flexGrow, fontSize, fontWeight, height, hex, justifyContent, left, margin, marginBottom, marginLeft, marginRight, marginTop, num, padding, paddingLeft, paddingRight, pointer, position, px, rem, row, solid, top, width)
 import Dict exposing (Dict)
 import Grid.Colors exposing (darkGrey, lightGrey, lightGrey2, white, white2)
+import Grid.Html exposing (focusOn)
 import Grid.Item exposing (Item)
 import Grid.Labels as Labels exposing (localize)
 import Html.Styled exposing (Attribute, Html, button, div, form, input, text, textarea)
@@ -67,6 +68,7 @@ type alias Dimensions =
 
 type Msg a
     = EditorLostFocus (Item a)
+    | NoOp
     | OnKeyUp Int -- the param is the key code
     | SetEditedValue String
     | SetOrigin Position
@@ -76,23 +78,36 @@ type Msg a
     | UserClickedCancel
 
 
-update : Msg a -> Model -> Model
+update : Msg a -> Model -> ( Model, Cmd (Msg a) )
 update msg model =
     case msg of
         SetPositionAndDimensions position dimensions ->
-            { model | position = position, dimensions = dimensions }
+            ( { model
+                | position = position
+                , dimensions = dimensions
+              }
+            , focusOn editorId NoOp
+            )
 
         SetEditedValue value ->
-            { model | value = value }
+            ( { model | value = value }
+            , Cmd.none
+            )
 
         SetOrigin position ->
-            { model | origin = position }
+            ( { model | origin = position }
+            , focusOn editorId NoOp
+            )
 
         UserChangedValue editedValue ->
-            { model | value = editedValue }
+            ( { model | value = editedValue }
+            , Cmd.none
+            )
 
         _ ->
-            model
+            ( model
+            , Cmd.none
+            )
 
 
 view : Model -> Item a -> Html (Msg a)
