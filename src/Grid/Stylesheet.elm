@@ -1,6 +1,6 @@
 module Grid.Stylesheet exposing (grid, preferences, resizingHandleWidth)
 
-import Css exposing (Style, absolute, after, alignItems, alignSelf, auto, backgroundColor, backgroundImage, before, border, border3, borderBottom3, borderLeft3, borderRadius, borderRight3, boxSizing, center, colResize, column, contentBox, cursor, deg, display, displayFlex, firstOfType, flex, flexDirection, flexEnd, flexGrow, flexShrink, flexStart, float, fontSize, height, hidden, hover, inlineFlex, int, justifyContent, left, lineHeight, linearGradient, margin, marginBottom, marginLeft, marginRight, maxWidth, minHeight, move, noWrap, none, num, opacity, overflow, overflowX, overflowY, padding, paddingLeft, paddingRight, paddingTop, pct, pointer, pointerEvents, position, property, px, relative, right, rotate, row, solid, spaceAround, spaceBetween, stop, stretch, top, transform, transparent, visibility, visible, whiteSpace, width, zIndex)
+import Css exposing (Style, absolute, after, alignItems, alignSelf, auto, backgroundColor, backgroundImage, before, bold, bolder, border, border3, borderBottom3, borderLeft3, borderRadius, borderRight3, boxSizing, center, colResize, column, contentBox, cursor, deg, display, displayFlex, firstOfType, flexDirection, flexEnd, flexGrow, flexShrink, flexStart, float, fontSize, fontStyle, fontWeight, height, hidden, hover, inlineFlex, int, italic, justifyContent, left, lineHeight, linearGradient, margin, marginBottom, marginLeft, marginRight, minHeight, move, noWrap, none, num, opacity, overflow, overflowX, overflowY, padding, paddingLeft, paddingRight, paddingTop, pct, pointer, pointerEvents, position, property, px, relative, right, rotate, row, solid, spaceAround, spaceBetween, stop, stretch, top, transform, transparent, visibility, visible, whiteSpace, width, zIndex)
 import Css.Global exposing (Snippet, class, descendants, global, typeSelector)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, white, white2)
 import Html.Styled
@@ -39,6 +39,9 @@ gridStyles =
         , visibility hidden
         , width (px 10)
         , zIndex (int 5)
+        ]
+    , class "eag-edited-row-class"
+        [ fontWeight bold
         ]
     , class "eag-flex-row"
         [ displayFlex
@@ -82,6 +85,13 @@ gridStyles =
         ]
     , class "eag-header-title"
         [ lineHeight (num 1.2)
+        ]
+    , class "eag-header-title-sorted"
+        [ fontStyle italic
+        , fontWeight bold
+        ]
+    , class "eag-header-title-filtered"
+        [ fontWeight bolder
         ]
     , class "eag-input-filter"
         [ border (px 0)

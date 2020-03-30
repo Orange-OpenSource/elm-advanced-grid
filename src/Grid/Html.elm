@@ -1,7 +1,9 @@
 module Grid.Html exposing (..)
 
 import Browser.Dom
-import Html.Styled exposing (Html, text)
+import Html.Styled exposing (Attribute, Html, text)
+import Html.Styled.Events exposing (stopPropagationOn)
+import Json.Decode as Decode
 import Task
 
 
@@ -24,3 +26,15 @@ noContent =
 focusOn : String -> msg -> Cmd msg
 focusOn elementId msg =
     Browser.Dom.focus elementId |> Task.attempt (\result -> msg)
+
+
+{-| Prevents the click on the line to be detected when interacting with the checkbox
+-}
+stopPropagationOnClick : msg -> Attribute msg
+stopPropagationOnClick msg =
+    stopPropagationOn "click" (Decode.map alwaysPreventDefault (Decode.succeed msg))
+
+
+alwaysPreventDefault : msg -> ( msg, Bool )
+alwaysPreventDefault msg =
+    ( msg, True )

@@ -67,24 +67,22 @@ import Css exposing (..)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
-import Grid.Html exposing (focusOn, noContent, viewIf)
-import Grid.Icons as Icons exposing (drawSvg, filterIcon)
+import Grid.Html exposing (noContent, stopPropagationOnClick, viewIf)
+import Grid.Icons as Icons exposing (drawDarkSvg, drawLightSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
 import Grid.List exposing (appendIf)
-import Grid.QuickFilter as QuickFilter exposing (openedQuickFilterHtmlId)
-import Grid.Scroll exposing (HorizontalScrollInfo, VerticalScrollInfo, onHorizontalScroll, onVerticalScroll)
+import Grid.QuickFilter as QuickFilter
+import Grid.Scroll exposing (HorizontalScrollInfo, VerticalScrollInfo, onVerticalScroll)
 import Grid.StringEditor as StringEditor
 import Grid.Stylesheet as Stylesheet exposing (resizingHandleWidth)
 import Html
-import Html.Attributes
 import Html.Events.Extra.Mouse as Mouse
 import Html.Styled exposing (Attribute, Html, div, i, input, label, span, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, css, for, fromUnstyled, id, title, type_, value)
-import Html.Styled.Events exposing (onBlur, onClick, onDoubleClick, onInput, onMouseUp, stopPropagationOn)
+import Html.Styled.Events exposing (onBlur, onClick, onDoubleClick, onInput, onMouseUp)
 import Html.Styled.Lazy exposing (lazy, lazy2, lazy3)
 import InfiniteList as IL
-import Json.Decode as Decode
 import List
 import List.Extra exposing (findIndex, unique)
 import String
@@ -1574,9 +1572,23 @@ listIdx is the index in the data source; if the total number of items is 1000, 0
 -}
 viewRow : State a -> Int -> Int -> Item a -> Html.Html (Msg a)
 viewRow state idx listIdx item =
+    let
+        editedRowClass =
+            case state.editedItem of
+                Just editedItem ->
+                    if item.visibleIndex == editedItem.visibleIndex then
+                        "eag-edited-row-class"
+
+                    else
+                        ""
+
+                Nothing ->
+                    ""
+    in
     toUnstyled
         << div
             [ attribute "data-testid" "row"
+            , class editedRowClass
             , class (state.config.rowClass item)
             , class "eag-row"
             , css
@@ -1634,18 +1646,6 @@ viewBool field properties item =
             ]
             []
         ]
-
-
-{-| Prevents the click on the line to be detected when interacting with the checkbox
--}
-stopPropagationOnClick : Msg a -> Attribute (Msg a)
-stopPropagationOnClick msg =
-    stopPropagationOn "click" (Decode.map alwaysPreventDefault (Decode.succeed msg))
-
-
-alwaysPreventDefault : Msg a -> ( Msg a, Bool )
-alwaysPreventDefault msg =
-    ( msg, True )
 
 
 {-| Create a ColumnConfig for a column containing a string value
@@ -2166,23 +2166,30 @@ isSelectionColumnProperties columnProperties =
 viewTitle : State a -> ColumnConfig a -> Html (Msg a)
 viewTitle state columnConfig =
     let
-        titleFontStyle =
+        classIfSorted =
             case state.sortedBy of
                 Just column ->
                     if column.properties.id == columnConfig.properties.id then
-                        fontStyle italic
+                        "eag-header-title-sorted"
 
                     else
-                        fontStyle normal
+                        ""
 
                 Nothing ->
-                    fontStyle normal
+                    ""
+
+        classIfFiltered =
+            case columnConfig.filteringValue of
+                Just _ ->
+                    "eag-header-title-filtered"
+
+                Nothing ->
+                    ""
     in
     span
         [ class "eag-header-title"
-        , css
-            [ titleFontStyle
-            ]
+        , class classIfSorted
+        , class classIfFiltered
         ]
         [ text <| columnConfig.properties.title
         ]
@@ -2311,6 +2318,14 @@ viewQuickFilterButton state columnConfig =
     let
         htmlId =
             quickFilterButtonId columnConfig
+
+        draw =
+            case columnConfig.filteringValue of
+                Nothing ->
+                    drawLightSvg
+
+                _ ->
+                    drawDarkSvg
     in
     div
         [ attribute "data-testid" htmlId
@@ -2319,7 +2334,7 @@ viewQuickFilterButton state columnConfig =
         , onClick UserClickedFilter
         , title <| localize Label.openQuickFilter state.labels
         ]
-        [ drawSvg Icons.width filterIcon (UserClickedQuickFilterButton columnConfig)
+        [ draw Icons.width filterIcon (UserClickedQuickFilterButton columnConfig)
         ]
 
 
