@@ -2133,7 +2133,7 @@ viewGhostHeader state =
         Just draggedColumn ->
             div
                 (headerStyles state
-                    :: [ class "eag-header ghost-header"
+                    :: [ class "eag-header eag-ghost-header"
                        , css
                             [ left (px <| draggedColumn.x - state.headerContainerPosition.x)
                             ]

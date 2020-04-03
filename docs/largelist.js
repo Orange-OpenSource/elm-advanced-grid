@@ -13311,7 +13311,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewGhostHeader = function (state)
 				$Orange_OpenSource$elm_advanced_grid$Grid$headerStyles(state),
 				_List_fromArray(
 					[
-						$rtfeldman$elm_css$Html$Styled$Attributes$class('eag-header ghost-header'),
+						$rtfeldman$elm_css$Html$Styled$Attributes$class('eag-header eag-ghost-header'),
 						$rtfeldman$elm_css$Html$Styled$Attributes$css(
 						_List_fromArray(
 							[
