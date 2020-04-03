@@ -639,7 +639,7 @@ update msg model =
                     StringEditor.update (StringEditor.SetOrigin position) stringEditorModel
 
                 ( updatedQuickFilterModel, quickFilterCommand ) =
-                    QuickFilter.update (QuickFilter.SetOrigin position) quickFilterModel
+                    QuickFilter.update (QuickFilter.SetOrigin position state.containerWidth) quickFilterModel
             in
             ( Model state updatedStringEditorModel updatedQuickFilterModel
             , Cmd.batch

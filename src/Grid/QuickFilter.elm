@@ -4,6 +4,7 @@ import Css exposing (..)
 import Dict exposing (Dict)
 import Grid.Colors exposing (darkGrey2, lightGrey3, white)
 import Grid.Html exposing (focusOn)
+import Grid.Icons
 import Grid.Labels as Label exposing (localize)
 import Html.Styled exposing (Attribute, Html, div, hr, span, text)
 import Html.Styled.Attributes exposing (css, id, tabindex)
@@ -18,11 +19,12 @@ import List exposing (take)
 type alias Model =
     { filteringValue : Maybe String
     , labels : Dict String String
+    , maxX : Float
     , origin : Position
+    , position : Position
     , propositions : List String
     , state : QuickFilterState
     , width : Float
-    , position : Position
     }
 
 
@@ -34,7 +36,7 @@ type QuickFilterState
 type Msg
     = FocusLost
     | NoOp
-    | SetOrigin Position
+    | SetOrigin Position Float -- the second parameter is the X value above which the quick filter view would be outside of the grid container
     | SetPosition Position
     | UserClosedQuickFilter
     | UserOpenedQuickFilter
@@ -80,11 +82,12 @@ init allValuesInColumn filteringValue labels columnWidth =
     in
     { filteringValue = filteringValue
     , labels = labels -- state.labels
-    , state = Closed
-    , propositions = filterPropositions
-    , width = columnWidth
+    , maxX = 0
     , origin = { x = 0, y = 0 }
     , position = { x = 0, y = 0 }
+    , propositions = filterPropositions
+    , state = Closed
+    , width = columnWidth
     }
 
 
@@ -110,8 +113,8 @@ update msg model =
             , Cmd.none
             )
 
-        SetOrigin position ->
-            ( { model | origin = position }
+        SetOrigin position maxX ->
+            ( { model | origin = position, maxX = maxX }
             , focusOn openedQuickFilterHtmlId NoOp
             )
 
@@ -144,9 +147,22 @@ view model =
             , isCommand = False
             , label = value
             }
+
+        x =
+            model.position.x - model.origin.x
+
+        popupPosition =
+            { x =
+                if x + model.width > model.maxX then
+                    x - model.width + Grid.Icons.width
+
+                else
+                    x
+            , y = model.position.y - model.origin.y
+            }
     in
     div
-        [ quickFilterPopupStyles model.origin model.position model.width
+        [ quickFilterPopupStyles popupPosition model.width
 
         -- allow this div to receive focus (necessary to receive blur event)
         , tabindex 0
@@ -160,12 +176,12 @@ view model =
             ++ viewResetSelector model.filteringValue (localize Label.clear model.labels)
 
 
-quickFilterPopupStyles : Position -> Position -> Float -> Attribute Msg
-quickFilterPopupStyles origin popupPosition columnWidth =
+quickFilterPopupStyles : Position -> Float -> Attribute Msg
+quickFilterPopupStyles popupPosition columnWidth =
     css
         [ position absolute
-        , left (px <| popupPosition.x - origin.x)
-        , top (px <| popupPosition.y - origin.y)
+        , left <| px popupPosition.x
+        , top <| px popupPosition.y
         , zIndex (int 1000)
         , border3 (px 1) solid Grid.Colors.lightGrey2
         , margin auto
