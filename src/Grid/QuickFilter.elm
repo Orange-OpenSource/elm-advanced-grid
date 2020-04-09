@@ -154,6 +154,7 @@ view model =
         popupPosition =
             { x =
                 if x + model.width > model.maxX then
+                    -- prevents popup to be partially hidden when on last colmun
                     x - model.width + Grid.Icons.width
 
                 else

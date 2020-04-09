@@ -67,7 +67,7 @@ import Css exposing (..)
 import Dict exposing (Dict)
 import Grid.Colors exposing (black)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
-import Grid.Html exposing (noContent, stopPropagationOnClick, viewIf)
+import Grid.Html exposing (getElementInfo, noContent, stopPropagationOnClick, viewIf)
 import Grid.Icons as Icons exposing (drawDarkSvg, drawLightSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
@@ -597,14 +597,17 @@ update msg model =
     case msg of
         GotCellInfo (Ok info) ->
             let
-                position =
+                cellPosition =
                     { x = info.element.x, y = info.element.y }
 
-                dimensions =
+                cellDimensions =
                     { width = info.element.width, height = info.element.height }
 
+                containerHeight =
+                    state.containerHeight
+
                 ( updatedStringEditorModel, cmd ) =
-                    StringEditor.update (StringEditor.SetPositionAndDimensions position dimensions) stringEditorModel
+                    StringEditor.update (StringEditor.SetPositionAndDimensions cellPosition cellDimensions containerHeight) stringEditorModel
             in
             ( Model state updatedStringEditorModel quickFilterModel, Cmd.map StringEditorMsg cmd )
 
@@ -635,11 +638,14 @@ update msg model =
                     , y = info.element.y - toFloat state.config.headerHeight
                     }
 
+                quickFilterMaxX =
+                    state.containerWidth - position.x
+
                 ( updatedStringEditorModel, stringEditorCmd ) =
                     StringEditor.update (StringEditor.SetOrigin position) stringEditorModel
 
                 ( updatedQuickFilterModel, quickFilterCommand ) =
-                    QuickFilter.update (QuickFilter.SetOrigin position state.containerWidth) quickFilterModel
+                    QuickFilter.update (QuickFilter.SetOrigin position quickFilterMaxX) quickFilterModel
             in
             ( Model state updatedStringEditorModel updatedQuickFilterModel
             , Cmd.batch
@@ -731,13 +737,6 @@ update msg model =
             ( Model (updateState msg state) stringEditorModel quickFilterModel
             , Cmd.none
             )
-
-
-{-| creates a command to get the absolute position of a given dom element
--}
-getElementInfo : String -> (Result Browser.Dom.Error Browser.Dom.Element -> Msg a) -> Cmd (Msg a)
-getElementInfo elementId msg =
-    Browser.Dom.getElement elementId |> Task.attempt (\result -> msg result)
 
 
 closeQuickFilter : State a -> State a

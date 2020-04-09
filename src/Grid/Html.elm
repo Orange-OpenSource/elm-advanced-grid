@@ -38,3 +38,10 @@ stopPropagationOnClick msg =
 alwaysPreventDefault : msg -> ( msg, Bool )
 alwaysPreventDefault msg =
     ( msg, True )
+
+
+{-| creates a command to get the absolute position of a given dom element
+-}
+getElementInfo : String -> (Result Browser.Dom.Error Browser.Dom.Element -> msg) -> Cmd msg
+getElementInfo elementId msg =
+    Browser.Dom.getElement elementId |> Task.attempt (\result -> msg result)

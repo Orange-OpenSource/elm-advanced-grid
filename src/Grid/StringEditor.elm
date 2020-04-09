@@ -11,10 +11,11 @@
 
 module Grid.StringEditor exposing (Model, Msg(..), init, update, view, withMaxLength)
 
-import Css exposing (absolute, backgroundColor, bold, border3, borderColor, borderRadius, column, cursor, displayFlex, flexDirection, flexEnd, flexGrow, fontSize, fontWeight, height, hex, justifyContent, left, margin, marginBottom, marginLeft, marginRight, marginTop, num, padding, paddingLeft, paddingRight, pointer, position, px, rem, row, solid, top, width)
+import Browser.Dom
+import Css exposing (absolute, backgroundColor, bold, border3, borderColor, borderRadius, bottom, column, cursor, displayFlex, flexDirection, flexEnd, flexGrow, fontSize, fontWeight, height, hex, justifyContent, left, margin, marginBottom, marginLeft, marginRight, marginTop, num, padding, paddingLeft, paddingRight, pointer, position, px, rem, row, solid, top, width)
 import Dict exposing (Dict)
 import Grid.Colors exposing (darkGrey, lightGrey, lightGrey2, white, white2)
-import Grid.Html exposing (focusOn)
+import Grid.Html exposing (focusOn, getElementInfo)
 import Grid.Item exposing (Item)
 import Grid.Labels as Labels exposing (localize)
 import Html.Styled exposing (Attribute, Html, button, div, form, input, text, textarea)
@@ -24,22 +25,26 @@ import Json.Decode
 
 
 type alias Model =
-    { dimensions : Dimensions
+    { cellDimensions : Dimensions
     , labels : Dict String String
     , maxLength : Int
+    , maxY : Float
     , origin : Position
     , position : Position
+    , textareaDimensions : Dimensions
     , value : String
     }
 
 
 init : Dict String String -> Model
 init labels =
-    { dimensions = { width = 0, height = 0 }
+    { cellDimensions = { width = 0, height = 0 }
     , labels = labels
     , maxLength = 0
+    , maxY = 0
     , origin = { x = 0, y = 0 }
     , position = { x = 0, y = 0 }
+    , textareaDimensions = { width = 0, height = 0 }
     , value = ""
     }
 
@@ -68,11 +73,12 @@ type alias Dimensions =
 
 type Msg a
     = EditorLostFocus (Item a)
+    | GotTextareaInfo (Result Browser.Dom.Error Browser.Dom.Element)
     | NoOp
     | OnKeyUp Int -- the param is the key code
     | SetEditedValue String
     | SetOrigin Position
-    | SetPositionAndDimensions Position Dimensions
+    | SetPositionAndDimensions Position Dimensions Float
     | UserChangedValue String
     | UserSubmittedForm (Item a)
     | UserClickedCancel
@@ -81,12 +87,25 @@ type Msg a
 update : Msg a -> Model -> ( Model, Cmd (Msg a) )
 update msg model =
     case msg of
-        SetPositionAndDimensions position dimensions ->
+        GotTextareaInfo (Ok info) ->
+            let
+                textareaDimension =
+                    { width = info.element.width
+                    , height = info.element.height
+                    }
+            in
+            ( { model | textareaDimensions = textareaDimension }, Cmd.none )
+
+        SetPositionAndDimensions position dimensions maxY ->
             ( { model
                 | position = position
-                , dimensions = dimensions
+                , maxY = maxY
+                , cellDimensions = dimensions
               }
-            , focusOn editorId NoOp
+            , Cmd.batch
+                [ focusOn editorId NoOp
+                , getElementInfo textareaId GotTextareaInfo
+                ]
             )
 
         SetEditedValue value ->
@@ -113,14 +132,9 @@ update msg model =
 view : Model -> Item a -> Html (Msg a)
 view model item =
     form
-        [ css
-            [ position absolute
-            , left (px <| model.position.x - model.origin.x)
-            , top (px <| model.position.y - model.origin.y)
-            ]
-        , onSubmit <| UserSubmittedForm item
+        [ onSubmit <| UserSubmittedForm item
         ]
-        [ if model.maxLength > 50 then
+        [ if shouldDisplayTextarea model then
             viewTextarea model item
 
           else
@@ -128,16 +142,34 @@ view model item =
         ]
 
 
+{-| Use a textarea for long texts to be edited, an input field of the size of the cell otherwise
+-}
+shouldDisplayTextarea : Model -> Bool
+shouldDisplayTextarea model =
+    model.maxLength > 50
+
+
 {-| Displays a single line input with the same dimensions as the edited cell
 -}
 viewInput : Model -> Item a -> Html (Msg a)
 viewInput model item =
+    let
+        x =
+            model.position.x - model.origin.x
+
+        y =
+            model.position.y - model.origin.y
+    in
     input
         [ css
-            [ height (px <| model.dimensions.height)
-            , width (px <| model.dimensions.width)
+            -- TODO move static styles into stylesheet
+            [ height (px <| model.cellDimensions.height)
+            , left (px x)
             , margin (px 0)
             , padding (px 0)
+            , position absolute
+            , top (px y)
+            , width (px <| model.cellDimensions.width)
             ]
         , id editorId
         , onBlur (EditorLostFocus item)
@@ -154,11 +186,18 @@ viewInput model item =
 viewTextarea : Model -> Item a -> Html (Msg a)
 viewTextarea model item =
     let
-        maxLineOfText =
-            round (toFloat model.maxLength / wrapAtColumn)
+        cellX =
+            model.position.x - model.origin.x
 
-        visibleLines =
-            min maxLineOfText maxTextareaRows
+        cellY =
+            model.position.y - model.origin.y
+
+        y =
+            if cellY + model.textareaDimensions.height > model.maxY then
+                cellY - model.textareaDimensions.height + model.cellDimensions.height
+
+            else
+                cellY
     in
     div
         [ css
@@ -166,11 +205,15 @@ viewTextarea model item =
             , border3 (px 1) solid darkGrey
             , displayFlex
             , flexDirection column
+            , left (px cellX)
+            , position absolute
+            , top (px y)
             ]
+        , id textareaId
         ]
         [ textarea
             [ css
-                [ width (px <| model.dimensions.width - 40)
+                [ width (px <| model.cellDimensions.width - 40)
                 , margin (px 10)
                 , padding (px 3)
                 ]
@@ -178,12 +221,25 @@ viewTextarea model item =
             , onInput <| UserChangedValue
             , onKeyUp OnKeyUp
             , maxlength model.maxLength
-            , rows visibleLines
+            , rows (visibleLines model)
             , value model.value
             ]
             []
         , viewButtons model
         ]
+
+
+textareaId =
+    "eag-textarea"
+
+
+visibleLines : Model -> Int
+visibleLines model =
+    let
+        maxLineOfText =
+            round (toFloat model.maxLength / wrapAtColumn)
+    in
+    min maxLineOfText maxTextareaRows
 
 
 viewButtons : Model -> Html (Msg a)
