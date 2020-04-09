@@ -41,7 +41,7 @@ Cypress.Commands.add("sortCitiesDescending", () => {
 })
 
 Cypress.Commands.add("scrollToCityStartingWith", (cityName) => {
-        cy.get('div[id="_grid_"]').scrollTo('bottom')
+        cy.get('div[id="eag-rows"]').scrollTo('bottom')
         cy.get('input[data-testid="scrollToInput"]')
           .clear()
           .type(`${cityName}`)

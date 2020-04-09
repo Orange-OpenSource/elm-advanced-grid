@@ -27,9 +27,9 @@ describe('elm grid example', function () {
         cy.get('input[data-testid="filter-Value"]')
     })
 
-    it('should contain 45 rows of data when none is filtered', function () {
+    it('should contain 41 rows of data when none is filtered', function () {
         cy.visit(url)
-        cy.get('div[data-testid="row"]').should('have.length', 45)
+        cy.get('div[data-testid="row"]').should('have.length', 41)
     })
 
     it('should filter elements containing an exact given value', function () {
@@ -99,7 +99,7 @@ describe('elm grid example', function () {
         cy.resetFilters()
 
         cy.get('div[data-testid="City"]').then (function($citiesList){
-            expect($citiesList).to.have.length(45)
+            expect($citiesList).to.have.length(41)
             for (let i=0; i<4; i++){
               expect ($citiesList.eq(`${i}`)).to.contain(`${defaultOrderCities[`${i}`]}`)
             }
@@ -136,7 +136,7 @@ describe('elm grid example', function () {
         status.contains("Clicked Item = id:31 - name: name31")
         cy.resetFilters()
         rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 45)
+        rows.should('have.length', 41)
     })
 
     it('should filter elements containing empty value when using the quick filter', function () {
@@ -153,7 +153,7 @@ describe('elm grid example', function () {
             .next().contains("id:40 - name: name40")
         cy.resetFilters()
         rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 45)
+        rows.should('have.length', 41)
     })
 
     it('should be allowed to edit a label in City column', function () {

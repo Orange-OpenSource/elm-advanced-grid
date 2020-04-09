@@ -46,7 +46,7 @@ describe('elm grid example', function () {
         cy.visit(url)
         cy.sortCitiesAscending()
         cy.get('div[data-testid="City"]').then (function($citiesList){
-            expect($citiesList).to.have.length(45)
+            expect($citiesList).to.have.length(41)
             for (let i=0; i<4; i++){
               expect ($citiesList.eq(`${i}`)).to.contain(`${sortCitiesAscending[`${i}`]}`)
             }
@@ -54,7 +54,7 @@ describe('elm grid example', function () {
 
         cy.sortCitiesDescending()
         cy.get('div[data-testid="City"]').then (function($citiesList){
-            expect($citiesList).to.have.length(45)
+            expect($citiesList).to.have.length(41)
             for (let i=0; i<4; i++){
               expect ($citiesList.eq(`${i}`)).to.contain(`${sortCitiesDescending[`${i}`]}`)
             }
