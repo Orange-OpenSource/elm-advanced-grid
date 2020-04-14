@@ -61,6 +61,10 @@ type alias TypedFilter a b =
         { filter : b -> a -> Bool
         , parser : Parser b
         }
+    , verifiesExpression :
+        { filter : b -> a -> Bool
+        , parser : Parser b
+        }
     }
 
 
@@ -244,10 +248,12 @@ makeFilter :
     , lessThan : b -> b -> Bool
     , greaterThan : b -> b -> Bool
     , contains : b -> b -> Bool
+    , verifiesExpression : b -> b -> Bool
+    , expressionParser : Parser (List b)
     , typedParser : Parser b
     }
     -> TypedFilter a b
-makeFilter { getter, equal, lessThan, greaterThan, contains, typedParser } =
+makeFilter { getter, equal, lessThan, greaterThan, contains, verifiesExpression, expressionParser, typedParser } =
     { equal =
         { filter = \value item -> equal (getter item) value
         , parser = equalityParser |= typedParser
@@ -263,5 +269,9 @@ makeFilter { getter, equal, lessThan, greaterThan, contains, typedParser } =
     , contains =
         { filter = \value item -> contains (getter item) value
         , parser = containsParser |= typedParser
+        }
+    , verifiesExpression =
+        { filter = \value item -> verifiesExpression (getter item) value
+        , parser = expressionParser
         }
     }

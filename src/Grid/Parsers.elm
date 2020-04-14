@@ -10,15 +10,19 @@
 
 
 module Grid.Parsers exposing
-    ( boolParser
+    ( boolExpressionParser
+    , boolParser
     , containsParser
     , equalityParser
+    , floatExpressionParser
     , greaterThanParser
+    , intExpressionParser
     , lessThanParser
+    , stringExpressionParser
     , stringParser
     )
 
-import Parser exposing ((|.), Parser, chompUntilEndOr, getChompedString, keyword, oneOf, spaces, succeed, symbol)
+import Parser exposing ((|.), (|=), Parser, Step(..), chompUntilEndOr, float, getChompedString, int, keyword, loop, map, oneOf, spaces, succeed, symbol)
 
 
 equalityParser : Parser (a -> a)
@@ -32,6 +36,26 @@ equalityParser =
 containsParser : Parser (a -> a)
 containsParser =
     succeed identity
+
+
+stringExpressionParser : Parser (List String)
+stringExpressionParser =
+    loop [] orStringParser
+
+
+intExpressionParser : Parser (List Int)
+intExpressionParser =
+    loop [] orIntParser
+
+
+floatExpressionParser : Parser (List Float)
+floatExpressionParser =
+    loop [] orFloatParser
+
+
+boolExpressionParser : Parser (List Bool)
+boolExpressionParser =
+    loop [] orBoolParser
 
 
 lessThanParser : Parser (a -> a)
@@ -48,6 +72,58 @@ greaterThanParser =
         |. spaces
         |. symbol ">"
         |. spaces
+
+
+orStringParser : List String -> Parser (Step (List String) (List String))
+orStringParser parsedStrings =
+    oneOf
+        [ succeed (\stmt -> Loop (stmt :: parsedStrings))
+            |= stringParser
+            |. spaces
+            |. keyword "or"
+            |. spaces
+        , succeed ()
+            |> map (\_ -> Done parsedStrings)
+        ]
+
+
+orIntParser : List Int -> Parser (Step (List Int) (List Int))
+orIntParser parsedInts =
+    oneOf
+        [ succeed (\stmt -> Loop (stmt :: parsedInts))
+            |= int
+            |. spaces
+            |. keyword "or"
+            |. spaces
+        , succeed ()
+            |> map (\_ -> Done parsedInts)
+        ]
+
+
+orFloatParser : List Float -> Parser (Step (List Float) (List Float))
+orFloatParser parsedFloats =
+    oneOf
+        [ succeed (\stmt -> Loop (stmt :: parsedFloats))
+            |= float
+            |. spaces
+            |. keyword "or"
+            |. spaces
+        , succeed ()
+            |> map (\_ -> Done parsedFloats)
+        ]
+
+
+orBoolParser : List Bool -> Parser (Step (List Bool) (List Bool))
+orBoolParser parsedBools =
+    oneOf
+        [ succeed (\stmt -> Loop (stmt :: parsedBools))
+            |= boolParser
+            |. spaces
+            |. keyword "or"
+            |. spaces
+        , succeed ()
+            |> map (\_ -> Done parsedBools)
+        ]
 
 
 stringParser : Parser String

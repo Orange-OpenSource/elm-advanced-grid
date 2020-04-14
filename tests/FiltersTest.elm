@@ -175,6 +175,9 @@ describeFilterParsing =
         , test "should detect if a String is not greater than another" <|
             \_ ->
                 testStringComparisonParsingFails ">ITEM 3" item2
+        , test "should detect if a sub-string or another is contained in a reference string" <|
+            \_ ->
+                testStringComparisonParsingSucceeds "FOO OR IT" item2
         ]
     ]
 
