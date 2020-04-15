@@ -1024,7 +1024,7 @@ updateQuickFilter msg model =
                 Just column ->
                     let
                         updatedState =
-                            applyFilter state column filteringValue
+                            applyFilter state column (quote filteringValue)
                     in
                     ( Model updatedState stringEditorModel quickFilterModel
                     , Cmd.map QuickFilterMsg cmd
@@ -1039,6 +1039,25 @@ updateQuickFilter msg model =
             ( Model state stringEditorModel updatedQuickFilterModel
             , Cmd.map QuickFilterMsg cmd
             )
+
+
+quote : Maybe String -> Maybe String
+quote maybeString =
+    case maybeString of
+        Just string ->
+            if String.contains " " string then
+                case String.left 1 string of
+                    "=" ->
+                        Just ("=\"" ++ String.dropLeft 1 string ++ "\"")
+
+                    _ ->
+                        Just ("\"" ++ string ++ "\"")
+
+            else
+                Just string
+
+        Nothing ->
+            Nothing
 
 
 updateStringEditor : StringEditor.Msg a -> Model a -> ( Model a, Cmd (Msg a) )
