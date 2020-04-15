@@ -28,7 +28,7 @@ data1 =
     { count = 1
     , isValid = True
     , score = 1.0
-    , title = "ITEM 1"
+    , title = "ITEM1"
     }
 
 
@@ -42,7 +42,7 @@ data2 =
     { count = 2
     , isValid = False
     , score = 2.0
-    , title = "ITEM 2"
+    , title = "ITEM2"
     }
 
 

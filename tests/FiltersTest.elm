@@ -135,10 +135,10 @@ describeFilterParsing =
                     |> Expect.equal Nothing
         , test "should detect if a String is equal to another" <|
             \_ ->
-                testStringComparisonParsingSucceeds "=ITEM 2" item2
+                testStringComparisonParsingSucceeds "=ITEM2" item2
         , test "should detect if a String is equal to another, doing a case-insensitive comparison" <|
             \_ ->
-                testStringComparisonParsingSucceeds "=itEM 2" item2
+                testStringComparisonParsingSucceeds "=itEM2" item2
         , test "should detect if a String is different to another" <|
             \_ ->
                 testStringComparisonParsingFails "=ITEM" item2
@@ -150,22 +150,22 @@ describeFilterParsing =
                 testStringComparisonParsingSucceeds "tem" item2
         , test "should detect if a String does not contain another" <|
             \_ ->
-                testStringComparisonParsingFails "ITEM2" item2
+                testStringComparisonParsingFails "ITEM5" item2
         , test "should detect if a String is lesser than another" <|
             \_ ->
-                testStringComparisonParsingSucceeds "<ITEM 42" item1
+                testStringComparisonParsingSucceeds "<ITEM42" item1
         , test "should detect if a String is not lesser than another, doing a case-insensitive comparison" <|
             \_ ->
                 testStringComparisonParsingFails "<a" item1
         , test "should detect if a String is not lesser than another" <|
             \_ ->
-                testStringComparisonParsingFails "<ITEM 1" item2
+                testStringComparisonParsingFails "<ITEM1" item2
         , test "should detect if a String is greater than another" <|
             \_ ->
-                testStringComparisonParsingSucceeds ">ITEM 1" item2
+                testStringComparisonParsingSucceeds ">ITEM1" item2
         , test "should detect if a String is greater than another, doing a case-insensitive comparison" <|
             \_ ->
-                testStringComparisonParsingSucceeds ">item 1" item2
+                testStringComparisonParsingSucceeds ">item1" item2
         , test "should detect if a String is empty" <|
             \_ ->
                 testStringComparisonParsingSucceeds ("=" ++ Label.empty) item6
@@ -174,10 +174,13 @@ describeFilterParsing =
                 testStringComparisonParsingFails ("=" ++ Label.empty) item1
         , test "should detect if a String is not greater than another" <|
             \_ ->
-                testStringComparisonParsingFails ">ITEM 3" item2
-        , test "should detect if a sub-string or another is contained in a reference string" <|
+                testStringComparisonParsingFails ">ITEM3" item2
+        , test "should detect if one of two sub-strings is contained in a reference string" <|
             \_ ->
                 testStringComparisonParsingSucceeds "IT or FOO" item2
+        , test "should detect if one of several sub-strings is contained in a reference string" <|
+            \_ ->
+                testStringComparisonParsingSucceeds "BAR or FOO or BAZ or EM" item2
         ]
     ]
 
