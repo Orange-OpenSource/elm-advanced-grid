@@ -136,6 +136,9 @@ describeFilterParsing =
         , test "should detect if a String is equal to another" <|
             \_ ->
                 testStringComparisonParsingSucceeds "=ITEM2" item2
+        , test "should detect if a String including a space is equal to another" <|
+            \_ ->
+                testStringComparisonParsingSucceeds "=\"ITEM 3\"" item3SpaceInTitle
         , test "should detect if a String including a comma is equal to another" <|
             \_ ->
                 testStringComparisonParsingSucceeds "=,.$£:;(){}[]!?" item4WithSymbols

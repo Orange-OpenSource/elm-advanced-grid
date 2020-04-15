@@ -76,16 +76,38 @@ orParser valueParser parsedValues =
 
 stringParser : Parser String
 stringParser =
+    succeed identity
+        |= oneOf
+            [ quotedWordsParser
+            , wordParser
+            ]
+
+
+wordParser : Parser String
+wordParser =
     succeed ()
-        |. chompIf isNotSpace
         -- chompIf id required ot ensure there is at least one character, as chompWhile returns always true
+        |. chompIf isNotSpace
         |. chompWhile isNotSpace
         |> getChompedString
+
+
+quotedWordsParser : Parser String
+quotedWordsParser =
+    succeed identity
+        |. symbol "\""
+        |= (getChompedString <| chompWhile isNotDoubleQuote)
+        |. symbol "\""
 
 
 isNotSpace : Char -> Bool
 isNotSpace char =
     char /= ' '
+
+
+isNotDoubleQuote : Char -> Bool
+isNotDoubleQuote char =
+    char /= '"'
 
 
 boolParser : Parser Bool
