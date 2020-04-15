@@ -51,6 +51,8 @@ greaterThanParser =
         |. spaces
 
 
+{-| Parses expressions like "abc or d or yz"
+-}
 orExpressionParser : Parser a -> Parser (List a)
 orExpressionParser valueParser =
     loop [] (orParser valueParser)
@@ -59,16 +61,16 @@ orExpressionParser valueParser =
 orParser : Parser a -> List a -> Parser (Step (List a) (List a))
 orParser valueParser parsedValues =
     oneOf
-        [ succeed (\value -> Debug.log "Loop" <| Loop (value :: parsedValues))
+        [ succeed (\value -> Loop (value :: parsedValues))
             |= valueParser
             |. spaces
-            |. keyword "or"
+            |. oneOf
+                [ keyword "or"
+                , end
+                ]
             |. spaces
-        , succeed (\value -> Debug.log "Loop end" <| Loop (value :: parsedValues))
-            |= valueParser
-            |. end
         , succeed ()
-            |> map (\_ -> Debug.log "Done" <| Done (List.reverse parsedValues))
+            |> map (\_ -> Done (List.reverse parsedValues))
         ]
 
 
