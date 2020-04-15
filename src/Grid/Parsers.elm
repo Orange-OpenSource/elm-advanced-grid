@@ -19,7 +19,7 @@ module Grid.Parsers exposing
     , stringParser
     )
 
-import Parser exposing ((|.), (|=), Parser, Step(..), chompIf, chompUntilEndOr, chompWhile, end, float, getChompedString, int, keyword, loop, map, oneOf, spaces, succeed, symbol)
+import Parser exposing ((|.), (|=), Parser, Step(..), chompIf, chompWhile, end, getChompedString, keyword, loop, map, oneOf, spaces, succeed, symbol)
 
 
 equalityParser : Parser (a -> a)
@@ -77,10 +77,15 @@ orParser valueParser parsedValues =
 stringParser : Parser String
 stringParser =
     succeed ()
-        |. chompIf Char.isAlphaNum
+        |. chompIf isNotSpace
         -- chompIf id required ot ensure there is at least one character, as chompWhile returns always true
-        |. chompWhile Char.isAlphaNum
+        |. chompWhile isNotSpace
         |> getChompedString
+
+
+isNotSpace : Char -> Bool
+isNotSpace char =
+    Char.isAlphaNum char
 
 
 boolParser : Parser Bool
