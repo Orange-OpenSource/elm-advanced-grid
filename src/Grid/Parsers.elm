@@ -19,7 +19,7 @@ module Grid.Parsers exposing
     , stringParser
     )
 
-import Parser exposing ((|.), (|=), Parser, Step(..), chompUntilEndOr, end, float, getChompedString, int, keyword, loop, map, oneOf, spaces, succeed, symbol)
+import Parser exposing ((|.), (|=), Parser, Step(..), chompIf, chompUntilEndOr, chompWhile, end, float, getChompedString, int, keyword, loop, map, oneOf, spaces, succeed, symbol)
 
 
 equalityParser : Parser (a -> a)
@@ -76,10 +76,11 @@ orParser valueParser parsedValues =
 
 stringParser : Parser String
 stringParser =
-    -- the input string cannot contain "\t"
-    -- another implementation is:
-    -- getChompedString <| chompWhile (\c -> True)
-    getChompedString <| chompUntilEndOr "\u{0000}"
+    succeed ()
+        |. chompIf Char.isAlphaNum
+        -- chompIf id required ot ensure there is at least one character, as chompWhile returns always true
+        |. chompWhile Char.isAlphaNum
+        |> getChompedString
 
 
 boolParser : Parser Bool

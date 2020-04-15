@@ -30,7 +30,7 @@ module Grid.Filters exposing
 
 import Dict exposing (Dict)
 import Grid.Labels as Label
-import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, orExpressionParser, stringParser)
+import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, operandParser, orExpressionParser, stringParser)
 import Parser exposing ((|=), DeadEnd, Parser)
 
 
