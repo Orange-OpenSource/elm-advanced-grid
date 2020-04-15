@@ -177,7 +177,7 @@ describeFilterParsing =
                 testStringComparisonParsingFails ">ITEM 3" item2
         , test "should detect if a sub-string or another is contained in a reference string" <|
             \_ ->
-                testStringComparisonParsingSucceeds "FOO OR IT" item2
+                testStringComparisonParsingSucceeds "IT or FOO" item2
         ]
     ]
 

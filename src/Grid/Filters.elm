@@ -30,7 +30,7 @@ module Grid.Filters exposing
 
 import Dict exposing (Dict)
 import Grid.Labels as Label
-import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, stringParser)
+import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, orExpressionParser, stringParser)
 import Parser exposing ((|=), DeadEnd, Parser)
 
 
@@ -62,8 +62,8 @@ type alias TypedFilter a b =
         , parser : Parser b
         }
     , verifiesExpression :
-        { filter : b -> a -> Bool
-        , parser : Parser b
+        { filter : List b -> a -> Bool
+        , parser : Parser (List b)
         }
     }
 
@@ -99,7 +99,7 @@ validateFilter : String -> TypedFilter a b -> Maybe (a -> Bool)
 validateFilter filteringString filters =
     let
         validators =
-            [ validateEqualFilter, validateLessThanFilter, validateGreaterThanFilter, validateContainsFilter ]
+            [ validateEqualFilter, validateLessThanFilter, validateGreaterThanFilter, validateExpressionFilter, validateContainsFilter ]
 
         -- validateContainsFilter must be tested last because it accepts any string
     in
@@ -135,6 +135,11 @@ validateGreaterThanFilter filters filteringString =
     Result.map filters.greaterThan.filter (Parser.run filters.greaterThan.parser filteringString)
 
 
+validateExpressionFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
+validateExpressionFilter filters filteringString =
+    Result.map filters.verifiesExpression.filter (Debug.log "Parser result" <| Parser.run filters.verifiesExpression.parser filteringString)
+
+
 validateContainsFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
 validateContainsFilter filters filteringString =
     Result.map filters.contains.filter (Parser.run filters.contains.parser filteringString)
@@ -158,9 +163,15 @@ stringFilter getter labels =
         , equal = stringEquals labels
         , lessThan = \a b -> String.toLower a < String.toLower b
         , greaterThan = \a b -> String.toLower a > String.toLower b
-        , contains = \a b -> String.contains (String.toLower b) (String.toLower a)
+        , contains = containsString
+        , verifiesExpression = containsOneStringOf
         , typedParser = stringParser
         }
+
+
+containsOneStringOf : String -> List String -> Bool
+containsOneStringOf referenceString substrings =
+    List.any (\substring -> containsString referenceString substring) substrings
 
 
 {-| Returns true when the given string are the same
@@ -170,6 +181,11 @@ stringEquals : Dict String String -> String -> String -> Bool
 stringEquals labels valueInCell valueInFilter =
     (String.toLower valueInCell == String.toLower valueInFilter)
         || (valueInCell == "" && valueInFilter == Label.localize Label.empty labels)
+
+
+containsString : String -> String -> Bool
+containsString a b =
+    String.contains (String.toLower b) (String.toLower a)
 
 
 {-| Filters integers.
@@ -187,9 +203,20 @@ intFilter getter =
         , equal = (==)
         , lessThan = \a b -> a < b
         , greaterThan = \a b -> a > b
-        , contains = \a b -> String.contains (String.fromInt b) (String.fromInt a)
+        , contains = containsInt
+        , verifiesExpression = containsOneIntOf
         , typedParser = Parser.int
         }
+
+
+containsInt : Int -> Int -> Bool
+containsInt a b =
+    String.contains (String.fromInt b) (String.fromInt a)
+
+
+containsOneIntOf : Int -> List Int -> Bool
+containsOneIntOf referenceInt values =
+    List.any (\value -> containsInt referenceInt value) values
 
 
 {-| Filters floating point numbers.
@@ -207,9 +234,20 @@ floatFilter getter =
         , equal = (==)
         , lessThan = \a b -> a < b
         , greaterThan = \a b -> a > b
-        , contains = \a b -> String.contains (String.fromFloat b) (String.fromFloat a)
+        , contains = containsFloat
+        , verifiesExpression = containsOneFloatOf
         , typedParser = Parser.float
         }
+
+
+containsFloat : Float -> Float -> Bool
+containsFloat a b =
+    String.contains (String.fromFloat b) (String.fromFloat a)
+
+
+containsOneFloatOf : Float -> List Float -> Bool
+containsOneFloatOf referenceFloat values =
+    List.any (\value -> containsFloat referenceFloat value) values
 
 
 {-| Filters booleans.
@@ -228,8 +266,14 @@ boolFilter getter =
         , lessThan = boolLessThan
         , greaterThan = boolGreaterThan
         , contains = (==)
+        , verifiesExpression = containsOneBoolOf
         , typedParser = boolParser
         }
+
+
+containsOneBoolOf : Bool -> List Bool -> Bool
+containsOneBoolOf referenceBool values =
+    List.any (\value -> value == referenceBool) values
 
 
 boolLessThan : Bool -> Bool -> Bool
@@ -248,12 +292,11 @@ makeFilter :
     , lessThan : b -> b -> Bool
     , greaterThan : b -> b -> Bool
     , contains : b -> b -> Bool
-    , verifiesExpression : b -> b -> Bool
-    , expressionParser : Parser (List b)
+    , verifiesExpression : b -> List b -> Bool
     , typedParser : Parser b
     }
     -> TypedFilter a b
-makeFilter { getter, equal, lessThan, greaterThan, contains, verifiesExpression, expressionParser, typedParser } =
+makeFilter { getter, equal, lessThan, greaterThan, contains, verifiesExpression, typedParser } =
     { equal =
         { filter = \value item -> equal (getter item) value
         , parser = equalityParser |= typedParser
@@ -272,6 +315,6 @@ makeFilter { getter, equal, lessThan, greaterThan, contains, verifiesExpression,
         }
     , verifiesExpression =
         { filter = \value item -> verifiesExpression (getter item) value
-        , parser = expressionParser
+        , parser = orExpressionParser typedParser
         }
     }
