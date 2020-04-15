@@ -1,4 +1,4 @@
-module Fixtures exposing (Data, columns, data, dataOrderedByAscendingScore, dataOrderedByDescendingScore, dataWithScoreGreaterThan2, gridConfig, isValidColumn, item1, item2, item3, item4, item5, item6, model, modelWithOneEmptyTitle, scoreColumn, titleColumn)
+module Fixtures exposing (Data, columns, data, dataOrderedByAscendingScore, dataOrderedByDescendingScore, dataWithScoreGreaterThan2, gridConfig, isValidColumn, item1, item2, item3SpaceInTitle, item4WithSymbols, item5WithAccentuatedChars, item6, model, modelWithOneEmptyTitle, scoreColumn, titleColumn)
 
 {- Copyright (c) 2019 Orange
    This code is released under the MIT license.
@@ -60,8 +60,8 @@ data3 =
     }
 
 
-item3 : Item Data
-item3 =
+item3SpaceInTitle : Item Data
+item3SpaceInTitle =
     Item.create data3 3
 
 
@@ -70,12 +70,12 @@ data4 =
     { count = 4
     , isValid = True
     , score = 3.0
-    , title = "ITEM 4"
+    , title = ",.$£:;(){}[]!?"
     }
 
 
-item4 : Item Data
-item4 =
+item4WithSymbols : Item Data
+item4WithSymbols =
     Item.create data4 4
 
 
@@ -84,12 +84,12 @@ data5 =
     { count = 520
     , isValid = True
     , score = 3.1415926
-    , title = "ITEM 5"
+    , title = "éàèêùÉÈÊ5"
     }
 
 
-item5 : Item Data
-item5 =
+item5WithAccentuatedChars : Item Data
+item5WithAccentuatedChars =
     Item.create data5 5
 
 

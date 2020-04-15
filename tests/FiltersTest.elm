@@ -12,7 +12,7 @@ module FiltersTest exposing (boolFilters, describeFilterParsing, floatFilters, i
 
 import Dict
 import Expect
-import Fixtures exposing (item1, item2, item5, item6)
+import Fixtures exposing (item1, item2, item3SpaceInTitle, item4WithSymbols, item5WithAccentuatedChars, item6)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Grid.Labels as Label
 import Test exposing (..)
@@ -38,10 +38,10 @@ describeFilterParsing =
                 testIntComparisonParsingFails "=0" item2
         , test "should detect if an int contains another" <|
             \_ ->
-                testIntComparisonParsingSucceeds "52" item5
+                testIntComparisonParsingSucceeds "52" item5WithAccentuatedChars
         , test "should detect if an int does not contain another" <|
             \_ ->
-                testIntComparisonParsingFails "53" item5
+                testIntComparisonParsingFails "53" item5WithAccentuatedChars
         , test "should detect if an int is lesser than another" <|
             \_ ->
                 testIntComparisonParsingSucceeds "<2" item1
@@ -68,7 +68,7 @@ describeFilterParsing =
                 testFloatComparisonParsingFails "=3.0" item2
         , test "should detect if a float contains another" <|
             \_ ->
-                testFloatComparisonParsingSucceeds "3" item5
+                testFloatComparisonParsingSucceeds "3" item5WithAccentuatedChars
 
         -- TODO : not implemented
         --        , test "should detect if a float contains another one beginning by a dot" <|
@@ -76,7 +76,7 @@ describeFilterParsing =
         --                testFloatComparisonParsingSucceeds ".14" item5
         , test "should detect if a float does not contain another" <|
             \_ ->
-                testFloatComparisonParsingFails "42" item5
+                testFloatComparisonParsingFails "42" item5WithAccentuatedChars
         , test "should detect if a float is lesser than another" <|
             \_ ->
                 testFloatComparisonParsingSucceeds "<1.1" item1
@@ -136,6 +136,12 @@ describeFilterParsing =
         , test "should detect if a String is equal to another" <|
             \_ ->
                 testStringComparisonParsingSucceeds "=ITEM2" item2
+        , test "should detect if a String including a comma is equal to another" <|
+            \_ ->
+                testStringComparisonParsingSucceeds "=,.$£:;(){}[]!?" item4WithSymbols
+        , test "should detect if a String including accentuated chars is equal to another" <|
+            \_ ->
+                testStringComparisonParsingSucceeds "=ÉàèêùéÈÊ5" item5WithAccentuatedChars
         , test "should detect if a String is equal to another, doing a case-insensitive comparison" <|
             \_ ->
                 testStringComparisonParsingSucceeds "=itEM2" item2

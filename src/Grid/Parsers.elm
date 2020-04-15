@@ -85,7 +85,7 @@ stringParser =
 
 isNotSpace : Char -> Bool
 isNotSpace char =
-    Char.isAlphaNum char
+    char /= ' '
 
 
 boolParser : Parser Bool
