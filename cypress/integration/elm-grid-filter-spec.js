@@ -34,15 +34,14 @@ describe('elm grid example', function () {
 
     it('should filter elements containing an exact given value', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-City"]').type("=paris")
-        let rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 2)
-        cy.get('div[data-testid="City"]').contains("Paris")
+        cy.typeSuchValueInSuchFilter("=paris", "City")
+        cy.shouldHaveXlinesInTheGrid(2)
+        cy.gridShouldContainTheCity("Paris")
     })
 
     it('should filter elements containing at least the given string', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-City"]').type("ara")
+        cy.typeSuchValueInSuchFilter("ara", "City")
         cy.get('div[data-testid="City"]').then (function($citiesList){
             expect($citiesList).to.have.length(3)
             for (let i=0; i<3; i++){
@@ -53,7 +52,7 @@ describe('elm grid example', function () {
 
     it('should filter elements greater than a given value', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-Value"]').type(">95")
+        cy.typeSuchValueInSuchFilter(">95", "Value")
         cy.get('div[data-testid="Value"]').then (function($valuesList){
             expect($valuesList).to.have.length(4)
             for (let i=0; i<3; i++){
@@ -64,7 +63,7 @@ describe('elm grid example', function () {
 
     it('should filter elements lesser than a given value', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-Value"]').type("<4")
+        cy.typeSuchValueInSuchFilter("<4", "Value")
         cy.get('div[data-testid="Value"]').then (function($valuesList){
             expect($valuesList).to.have.length(4)
             for (let i=0; i<3; i++){
@@ -87,14 +86,13 @@ describe('elm grid example', function () {
 
     it('should reset filters when clicking on "Reset filters" button', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-Id"]').type("<25")
-        cy.get('input[data-testid="filter-Name"]').type("me1")
-        cy.get('input[data-testid="filter-Progress"]').type(">15")
-        cy.get('input[data-testid="filter-Value"]').type("8")
-        cy.get('input[data-testid="filter-City"]').type("sa")
-        let rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 1)
-        cy.get('div[data-testid="City"]').contains("Osaka")
+        cy.typeSuchValueInSuchFilter("<25", "Id")
+        cy.typeSuchValueInSuchFilter("me1", "Name")
+        cy.typeSuchValueInSuchFilter(">15", "Progress")
+        cy.typeSuchValueInSuchFilter("8", "Value")
+        cy.typeSuchValueInSuchFilter("sa", "City")
+        cy.shouldHaveXlinesInTheGrid(1)
+        cy.gridShouldContainTheCity("Osaka")
 
         cy.resetFilters()
 
@@ -108,43 +106,38 @@ describe('elm grid example', function () {
 
    it('should filter elements containing exactly the given string', function () {
         cy.visit(url)
-        cy.get('input[data-testid="filter-City"]').type("=ondon")
-        let rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 0)
-        cy.get('input[data-testid="filter-City"]').clear()
+        cy.typeSuchValueInSuchFilter("=ondon", "City")
+        cy.shouldHaveXlinesInTheGrid(0)
+        cy.resetFilters()
 
-        cy.get('input[data-testid="filter-City"]').type("=london")
-        rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 2)
-        cy.get('input[data-testid="filter-City"]').clear()
+        cy.typeSuchValueInSuchFilter("=london", "City")
+        cy.shouldHaveXlinesInTheGrid(2)
+        cy.gridShouldContainTheCity("London")
+        cy.resetFilters()
 
-        cy.get('input[data-testid="filter-City"]').type("=London")
-        rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 2)
-        cy.get('div[data-testid="City"]').contains("London")
+        cy.typeSuchValueInSuchFilter("=London", "City")
+        cy.shouldHaveXlinesInTheGrid(2)
+        cy.gridShouldContainTheCity("London")
     })
 
     it('should filter elements containing the wished item when using the quick filter', function () {
         cy.visit(url)
         cy.get('div[data-testid="quickFilter-City"]').click()
         cy.get('div[id="openedQuickFilter"] > div').eq(11).click()
-        let rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 1)
+        cy.shouldHaveXlinesInTheGrid(1)
         cy.get('div[data-testid="row"]').click()
 
         let status = cy.get('div[data-testid="clickedItem"]')
         status.contains("Clicked Item = id:31 - name: name31")
         cy.resetFilters()
-        rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 41)
+        cy.shouldHaveXlinesInTheGrid(41)
     })
 
     it('should filter elements containing empty value when using the quick filter', function () {
         cy.visit(url)
         cy.get('div[data-testid="quickFilter-City"]').click()
         cy.get('div[id="openedQuickFilter"] > div').eq(0).click()
-        let rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 2)
+        cy.shouldHaveXlinesInTheGrid(2)
         cy.get('input[data-testid="allItemSelection"]').click()
 
         let selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
@@ -152,8 +145,7 @@ describe('elm grid example', function () {
         selectedItems.first().contains("id:33 - name: name33")
             .next().contains("id:40 - name: name40")
         cy.resetFilters()
-        rows = cy.get('div[data-testid="row"]')
-        rows.should('have.length', 41)
+        cy.shouldHaveXlinesInTheGrid(41)
     })
 
     it('should be allowed to edit a label in City column', function () {
@@ -169,8 +161,8 @@ describe('elm grid example', function () {
           .type('Saint Christophe de Valains')
           .type('{enter}')
 
-        cy.get('input[data-testid="filter-City"]').type("valains")
-        cy.get('div[data-testid="City"]').should('contain', 'Saint Christophe de Valains')
+        cy.typeSuchValueInSuchFilter("valains", "City")
+        cy.gridShouldContainTheCity("Saint Christophe de Valains")
     })
 
     it('should be allowed to start modifying a label in City column then escape', function () {
@@ -186,8 +178,29 @@ describe('elm grid example', function () {
           .type('Saint Christophe de Valains')
           .type('{esc}')
 
-        cy.get('input[data-testid="filter-City"]').type("Tokyo")
-        cy.get('div[data-testid="City"]').should('contain', 'Tokyo')
+        cy.typeSuchValueInSuchFilter("Tokyo", "City")
+        cy.gridShouldContainTheCity("Tokyo")
+    })
+
+
+    it('should be allowed to use "or" in the filter', function () {
+        cy.visit(url)
+        cy.typeSuchValueInSuchFilter("26 or 35", "Id")
+        cy.shouldHaveXlinesInTheGrid(2)
+        cy.gridShouldContainTheCity("Moscow")
+        cy.gridShouldContainTheCity("Bangkok")
+        cy.resetFilters()
+
+        cy.typeSuchValueInSuchFilter("18 or 90.3", "Value")
+        cy.shouldHaveXlinesInTheGrid(2)
+        cy.gridShouldContainTheCity("Osaka")
+        cy.gridShouldContainTheCity("Milan")
+        cy.resetFilters()
+
+        cy.typeSuchValueInSuchFilter("tokyo or \"mexico city\"", "City")
+        cy.shouldHaveXlinesInTheGrid(2)
+        cy.gridShouldContainTheCity("Tokyo")
+        cy.gridShouldContainTheCity("Mexico City")
     })
 
 })

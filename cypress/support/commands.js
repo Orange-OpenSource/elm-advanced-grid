@@ -41,8 +41,22 @@ Cypress.Commands.add("sortCitiesDescending", () => {
 })
 
 Cypress.Commands.add("scrollToCityStartingWith", (cityName) => {
-        cy.get('div[id="eag-rows"]').scrollTo('bottom')
-        cy.get('input[data-testid="scrollToInput"]')
-          .clear()
-          .type(`${cityName}`)
+    cy.get('div[id="eag-rows"]').scrollTo('bottom')
+    cy.get('input[data-testid="scrollToInput"]')
+        .clear()
+        .type(`${cityName}`)
+})
+
+Cypress.Commands.add("gridShouldContainTheCity", (cityName) => {
+    cy.get('div[data-testid="City"]').contains(`${cityName}`)
+})
+
+Cypress.Commands.add("shouldHaveXlinesInTheGrid", (numberOfLines) => {
+    let rows = cy.get('div[data-testid="row"]')
+    rows.should('have.length', `${numberOfLines}`)
+})
+
+Cypress.Commands.add("typeSuchValueInSuchFilter", (value, filterName) => {
+    let filter = 'input[data-testid="filter-'+`${filterName}`+'"]'
+    cy.get(filter).type(`${value}`)
 })
