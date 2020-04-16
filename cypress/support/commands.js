@@ -51,7 +51,11 @@ Cypress.Commands.add("gridShouldContainTheCity", (cityName) => {
     cy.get('div[data-testid="City"]').contains(`${cityName}`)
 })
 
-Cypress.Commands.add("shouldHaveXlinesInTheGrid", (numberOfLines) => {
+Cypress.Commands.add("gridShouldNotContainTheCity", (cityName) => {
+    cy.get('div[data-testid="City"]').should('not.contain', `${cityName}`)
+})
+
+Cypress.Commands.add("numberOflinesInTheGridShouldBe", (numberOfLines) => {
     let rows = cy.get('div[data-testid="row"]')
     rows.should('have.length', `${numberOfLines}`)
 })
@@ -59,4 +63,24 @@ Cypress.Commands.add("shouldHaveXlinesInTheGrid", (numberOfLines) => {
 Cypress.Commands.add("typeSuchValueInSuchFilter", (value, filterName) => {
     let filter = 'input[data-testid="filter-'+`${filterName}`+'"]'
     cy.get(filter).type(`${value}`)
+})
+
+Cypress.Commands.add("statusContains", (expectedValue) => {
+    let status = cy.get('div[data-testid="clickedItem"]')
+    status.contains(`${expectedValue}`)
+})
+
+Cypress.Commands.add("clickOnTheFirstRow", () => {
+    let rows = cy.get('div[data-testid="row"]')
+    rows.first().click()
+})
+
+Cypress.Commands.add("clickOnTheLastRow", () => {
+    let rows = cy.get('div[data-testid="row"]')
+    rows.last().click()
+})
+
+Cypress.Commands.add("selectInTheCityQuickFilterIndexNumber", (expectedindex) => {
+    cy.get('div[data-testid="quickFilter-City"]').click()
+    cy.get('div[id="openedQuickFilter"] > div').eq(`${expectedindex}`).click()
 })

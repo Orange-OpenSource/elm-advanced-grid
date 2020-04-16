@@ -28,8 +28,7 @@ describe('elm grid example', function () {
         cy.visit(url)
         cy.get(':nth-child(2) > [data-testid=_MultipleSelection_] > input').click()
 
-        let status = cy.get('div[data-testid="clickedItem"]')
-        status.contains("Clicked Item = None.")
+        cy.statusContains("Clicked Item = None.")
     })
 
     it('should select all rows when clicking the multiple selection checkbox', function () {

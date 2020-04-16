@@ -35,7 +35,7 @@ describe('elm grid example', function () {
     it('should filter elements containing an exact given value', function () {
         cy.visit(url)
         cy.typeSuchValueInSuchFilter("=paris", "City")
-        cy.shouldHaveXlinesInTheGrid(2)
+        cy.numberOflinesInTheGridShouldBe(2)
         cy.gridShouldContainTheCity("Paris")
     })
 
@@ -91,7 +91,7 @@ describe('elm grid example', function () {
         cy.typeSuchValueInSuchFilter(">15", "Progress")
         cy.typeSuchValueInSuchFilter("8", "Value")
         cy.typeSuchValueInSuchFilter("sa", "City")
-        cy.shouldHaveXlinesInTheGrid(1)
+        cy.numberOflinesInTheGridShouldBe(1)
         cy.gridShouldContainTheCity("Osaka")
 
         cy.resetFilters()
@@ -107,37 +107,34 @@ describe('elm grid example', function () {
    it('should filter elements containing exactly the given string', function () {
         cy.visit(url)
         cy.typeSuchValueInSuchFilter("=ondon", "City")
-        cy.shouldHaveXlinesInTheGrid(0)
+        cy.numberOflinesInTheGridShouldBe(0)
         cy.resetFilters()
 
         cy.typeSuchValueInSuchFilter("=london", "City")
-        cy.shouldHaveXlinesInTheGrid(2)
+        cy.numberOflinesInTheGridShouldBe(2)
         cy.gridShouldContainTheCity("London")
         cy.resetFilters()
 
         cy.typeSuchValueInSuchFilter("=London", "City")
-        cy.shouldHaveXlinesInTheGrid(2)
+        cy.numberOflinesInTheGridShouldBe(2)
         cy.gridShouldContainTheCity("London")
     })
 
     it('should filter elements containing the wished item when using the quick filter', function () {
         cy.visit(url)
-        cy.get('div[data-testid="quickFilter-City"]').click()
-        cy.get('div[id="openedQuickFilter"] > div').eq(11).click()
-        cy.shouldHaveXlinesInTheGrid(1)
+        cy.selectInTheCityQuickFilterIndexNumber(11)
+        cy.numberOflinesInTheGridShouldBe(1)
         cy.get('div[data-testid="row"]').click()
-
-        let status = cy.get('div[data-testid="clickedItem"]')
-        status.contains("Clicked Item = id:31 - name: name31")
+        cy.gridShouldContainTheCity("Bogota")
+        cy.statusContains("Clicked Item = id:31 - name: name31")
         cy.resetFilters()
-        cy.shouldHaveXlinesInTheGrid(41)
+        cy.numberOflinesInTheGridShouldBe(41)
     })
 
     it('should filter elements containing empty value when using the quick filter', function () {
         cy.visit(url)
-        cy.get('div[data-testid="quickFilter-City"]').click()
-        cy.get('div[id="openedQuickFilter"] > div').eq(0).click()
-        cy.shouldHaveXlinesInTheGrid(2)
+        cy.selectInTheCityQuickFilterIndexNumber(0)
+        cy.numberOflinesInTheGridShouldBe(2)
         cy.get('input[data-testid="allItemSelection"]').click()
 
         let selectedItems = cy.get('ul[data-testid="selectedItems"]').children()
@@ -145,7 +142,7 @@ describe('elm grid example', function () {
         selectedItems.first().contains("id:33 - name: name33")
             .next().contains("id:40 - name: name40")
         cy.resetFilters()
-        cy.shouldHaveXlinesInTheGrid(41)
+        cy.numberOflinesInTheGridShouldBe(41)
     })
 
     it('should be allowed to edit a label in City column', function () {
@@ -186,19 +183,19 @@ describe('elm grid example', function () {
     it('should be allowed to use "or" in the filter', function () {
         cy.visit(url)
         cy.typeSuchValueInSuchFilter("26 or 35", "Id")
-        cy.shouldHaveXlinesInTheGrid(2)
+        cy.numberOflinesInTheGridShouldBe(2)
         cy.gridShouldContainTheCity("Moscow")
         cy.gridShouldContainTheCity("Bangkok")
         cy.resetFilters()
 
         cy.typeSuchValueInSuchFilter("18 or 90.3", "Value")
-        cy.shouldHaveXlinesInTheGrid(2)
+        cy.numberOflinesInTheGridShouldBe(2)
         cy.gridShouldContainTheCity("Osaka")
         cy.gridShouldContainTheCity("Milan")
         cy.resetFilters()
 
         cy.typeSuchValueInSuchFilter("tokyo or \"mexico city\"", "City")
-        cy.shouldHaveXlinesInTheGrid(2)
+        cy.numberOflinesInTheGridShouldBe(2)
         cy.gridShouldContainTheCity("Tokyo")
         cy.gridShouldContainTheCity("Mexico City")
     })

@@ -22,6 +22,7 @@ describe('elm grid example', function () {
         cy.get('div[data-testid="header-Name"]').contains('Name')
         cy.get('div[data-testid="header-Progress"]').contains('Progress')
         cy.get('div[data-testid="header-Value"]').contains('Value')
+        cy.get('div[data-testid="header-City"]').contains('City')
     })
 
     it('should display unsorted and unfiltered data in default order', function () {
@@ -33,13 +34,10 @@ describe('elm grid example', function () {
 
     it('should detect click on first line', function () {
         cy.visit(url)
-        let status = cy.get('div[data-testid="clickedItem"]')
-        status.contains("Clicked Item = None")
+        cy.statusContains("Clicked Item = None")
 
-        let firstRow = cy.get('div[data-testid="row"]').first().click()
-
-        status = cy.get('div[data-testid="clickedItem"]')
-        status.contains("Clicked Item = id:0 - name: name0")
+        cy.clickOnTheFirstRow()
+        cy.statusContains("Clicked Item = id:0 - name: name0")
     })
 
     it('should sort cities when clicking the "sort cities" buttons', function () {

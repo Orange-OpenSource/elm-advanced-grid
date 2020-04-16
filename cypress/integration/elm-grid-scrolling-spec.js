@@ -15,20 +15,16 @@ describe('elm grid example', function () {
 
     it('should display the wished city when using the "scroll to first city starting with" field', function () {
         cy.visit(url)
-        let rows = cy.get('div[data-testid="row"]')
-        rows.should('not.contain', 'Brasilia')
-            .should('not.contain', 'Manchester')
+        cy.gridShouldNotContainTheCity("Brasilia")
+        cy.gridShouldNotContainTheCity("Manchester")
 
         cy.scrollToCityStartingWith('br')
-        rows = cy.get('div[data-testid="row"]')
-        rows.should('contain', 'Brasilia')
+        cy.gridShouldContainTheCity("Brasilia")
 
         cy.scrollToCityStartingWith('manch')
-        rows = cy.get('div[data-testid="row"]')
-        rows.should('contain', 'Manchester')
-        rows.last().click()
-        let status = cy.get('div[data-testid="clickedItem"]')
-        status.contains("Clicked Item = id:82 - name: name82")
+        cy.gridShouldContainTheCity("Manchester")
+        cy.clickOnTheLastRow()
+        cy.statusContains("Clicked Item = id:82 - name: name82")
     })
 
 })
