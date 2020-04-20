@@ -24,6 +24,7 @@ keys =
     , clear
     , empty
     , openQuickFilter
+    , or
     , submit
     ]
 
@@ -46,6 +47,11 @@ empty =
 openQuickFilter : String
 openQuickFilter =
     "Open quick filter"
+
+
+or : String
+or =
+    "or"
 
 
 submit : String

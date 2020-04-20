@@ -19,6 +19,8 @@ module Grid.Parsers exposing
     , stringParser
     )
 
+import Dict exposing (Dict)
+import Grid.Labels as Labels exposing (localize)
 import Parser exposing ((|.), (|=), Parser, Step(..), chompIf, chompWhile, end, getChompedString, keyword, loop, map, oneOf, spaces, succeed, symbol)
 
 
@@ -53,19 +55,23 @@ greaterThanParser =
 
 {-| Parses expressions like "abc or d or yz"
 -}
-orExpressionParser : Parser a -> Parser (List a)
-orExpressionParser valueParser =
-    loop [] (orParser valueParser)
+orExpressionParser : Dict String String -> Parser a -> Parser (List a)
+orExpressionParser labels valueParser =
+    let
+        orLabel =
+            localize Labels.or labels
+    in
+    loop [] (orParser orLabel valueParser)
 
 
-orParser : Parser a -> List a -> Parser (Step (List a) (List a))
-orParser valueParser parsedValues =
+orParser : String -> Parser a -> List a -> Parser (Step (List a) (List a))
+orParser orLabel valueParser parsedValues =
     oneOf
         [ succeed (\value -> Loop (value :: parsedValues))
             |= valueParser
             |. spaces
             |. oneOf
-                [ keyword "or"
+                [ keyword orLabel
                 , end
                 ]
             |. spaces

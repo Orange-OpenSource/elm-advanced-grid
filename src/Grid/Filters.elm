@@ -166,6 +166,7 @@ stringFilter getter labels =
         , contains = containsString
         , verifiesExpression = containsOneStringOf
         , typedParser = stringParser
+        , labels = labels
         }
 
 
@@ -196,8 +197,8 @@ the value of the field to be filtered.
         IntFilter <| intFilter (\\item -> item.id)
 
 -}
-intFilter : (a -> Int) -> TypedFilter a Int
-intFilter getter =
+intFilter : (a -> Int) -> Dict String String -> TypedFilter a Int
+intFilter getter labels =
     makeFilter
         { getter = getter
         , equal = (==)
@@ -206,6 +207,7 @@ intFilter getter =
         , contains = containsInt
         , verifiesExpression = containsOneIntOf
         , typedParser = Parser.int
+        , labels = labels
         }
 
 
@@ -227,8 +229,8 @@ the value of the field to be filtered.
         FloatFilter <| floatFilter (\item -> item.value)
 
 -}
-floatFilter : (a -> Float) -> TypedFilter a Float
-floatFilter getter =
+floatFilter : (a -> Float) -> Dict String String -> TypedFilter a Float
+floatFilter getter labels =
     makeFilter
         { getter = getter
         , equal = (==)
@@ -237,6 +239,7 @@ floatFilter getter =
         , contains = containsFloat
         , verifiesExpression = containsOneFloatOf
         , typedParser = Parser.float
+        , labels = labels
         }
 
 
@@ -258,8 +261,8 @@ the value of the field to be filtered.
         BoolFilter <| boolFilter (\item -> item.even)
 
 -}
-boolFilter : (a -> Bool) -> TypedFilter a Bool
-boolFilter getter =
+boolFilter : (a -> Bool) -> Dict String String -> TypedFilter a Bool
+boolFilter getter labels =
     makeFilter
         { getter = getter
         , equal = (==)
@@ -268,6 +271,7 @@ boolFilter getter =
         , contains = (==)
         , verifiesExpression = containsOneBoolOf
         , typedParser = boolParser
+        , labels = labels
         }
 
 
@@ -294,9 +298,10 @@ makeFilter :
     , contains : b -> b -> Bool
     , verifiesExpression : b -> List b -> Bool
     , typedParser : Parser b
+    , labels : Dict String String
     }
     -> TypedFilter a b
-makeFilter { getter, equal, lessThan, greaterThan, contains, verifiesExpression, typedParser } =
+makeFilter { getter, equal, lessThan, greaterThan, contains, verifiesExpression, typedParser, labels } =
     { equal =
         { filter = \value item -> equal (getter item) value
         , parser = equalityParser |= typedParser
@@ -315,6 +320,6 @@ makeFilter { getter, equal, lessThan, greaterThan, contains, verifiesExpression,
         }
     , verifiesExpression =
         { filter = \value item -> verifiesExpression (getter item) value
-        , parser = orExpressionParser typedParser
+        , parser = orExpressionParser labels typedParser
         }
     }

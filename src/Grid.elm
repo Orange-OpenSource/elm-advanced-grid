@@ -1719,8 +1719,18 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-floatColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Float, setter : Item a -> Float -> Item a, localize : String -> String } -> ColumnConfig a
-floatColumnConfig properties =
+floatColumnConfig :
+    { id : String
+    , title : String
+    , tooltip : String
+    , width : Int
+    , getter : a -> Float
+    , setter : Item a -> Float -> Item a
+    , localize : String -> String
+    }
+    -> Dict String String
+    -> ColumnConfig a
+floatColumnConfig properties labels =
     let
         columnProperties =
             { id = properties.id
@@ -1736,7 +1746,7 @@ floatColumnConfig properties =
             .data >> properties.getter
     in
     { properties = columnProperties
-    , filters = FloatFilter <| floatFilter properties.getter
+    , filters = FloatFilter <| floatFilter properties.getter labels
     , filteringValue = Nothing
     , toString = nestedDataGetter >> String.fromFloat
     , renderer = viewFloat nestedDataGetter
@@ -1753,8 +1763,18 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-intColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Int, setter : Item a -> Int -> Item a, localize : String -> String } -> ColumnConfig a
-intColumnConfig properties =
+intColumnConfig :
+    { id : String
+    , title : String
+    , tooltip : String
+    , width : Int
+    , getter : a -> Int
+    , setter : Item a -> Int -> Item a
+    , localize : String -> String
+    }
+    -> Dict String String
+    -> ColumnConfig a
+intColumnConfig properties labels =
     let
         columnProperties =
             { id = properties.id
@@ -1770,7 +1790,7 @@ intColumnConfig properties =
             .data >> properties.getter
     in
     { properties = columnProperties
-    , filters = IntFilter <| intFilter properties.getter
+    , filters = IntFilter <| intFilter properties.getter labels
     , filteringValue = Nothing
     , toString = nestedDataGetter >> String.fromInt
     , renderer = viewInt nestedDataGetter
@@ -1785,8 +1805,18 @@ localize takes the title or the tooltip of the column as a parameter, and return
 If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
 
 -}
-boolColumnConfig : { id : String, title : String, tooltip : String, width : Int, getter : a -> Bool, setter : Item a -> Bool -> Item a, localize : String -> String } -> ColumnConfig a
-boolColumnConfig properties =
+boolColumnConfig :
+    { id : String
+    , title : String
+    , tooltip : String
+    , width : Int
+    , getter : a -> Bool
+    , setter : Item a -> Bool -> Item a
+    , localize : String -> String
+    }
+    -> Dict String String
+    -> ColumnConfig a
+boolColumnConfig properties labels =
     let
         columnProperties =
             { id = properties.id
@@ -1802,7 +1832,7 @@ boolColumnConfig properties =
             .data >> properties.getter
     in
     { properties = columnProperties
-    , filters = BoolFilter <| boolFilter properties.getter
+    , filters = BoolFilter <| boolFilter properties.getter labels
     , filteringValue = Nothing
     , toString = nestedDataGetter >> boolToString
     , renderer = viewBool nestedDataGetter

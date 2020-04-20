@@ -354,7 +354,7 @@ init _ =
 gridConfig : Grid.Config Data
 gridConfig =
     { canSelectRows = True
-    , columns = columns Dict.empty
+    , columns = columns columnLabels
     , containerId = "grid-container"
     , hasFilters = True
     , footerHeight = 240 -- defines the distance from the bottom of the window
@@ -399,6 +399,7 @@ columns labels =
         , tooltip = "Une indication pour la colonne Id"
         , width = 50
         }
+        labels
     , stringColumnConfig
         { id = "Name"
         , editor = Nothing
@@ -421,6 +422,7 @@ columns labels =
                 , tooltip = "Une indication pour la colonne Progrès"
                 , width = 100
                 }
+                labels
       in
       { progressColumnConfig | renderer = viewProgressBar 8 .value }
     , floatColumnConfig
@@ -432,6 +434,7 @@ columns labels =
         , tooltip = "Une indication pour la colonne Valeur"
         , width = 100
         }
+        labels
     , stringColumnConfig
         { id = "City"
         , editor = Just { fromString = setCity, maxLength = 32 }
@@ -478,6 +481,13 @@ translations =
         , ( "Une indication pour la colonne Valeur", "A hint for Value column" )
         , ( "Une indication pour la colonne Progrès", "A hint for Progress column" )
         , ( "Une indication pour la colonne Ville", "A hint for City column" )
+        ]
+
+
+columnLabels : Dict String String
+columnLabels =
+    Dict.fromList
+        [ ( "or", "ou" )
         ]
 
 
