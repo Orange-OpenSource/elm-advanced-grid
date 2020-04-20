@@ -408,26 +408,26 @@ rowClass item =
 
 columns : Dict String String -> List (ColumnConfig Data)
 columns labels =
-    [ idColumn
+    [ idColumn labels
     , nameColumn labels
-    , progressColumn
+    , progressColumn labels
     , cityColumn labels
-    , value1Column
-    , value1ProgressColumn
-    , value2Column
-    , value2ProgressColumn
-    , value3Column
-    , value3ProgressColumn
-    , value4Column
-    , value4ProgressColumn
-    , value5Column
-    , value5ProgressColumn
-    , value6ProgressColumn
-    , value6Column
+    , value1Column labels
+    , value1ProgressColumn labels
+    , value2Column labels
+    , value2ProgressColumn labels
+    , value3Column labels
+    , value3ProgressColumn labels
+    , value4Column labels
+    , value4ProgressColumn labels
+    , value5Column labels
+    , value5ProgressColumn labels
+    , value6ProgressColumn labels
+    , value6Column labels
     ]
 
 
-idColumn =
+idColumn labels =
     intColumnConfig
         { id = "Id"
         , getter = .id
@@ -437,9 +437,10 @@ idColumn =
         , tooltip = "Une indication pour la colonne Id"
         , width = 50
         }
+        labels
 
 
-nameColumn =
+nameColumn labels =
     stringColumnConfig
         { id = "Name"
         , editor = Just { fromString = setName, maxLength = 20 }
@@ -450,6 +451,7 @@ nameColumn =
         , tooltip = "Une indication pour la colonne Nom"
         , width = 100
         }
+        labels
 
 
 setName : Item Data -> String -> Item Data
@@ -464,7 +466,7 @@ setName item name =
     { item | data = newData }
 
 
-progressColumn =
+progressColumn labels =
     let
         progressColumnConfig =
             floatColumnConfig
@@ -476,11 +478,12 @@ progressColumn =
                 , tooltip = "Une indication pour la colonne Progrès"
                 , width = 100
                 }
+                labels
     in
     { progressColumnConfig | renderer = viewProgressBar 8 .value1 }
 
 
-cityColumn =
+cityColumn labels =
     stringColumnConfig
         { id = "City"
         , editor = Nothing
@@ -491,9 +494,10 @@ cityColumn =
         , tooltip = "Une indication pour la colonne Ville"
         , width = 300
         }
+        labels
 
 
-value1Column =
+value1Column labels =
     floatColumnConfig
         { id = "Value1"
         , getter = .value1 >> truncateDecimals
@@ -503,9 +507,10 @@ value1Column =
         , tooltip = "Une indication pour la colonne Valeur 1"
         , width = 100
         }
+        labels
 
 
-value1ProgressColumn =
+value1ProgressColumn labels =
     let
         columnConfig =
             floatColumnConfig
@@ -517,11 +522,12 @@ value1ProgressColumn =
                 , tooltip = "Une indication pour la colonne Valeur 1"
                 , width = 100
                 }
+                labels
     in
     { columnConfig | renderer = viewProgressBar 8 .value1 }
 
 
-value2Column =
+value2Column labels =
     floatColumnConfig
         { id = "Value2"
         , getter = .value2 >> truncateDecimals
@@ -531,9 +537,10 @@ value2Column =
         , tooltip = "Une indication pour la colonne Valeur 2"
         , width = 100
         }
+        labels
 
 
-value2ProgressColumn =
+value2ProgressColumn labels =
     let
         columnConfig =
             floatColumnConfig
@@ -545,6 +552,7 @@ value2ProgressColumn =
                 , tooltip = "Une indication pour la colonne Valeur 2"
                 , width = 100
                 }
+                labels
     in
     { columnConfig | renderer = viewProgressBar 8 .value2 }
 
@@ -561,7 +569,7 @@ value3Column =
         }
 
 
-value3ProgressColumn =
+value3ProgressColumn labels =
     let
         columnConfig =
             floatColumnConfig
@@ -573,11 +581,12 @@ value3ProgressColumn =
                 , tooltip = "Une indication pour la colonne Valeur 3"
                 , width = 100
                 }
+                labels
     in
     { columnConfig | renderer = viewProgressBar 8 .value3 }
 
 
-value4Column =
+value4Column labels =
     floatColumnConfig
         { id = "Value4"
         , getter = .value4 >> truncateDecimals
@@ -587,9 +596,10 @@ value4Column =
         , tooltip = "Une indication pour la colonne Valeur 4"
         , width = 100
         }
+        labels
 
 
-value4ProgressColumn =
+value4ProgressColumn labels =
     let
         columnConfig =
             floatColumnConfig
@@ -601,6 +611,7 @@ value4ProgressColumn =
                 , tooltip = "Une indication pour la colonne Valeur 4"
                 , width = 100
                 }
+                labels
     in
     { columnConfig | renderer = viewProgressBar 8 .value4 }
 
@@ -617,7 +628,7 @@ value5Column =
         }
 
 
-value5ProgressColumn =
+value5ProgressColumn labels =
     let
         columnConfig =
             floatColumnConfig
@@ -629,11 +640,12 @@ value5ProgressColumn =
                 , tooltip = "Une indication pour la colonne Valeur 5"
                 , width = 100
                 }
+                labels
     in
     { columnConfig | renderer = viewProgressBar 8 .value5 }
 
 
-value6Column =
+value6Column labels =
     floatColumnConfig
         { id = "Value6"
         , getter = .value6 >> truncateDecimals
@@ -643,9 +655,10 @@ value6Column =
         , tooltip = "Une indication pour la colonne Valeur 6"
         , width = 100
         }
+        labels
 
 
-value6ProgressColumn =
+value6ProgressColumn labels =
     let
         columnConfig =
             floatColumnConfig
@@ -657,6 +670,7 @@ value6ProgressColumn =
                 , tooltip = "Une indication pour la colonne Valeur 6"
                 , width = 100
                 }
+                labels
     in
     { columnConfig | renderer = viewProgressBar 8 .value6 }
 
