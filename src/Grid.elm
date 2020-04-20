@@ -763,7 +763,16 @@ updateState msg state =
             { state | filterHasFocus = False } |> closeQuickFilter
 
         FilterModified columnConfig maybeString ->
-            applyFilter state columnConfig maybeString
+            let
+                filterString =
+                    case maybeString of
+                        Just "" ->
+                            Nothing
+
+                        _ ->
+                            maybeString
+            in
+            applyFilter state columnConfig filterString
 
         -- processed by update
         GotCellInfo _ ->

@@ -10183,10 +10183,11 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$validateEqualFilter = F2(
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$validateExpressionFilter = F2(
 	function (filters, filteringString) {
+		var lowerCaseFilteringString = $elm$core$String$toLower(filteringString);
 		return A2(
 			$elm$core$Result$map,
 			filters._.M,
-			A2($elm$parser$Parser$run, filters._.P, filteringString));
+			A2($elm$parser$Parser$run, filters._.P, lowerCaseFilteringString));
 	});
 var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$validateGreaterThanFilter = F2(
 	function (filters, filteringString) {
@@ -11025,7 +11026,14 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$updateState = F2(
 			case 3:
 				var columnConfig = msg.a;
 				var maybeString = msg.b;
-				return A3($Orange_OpenSource$elm_advanced_grid$Grid$applyFilter, state, columnConfig, maybeString);
+				var filterString = function () {
+					if ((!maybeString.$) && (maybeString.a === '')) {
+						return $elm$core$Maybe$Nothing;
+					} else {
+						return maybeString;
+					}
+				}();
+				return A3($Orange_OpenSource$elm_advanced_grid$Grid$applyFilter, state, columnConfig, filterString);
 			case 4:
 				return state;
 			case 5:
@@ -11150,9 +11158,9 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$updateState = F2(
 			case 26:
 				var mousePosition = msg.a;
 				var newDraggedColumn = function () {
-					var _v2 = state.L;
-					if (!_v2.$) {
-						var draggedColumn = _v2.a;
+					var _v3 = state.L;
+					if (!_v3.$) {
+						var draggedColumn = _v3.a;
 						return $elm$core$Maybe$Just(
 							_Utils_update(
 								draggedColumn,
@@ -11180,9 +11188,9 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$updateState = F2(
 			case 32:
 				var columnConfig = msg.a;
 				var draggedColumnConfig = msg.b;
-				var _v3 = state.L;
-				if (!_v3.$) {
-					var draggedColumn = _v3.a;
+				var _v4 = state.L;
+				if (!_v4.$) {
+					var draggedColumn = _v4.a;
 					if (_Utils_eq(columnConfig.b.W, draggedColumn.bY)) {
 						return state;
 					} else {

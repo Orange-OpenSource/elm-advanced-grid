@@ -137,7 +137,11 @@ validateGreaterThanFilter filters filteringString =
 
 validateExpressionFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
 validateExpressionFilter filters filteringString =
-    Result.map filters.verifiesExpression.filter (Parser.run filters.verifiesExpression.parser filteringString)
+    let
+        lowerCaseFilteringString =
+            String.toLower filteringString
+    in
+    Result.map filters.verifiesExpression.filter (Parser.run filters.verifiesExpression.parser lowerCaseFilteringString)
 
 
 validateContainsFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
