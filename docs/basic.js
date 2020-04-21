@@ -8315,7 +8315,10 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$Parsers$quotedWordsParser = A2(
 	$elm$parser$Parser$keeper,
 	A2(
 		$elm$parser$Parser$ignorer,
-		$elm$parser$Parser$succeed($elm$core$Basics$identity),
+		A2(
+			$elm$parser$Parser$ignorer,
+			$elm$parser$Parser$succeed($elm$core$Basics$identity),
+			$elm$parser$Parser$spaces),
 		$elm$parser$Parser$symbol('\"')),
 	A2(
 		$elm$parser$Parser$ignorer,
