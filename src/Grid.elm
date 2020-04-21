@@ -767,6 +767,7 @@ updateState msg state =
                 filterString =
                     case maybeString of
                         Just "" ->
+                            -- the content of the input field was just deleted by the user
                             Nothing
 
                         _ ->
@@ -1050,6 +1051,9 @@ updateQuickFilter msg model =
             )
 
 
+{-| Enquotes the filter value selected by the user using a quick filter, if contains a space
+Quotes are required for searching an exact string like "New York". In this case, the filter must contain ="New York"
+-}
 quote : Maybe String -> Maybe String
 quote maybeString =
     case maybeString of
