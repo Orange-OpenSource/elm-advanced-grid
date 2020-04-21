@@ -101,6 +101,7 @@ wordParser =
 quotedWordsParser : Parser String
 quotedWordsParser =
     succeed identity
+        |. spaces
         |. symbol "\""
         |= (getChompedString <| chompWhile isNotDoubleQuote)
         |. symbol "\""
