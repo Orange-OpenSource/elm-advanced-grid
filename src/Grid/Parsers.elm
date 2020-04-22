@@ -21,7 +21,7 @@ module Grid.Parsers exposing
 
 import Dict exposing (Dict)
 import Grid.Labels as Labels exposing (localize)
-import Parser exposing ((|.), (|=), Parser, Step(..), chompIf, chompWhile, end, getChompedString, keyword, loop, map, oneOf, spaces, succeed, symbol)
+import Parser exposing ((|.), (|=), Parser, Step(..), andThen, chompIf, chompUntilEndOr, chompWhile, end, getChompedString, keyword, loop, map, oneOf, sequence, spaces, succeed, symbol)
 
 
 equalityParser : Parser (a -> a)
@@ -53,44 +53,76 @@ greaterThanParser =
         |. spaces
 
 
-{-| Parses expressions like "abc or d or yz"
--}
 orExpressionParser : Dict String String -> Parser a -> Parser (List a)
 orExpressionParser labels valueParser =
     let
         orLabel =
             localize Labels.or labels
     in
-    loop [] (orParser orLabel valueParser)
+    succeed (\operand1 operand2 -> [ Debug.log "op1" operand1, Debug.log "op2" operand2 ])
+        |= valueParser
+        |. orKeyword
+            orLabel
+        |= valueParser
 
 
-orParser : String -> Parser a -> List a -> Parser (Step (List a) (List a))
-orParser orLabel valueParser parsedValues =
-    oneOf
-        [ succeed (\value -> Loop (value :: parsedValues))
-            |= valueParser
-            |. spaces
-            |. oneOf
-                [ keyword orLabel
-                , end
-                ]
-            |. spaces
-        , succeed ()
-            |> map (\_ -> Done (List.reverse parsedValues))
-        ]
+{-| Parses expressions like "abc or d or yz"
+-}
+
+
+
+--orExpressionParser : Dict String String -> Parser a -> Parser (List a)
+--orExpressionParser labels valueParser =
+--    let
+--        orLabel =
+--            localize Labels.or labels
+--    in
+--    loop [] (orParser orLabel valueParser)
+--
+--
+--orParser : String -> Parser a -> List a -> Parser (Step (List a) (List a))
+--orParser orLabel valueParser parsedValues =
+--    oneOf
+--        [ succeed (\value -> Loop (value :: parsedValues))
+--            |= valueParser
+--            |. spaces
+--            |. oneOf
+--                [ keyword orLabel
+--                , end
+--                ]
+--            |. spaces
+--        , succeed ()
+--            |> map (\_ -> Done (List.reverse parsedValues))
+--        ]
+
+
+orKeyword : String -> Parser ()
+orKeyword orLabel =
+    succeed ()
+        |. chompIf isSpace
+        |. keyword orLabel
+        |. chompIf isSpace
+
+
+oneOrMoreSpaces : Parser String
+oneOrMoreSpaces =
+    succeed identity
+        |. chompIf (\c -> c == ' ' || c == '\n' || c == '\u{000D}')
+        |. chompWhile (\c -> c == ' ' || c == '\n' || c == '\u{000D}')
+        |> getChompedString
 
 
 stringParser : Parser String
 stringParser =
-    succeed identity
+    succeed (\string -> Debug.log "stringparser returns " string)
         |= oneOf
-            [ quotedWordsParser
-            , wordParser
+            [ oneQuotedWord
+            , oneOrMoreWords
             ]
 
 
-wordParser : Parser String
-wordParser =
+oneWord : Parser String
+oneWord =
     succeed ()
         -- chompIf id required ot ensure there is at least one character, as chompWhile returns always true
         |. chompIf isNotSpace
@@ -98,13 +130,25 @@ wordParser =
         |> getChompedString
 
 
-quotedWordsParser : Parser String
-quotedWordsParser =
+oneOrMoreWords : Parser String
+oneOrMoreWords =
+    succeed identity
+        |. chompUntilEndOr " ou "
+        |> getChompedString
+
+
+oneQuotedWord : Parser String
+oneQuotedWord =
     succeed identity
         |. spaces
         |. symbol "\""
         |= (getChompedString <| chompWhile isNotDoubleQuote)
         |. symbol "\""
+
+
+isSpace : Char -> Bool
+isSpace char =
+    char == ' '
 
 
 isNotSpace : Char -> Bool
