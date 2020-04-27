@@ -30,7 +30,7 @@ module Grid.Filters exposing
 
 import Dict exposing (Dict)
 import Grid.Labels as Label
-import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, orExpressionParser, stringParser)
+import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, orExpression, stringParser)
 import Parser exposing ((|=), DeadEnd, Parser)
 
 
@@ -169,7 +169,7 @@ stringFilter getter labels =
         , greaterThan = \a b -> String.toLower a > String.toLower b
         , contains = containsString
         , verifiesExpression = containsOneStringOf
-        , typedParser = stringParser
+        , typedParser = stringParser labels
         , labels = labels
         }
 
@@ -324,6 +324,6 @@ makeFilter { getter, equal, lessThan, greaterThan, contains, verifiesExpression,
         }
     , verifiesExpression =
         { filter = \value item -> verifiesExpression (getter item) value
-        , parser = orExpressionParser labels typedParser
+        , parser = orExpression labels typedParser
         }
     }

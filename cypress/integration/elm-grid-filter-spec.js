@@ -194,7 +194,7 @@ describe('elm grid example', function () {
         cy.gridShouldContainTheCity("Milan")
         cy.resetFilters()
 
-        cy.typeSuchValueInSuchFilter("tokyo or \"mexico city\"", "City")
+        cy.typeSuchValueInSuchFilter("tokyo or mexico city", "City")
         cy.numberOflinesInTheGridShouldBe(2)
         cy.gridShouldContainTheCity("Tokyo")
         cy.gridShouldContainTheCity("Mexico City")

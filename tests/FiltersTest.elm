@@ -216,15 +216,15 @@ removeComparisonOperator str =
 
 
 intFilters =
-    IntFilter <| intFilter (.data >> .count)
+    IntFilter <| intFilter (.data >> .count) Dict.empty
 
 
 floatFilters =
-    FloatFilter <| floatFilter (.data >> .score)
+    FloatFilter <| floatFilter (.data >> .score) Dict.empty
 
 
 boolFilters =
-    BoolFilter <| boolFilter (.data >> .isValid)
+    BoolFilter <| boolFilter (.data >> .isValid) Dict.empty
 
 
 stringFilters =

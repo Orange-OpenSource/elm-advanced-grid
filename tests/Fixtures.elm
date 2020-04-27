@@ -142,6 +142,7 @@ scoreColumn =
         , tooltip = "Some text"
         , width = 50
         }
+        Dict.empty
 
 
 titleColumn =
@@ -168,6 +169,7 @@ isValidColumn =
         , tooltip = "Some text"
         , width = 100
         }
+        Dict.empty
 
 
 columns : List (ColumnConfig Data)
