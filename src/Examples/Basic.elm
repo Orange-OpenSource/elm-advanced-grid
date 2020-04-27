@@ -469,6 +469,13 @@ type alias Translations =
     Dict String String
 
 
+{-| In order to show how to provide a translation for the title and tooltip of the columns,
+they are defined in French in this example (in "columns"), and below are provided translation from French to English
+in order to the example to be displayed in English.
+
+You may want to provide a translation, or just an empty Dict if your app is to be displayed in a unique language.
+
+-}
 translations : Translations
 translations =
     Dict.fromList
@@ -484,22 +491,40 @@ translations =
         ]
 
 
+{-| Translation of grid default texts
+Default texts are in english
+To display the UI in another language, you have to provide a translation for all keys
+defined in Grid.Labels.keys, like:
+
+        Dict.fromList
+            [
+                  (Grid.Labels.cancel, "Annuler")
+                , (Grid.Labels.clear, "Effacer")
+                , (Grid.Labels.empty, "Vide")
+                , (Grid.Labels.openQuickFilter, "Afficher le filtre rapide")
+                , (Grid.Labels.or, "ou")
+                , (Grid.Labels.submit, "Valider")
+            ]
+
+See Grid.labels for more information about the usage of these labels
+
+In this example, we will provide an empty dictionary in order to display all labels in Englsih
+
+-}
 columnLabels : Dict String String
 columnLabels =
-    Dict.fromList
-        [ ( "or", "ou" )
-        ]
+    Dict.empty
 
 
+{-| Returns the translation for a given key
+-}
 localize : String -> String
 localize key =
     Maybe.withDefault key <| Dict.get key translations
 
 
-
-{- an example of tranformation which can be applied ot a given column value -}
-
-
+{-| An example of tranformation which can be applied ot a given column value
+-}
 truncateDecimals : Float -> Float
 truncateDecimals value =
     let
