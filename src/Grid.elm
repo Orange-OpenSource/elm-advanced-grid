@@ -68,7 +68,7 @@ import Dict exposing (Dict)
 import Grid.Colors exposing (black)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Grid.Html exposing (getElementInfo, noContent, stopPropagationOnClick, viewIf)
-import Grid.Icons as Icons exposing (drawDarkSvg, drawLightSvg, filterIcon)
+import Grid.Icons as Icons exposing (checkIcon, drawClickableDarkSvg, drawClickableLightSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
 import Grid.List exposing (appendIf)
@@ -685,7 +685,7 @@ update msg model =
             -- the focus must be put on opened filter div, so that the blur event will be launched when we leave it
             let
                 allValuesInColumn =
-                    columnVisibleValues columnConfig state
+                    columnValues columnConfig state
 
                 columnWidth =
                     toFloat columnConfig.properties.width
@@ -2361,10 +2361,10 @@ viewQuickFilterButton state columnConfig =
         draw =
             case columnConfig.filteringValue of
                 Nothing ->
-                    drawLightSvg
+                    drawClickableLightSvg
 
                 _ ->
-                    drawDarkSvg
+                    drawClickableDarkSvg
     in
     div
         [ attribute "data-testid" htmlId
@@ -2421,9 +2421,10 @@ contextualMenuPosition columnConfig =
 
 {-| The unique values in a column
 -}
-columnVisibleValues : ColumnConfig a -> State a -> List String
-columnVisibleValues columnConfig state =
-    state.visibleItems
+columnValues : ColumnConfig a -> State a -> List String
+columnValues columnConfig state =
+    state.content
+        |> List.indexedMap (\index data -> Item.create data index)
         |> List.sortWith columnConfig.comparator
         |> List.map columnConfig.toString
         |> unique

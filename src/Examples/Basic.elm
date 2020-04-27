@@ -523,7 +523,7 @@ localize key =
     Maybe.withDefault key <| Dict.get key translations
 
 
-{-| An example of tranformation which can be applied ot a given column value
+{-| An example of tranformation which can be applied to a given column value
 -}
 truncateDecimals : Float -> Float
 truncateDecimals value =

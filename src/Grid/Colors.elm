@@ -9,8 +9,9 @@
 -}
 
 
-module Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, lightGrey3, white, white2)
+module Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, darkGreyRgb, lightGreen, lightGrey, lightGrey2, lightGrey3, lightGreyRgb, white, white2)
 
+import Color
 import Css exposing (Color, hex)
 
 
@@ -62,3 +63,13 @@ white2 =
 white : Color
 white =
     hex "FFF"
+
+
+darkGreyRgb : Color.Color
+darkGreyRgb =
+    Color.rgb 0.2 0.2 0.2
+
+
+lightGreyRgb : Color.Color
+lightGreyRgb =
+    Color.rgb 0.6 0.6 0.6

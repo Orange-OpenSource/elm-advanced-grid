@@ -1,8 +1,8 @@
 module Grid.Stylesheet exposing (grid, preferences, resizingHandleWidth)
 
-import Css exposing (Style, absolute, after, alignItems, alignSelf, auto, backgroundColor, backgroundImage, before, bold, bolder, border, border3, borderBottom3, borderLeft3, borderRadius, borderRight3, boxSizing, center, colResize, column, contentBox, cursor, deg, display, displayFlex, firstOfType, flexDirection, flexEnd, flexGrow, flexShrink, flexStart, float, fontSize, fontStyle, fontWeight, height, hidden, hover, inlineFlex, int, italic, justifyContent, left, lineHeight, linearGradient, margin, marginBottom, marginLeft, marginRight, minHeight, move, noWrap, none, num, opacity, overflow, overflowX, overflowY, padding, paddingLeft, paddingRight, paddingTop, pct, pointer, pointerEvents, position, property, px, relative, right, rotate, row, solid, spaceAround, spaceBetween, stop, stretch, top, transform, transparent, visibility, visible, whiteSpace, width, zIndex)
+import Css exposing (Style, absolute, after, alignItems, alignSelf, auto, backgroundColor, backgroundImage, before, bold, bolder, border, border3, borderBottom3, borderLeft3, borderRadius, borderRight3, boxSizing, center, colResize, column, contentBox, cursor, deg, display, displayFlex, firstOfType, flexDirection, flexEnd, flexGrow, flexShrink, flexStart, float, fontSize, fontStyle, fontWeight, height, hidden, hover, inlineFlex, int, italic, justifyContent, left, lineHeight, linearGradient, margin, marginBottom, marginLeft, marginRight, minHeight, move, noWrap, none, num, opacity, overflow, overflowX, overflowY, padding, paddingLeft, paddingRight, paddingTop, pct, pointer, pointerEvents, position, property, px, relative, rem, right, rotate, row, solid, spaceAround, spaceBetween, stop, stretch, top, transform, transparent, visibility, visible, whiteSpace, width, zIndex)
 import Css.Global exposing (Snippet, class, descendants, global, typeSelector)
-import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, white, white2)
+import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, lightGrey3, white, white2)
 import Html.Styled
 
 
@@ -14,7 +14,14 @@ grid =
 
 gridStyles : List Snippet
 gridStyles =
-    [ class "eag-cell"
+    [ class "eag-arrow-head"
+        [ width (px 0)
+        , height (px 0)
+        , borderLeft3 (px 5) solid transparent
+        , borderRight3 (px 5) solid transparent
+        , margin (px 5)
+        ]
+    , class "eag-cell"
         [ alignItems center
         , display inlineFlex
         , noShrink
@@ -115,6 +122,11 @@ gridStyles =
     , class "eag-margin-Left-XS"
         [ marginLeft (px 5)
         ]
+    , class "eag-placeHolder"
+        [ display inlineFlex
+        , width (px 15)
+        , height (px 15)
+        ]
     , class "eag-progress-bar-background"
         [ displayFlex
         , backgroundColor white
@@ -139,6 +151,16 @@ gridStyles =
         [ cursor pointer
         , padding (px 2)
         , paddingTop (px 6)
+        ]
+    , class "eag-quick-filter-control"
+        [ fontStyle italic
+        ]
+    , class "eag-quick-filter-entry"
+        [ cursor pointer
+        , displayFlex
+        , alignItems center
+        , hover [ backgroundColor lightGrey3 ]
+        , lineHeight (rem 1.3)
         ]
     , class "eag-resize-handle"
         [ cursor colResize
@@ -182,13 +204,6 @@ gridStyles =
         , width (px 3)
         , marginRight (px 1)
         , marginBottom (px 2)
-        ]
-    , class "eag-arrow-head"
-        [ width (px 0)
-        , height (px 0)
-        , borderLeft3 (px 5) solid transparent
-        , borderRight3 (px 5) solid transparent
-        , margin (px 5)
         ]
     , class "eag-vertical-bar"
         [ width (px 1)

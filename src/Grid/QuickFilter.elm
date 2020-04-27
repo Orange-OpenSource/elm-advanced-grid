@@ -4,10 +4,10 @@ import Css exposing (..)
 import Dict exposing (Dict)
 import Grid.Colors exposing (darkGrey2, lightGrey3, white)
 import Grid.Html exposing (focusOn)
-import Grid.Icons
+import Grid.Icons as Icons exposing (checkIcon, drawDarkSvg)
 import Grid.Labels as Label exposing (localize)
 import Html.Styled exposing (Attribute, Html, div, hr, span, text)
-import Html.Styled.Attributes exposing (css, id, tabindex)
+import Html.Styled.Attributes exposing (class, css, id, tabindex)
 import Html.Styled.Events exposing (onBlur, onClick)
 import List exposing (take)
 
@@ -142,7 +142,8 @@ view : Model -> Html Msg
 view model =
     let
         params value =
-            { emptyLabel = localize Label.empty model.labels
+            { currentSelection = model.filteringValue
+            , emptyLabel = localize Label.empty model.labels
             , filterString = Just ("=" ++ value)
             , isCommand = False
             , label = value
@@ -155,7 +156,7 @@ view model =
             { x =
                 if x + model.width > model.maxX then
                     -- prevents popup to be partially hidden when on last colmun
-                    x - model.width + Grid.Icons.width
+                    x - model.width + Icons.width
 
                 else
                     x
@@ -174,7 +175,6 @@ view model =
         List.map (\value -> viewQuickFilterEntry (params value))
             model.propositions
             ++ viewEllipsis (List.length model.propositions) maxQuickFilterPropositions
-            ++ viewResetSelector model.filteringValue (localize Label.clear model.labels)
 
 
 quickFilterPopupStyles : Position -> Float -> Attribute Msg
@@ -206,29 +206,10 @@ viewEllipsis totalNumber actualNumber =
         []
 
 
-viewResetSelector : Maybe String -> String -> List (Html Msg)
-viewResetSelector filteringValue label =
-    let
-        params =
-            { emptyLabel = ""
-            , filterString = Nothing
-            , isCommand = True
-            , label = label
-            }
-    in
-    case filteringValue of
-        Nothing ->
-            []
-
-        _ ->
-            [ hr [ css [ color darkGrey2 ] ] []
-            , viewQuickFilterEntry params
-            ]
-
-
 type alias ViewQuickFilterEntryParams =
     { emptyLabel : String
     , filterString : Maybe String
+    , currentSelection : Maybe String
     , isCommand : Bool
     , label : String
     }
@@ -237,22 +218,35 @@ type alias ViewQuickFilterEntryParams =
 viewQuickFilterEntry : ViewQuickFilterEntryParams -> Html Msg
 viewQuickFilterEntry params =
     let
-        style =
+        className =
             if params.isCommand || params.label == params.emptyLabel then
-                fontStyle italic
+                "eag-quick-filter-control eag-quick-filter-entry"
 
             else
-                fontStyle normal
+                "eag-quick-filter-entry"
+
+        isSelected =
+            case params.currentSelection of
+                Just value ->
+                    value == Maybe.withDefault "" params.filterString || value == (params.filterString |> Maybe.withDefault "")
+
+                Nothing ->
+                    False
+
+        selectionSymbol =
+            if isSelected then
+                drawDarkSvg Icons.width checkIcon
+
+            else
+                Icons.placeHolder
     in
     div
-        [ onClick <| UserSelectedEntry params.filterString
-        , css
-            [ cursor pointer
-            , style
-            , hover [ backgroundColor lightGrey3 ]
-            ]
+        [ class className
+        , onClick <| UserSelectedEntry params.filterString
         ]
-        [ text params.label ]
+        [ selectionSymbol
+        , text params.label
+        ]
 
 
 openedQuickFilterHtmlId : String
