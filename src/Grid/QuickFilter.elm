@@ -58,7 +58,7 @@ type alias Position =
 
 
 maxQuickFilterPropositions =
-    100
+    1000
 
 
 init : List String -> Maybe String -> Dict String String -> Float -> Model
