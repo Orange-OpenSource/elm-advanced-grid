@@ -18,7 +18,7 @@ import Set exposing (Set)
 
 
 type alias Model =
-    { filteringValues : List String
+    { filteringValues : Set String
     , labels : Dict String String
     , maxX : Float
     , origin : Position
@@ -59,8 +59,8 @@ maxQuickFilterPropositions =
     100
 
 
-init : List String -> List String -> Dict String String -> Float -> Model
-init allValuesInColumn filteringValues labels columnWidth =
+init : List String -> Maybe String -> Dict String String -> Float -> Model
+init allValuesInColumn filteringString labels columnWidth =
     let
         values =
             allValuesInColumn
@@ -81,17 +81,36 @@ init allValuesInColumn filteringValues labels columnWidth =
 
             else
                 values
+
+        filteringValues =
+            inputValues labels filteringString
     in
     { filteringValues = filteringValues
     , labels = labels
     , maxX = 0
     , origin = { x = 0, y = 0 }
-    , outputStrings = Set.fromList filteringValues
+    , outputStrings = filteringValues
     , position = { x = 0, y = 0 }
     , propositions = filterPropositions
     , state = Closed
     , width = columnWidth
     }
+
+
+{-| Extract the values in an input filter as a list of strings
+-}
+inputValues : Dict String String -> Maybe String -> Set String
+inputValues labels filteringValue =
+    let
+        orKeyword =
+            --TODO mutualize
+            " " ++ Label.localize Label.or labels ++ " "
+    in
+    filteringValue
+        |> Maybe.withDefault ""
+        |> String.split orKeyword
+        |> List.filter (not << String.isEmpty)
+        |> Set.fromList
 
 
 
@@ -153,7 +172,7 @@ view : Model -> Html Msg
 view model =
     let
         params value =
-            { selectedValues = Set.fromList model.filteringValues
+            { selectedValues = model.filteringValues
             , emptyLabel = localize Label.empty model.labels
             , outputStrings = model.outputStrings
             , isCommand = False

@@ -85,7 +85,7 @@ import Html.Styled.Lazy exposing (lazy, lazy2, lazy3)
 import InfiniteList as IL
 import List
 import List.Extra exposing (findIndex, unique)
-import Set
+import Set exposing (Set)
 import String
 
 
@@ -571,7 +571,7 @@ init config data =
             StringEditor.init config.labels
 
         quickFilterModel =
-            QuickFilter.init [] [] config.labels 0
+            QuickFilter.init [] Nothing config.labels 0
     in
     ( Model { initialState | columnsX = columnsX initialState } stringEditorModel quickFilterModel
     , getElementInfo config.containerId GotParentContainerInfo
@@ -690,18 +690,8 @@ update msg model =
                 columnWidth =
                     toFloat columnConfig.properties.width
 
-                orKeyword =
-                    --TODO mutualize
-                    " " ++ Label.localize Label.or state.config.labels ++ " "
-
-                filteringValues =
-                    columnConfig.filteringValue
-                        |> Maybe.withDefault ""
-                        |> String.split orKeyword
-                        |> List.filter (not << String.isEmpty)
-
                 updatedQuickFilterModel =
-                    QuickFilter.init allValuesInColumn filteringValues state.labels columnWidth
+                    QuickFilter.init allValuesInColumn columnConfig.filteringValue state.labels columnWidth
             in
             ( Model
                 { state
