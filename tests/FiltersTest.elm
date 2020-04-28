@@ -190,6 +190,12 @@ describeFilterParsing =
         , test "should detect if one of several sub-strings is contained in a reference string" <|
             \_ ->
                 testStringComparisonParsingSucceeds "BAR or FOO or BAZ or EM" item2
+        , test "should detect strict equality in or expression" <|
+            \_ ->
+                testStringComparisonParsingSucceeds "=ZIG or ITEM2" item2
+        , test "should detect strict inequality in or expression" <|
+            \_ ->
+                testStringComparisonParsingFails "=Baz or =ITEM3" item2
         ]
     ]
 

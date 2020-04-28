@@ -15,6 +15,7 @@ module Grid.Parsers exposing
     , equalityParser
     , greaterThanParser
     , lessThanParser
+    , operandParser
     , orExpression
     , orKeyword
     , stringParser
@@ -22,7 +23,7 @@ module Grid.Parsers exposing
 
 import Dict exposing (Dict)
 import Grid.Labels as Labels exposing (localize)
-import Parser exposing ((|.), (|=), Parser, Step(..), Trailing(..), andThen, chompIf, chompUntilEndOr, chompWhile, end, getChompedString, keyword, lazy, loop, map, oneOf, sequence, spaces, succeed, symbol)
+import Parser exposing ((|.), (|=), Parser, Step(..), Trailing(..), andThen, chompIf, chompUntilEndOr, chompWhile, end, getChompedString, keyword, lazy, loop, map, oneOf, problem, sequence, spaces, succeed, symbol)
 
 
 equalityParser : Parser (a -> a)
@@ -64,6 +65,23 @@ orExpression labels valueParser =
         , item = valueParser
         , trailing = Forbidden
         }
+        |> andThen
+            (\values ->
+                if List.length values > 1 then
+                    succeed values
+
+                else
+                    problem "not enough operands to be an OR expression"
+            )
+
+
+operandParser : Parser a -> Parser a
+operandParser valueParser =
+    succeed identity
+        |= oneOf
+            [ equalityParser |= valueParser
+            , containsParser |= valueParser
+            ]
 
 
 stringParser : Dict String String -> Parser String

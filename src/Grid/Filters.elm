@@ -30,7 +30,7 @@ module Grid.Filters exposing
 
 import Dict exposing (Dict)
 import Grid.Labels as Label
-import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, orExpression, stringParser)
+import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, operandParser, orExpression, stringParser)
 import Parser exposing ((|=), DeadEnd, Parser)
 
 
@@ -99,7 +99,7 @@ validateFilter : String -> TypedFilter a b -> Maybe (a -> Bool)
 validateFilter filteringString filters =
     let
         validators =
-            [ validateEqualFilter, validateLessThanFilter, validateGreaterThanFilter, validateExpressionFilter, validateContainsFilter ]
+            [ validateExpressionFilter, validateEqualFilter, validateLessThanFilter, validateGreaterThanFilter, validateContainsFilter ]
 
         -- validateContainsFilter must be tested last because it accepts any string
     in
@@ -323,7 +323,9 @@ makeFilter { getter, equal, lessThan, greaterThan, contains, verifiesExpression,
         , parser = containsParser |= typedParser
         }
     , verifiesExpression =
-        { filter = \value item -> verifiesExpression (getter item) value
-        , parser = orExpression labels typedParser
+        { filter =
+            \value item ->
+                verifiesExpression (getter item) value
+        , parser = orExpression labels (operandParser typedParser)
         }
     }
