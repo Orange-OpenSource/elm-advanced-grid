@@ -6,10 +6,12 @@ import Grid.Colors exposing (white)
 import Grid.Html exposing (focusOn)
 import Grid.Icons as Icons exposing (checkIcon, drawDarkSvg)
 import Grid.Labels as Label exposing (localize)
+import Grid.Parsers as Parsers exposing (orKeyword)
 import Html.Styled exposing (Attribute, Html, div, span, text)
 import Html.Styled.Attributes exposing (class, css, id, tabindex)
 import Html.Styled.Events exposing (onBlur, onClick)
 import List exposing (take)
+import Parser exposing ((|.), (|=), succeed)
 import Set exposing (Set)
 
 
@@ -105,7 +107,27 @@ inputValues labels filteringValue =
         |> Maybe.withDefault ""
         |> String.split (orKeyword labels)
         |> List.filter (not << String.isEmpty)
+        |> List.map (removeEqualSign labels)
         |> Set.fromList
+
+
+removeEqualSign : Dict String String -> String -> String
+removeEqualSign labels inputString =
+    let
+        parser =
+            succeed identity
+                |. Parsers.equalityParser
+                |= Parsers.stringParser labels
+
+        parsedValue =
+            Parser.run parser inputString
+    in
+    case parsedValue of
+        Ok value ->
+            value
+
+        Err _ ->
+            inputString
 
 
 
