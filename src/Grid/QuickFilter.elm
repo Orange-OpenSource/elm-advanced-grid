@@ -2,14 +2,15 @@ module Grid.QuickFilter exposing (..)
 
 import Css exposing (..)
 import Dict exposing (Dict)
-import Grid.Colors exposing (darkGrey2, lightGrey3, white)
+import Grid.Colors exposing (white)
 import Grid.Html exposing (focusOn)
 import Grid.Icons as Icons exposing (checkIcon, drawDarkSvg)
 import Grid.Labels as Label exposing (localize)
-import Html.Styled exposing (Attribute, Html, div, hr, span, text)
+import Html.Styled exposing (Attribute, Html, div, span, text)
 import Html.Styled.Attributes exposing (class, css, id, tabindex)
 import Html.Styled.Events exposing (onBlur, onClick)
 import List exposing (take)
+import Set exposing (Set)
 
 
 
@@ -17,10 +18,11 @@ import List exposing (take)
 
 
 type alias Model =
-    { filteringValue : Maybe String
+    { filteringValues : List String
     , labels : Dict String String
     , maxX : Float
     , origin : Position
+    , outputStrings : Set String
     , position : Position
     , propositions : List String
     , state : QuickFilterState
@@ -40,7 +42,7 @@ type Msg
     | SetPosition Position
     | UserClosedQuickFilter
     | UserOpenedQuickFilter
-    | UserSelectedEntry (Maybe String)
+    | UserToggledEntry String
 
 
 type alias Position =
@@ -57,8 +59,8 @@ maxQuickFilterPropositions =
     100
 
 
-init : List String -> Maybe String -> Dict String String -> Float -> Model
-init allValuesInColumn filteringValue labels columnWidth =
+init : List String -> List String -> Dict String String -> Float -> Model
+init allValuesInColumn filteringValues labels columnWidth =
     let
         values =
             allValuesInColumn
@@ -80,10 +82,11 @@ init allValuesInColumn filteringValue labels columnWidth =
             else
                 values
     in
-    { filteringValue = filteringValue
-    , labels = labels -- state.labels
+    { filteringValues = filteringValues
+    , labels = labels
     , maxX = 0
     , origin = { x = 0, y = 0 }
+    , outputStrings = Set.fromList filteringValues
     , position = { x = 0, y = 0 }
     , propositions = filterPropositions
     , state = Closed
@@ -128,8 +131,16 @@ update msg model =
             , Cmd.none
             )
 
-        UserSelectedEntry maybeString ->
-            ( model
+        UserToggledEntry entry ->
+            let
+                outputEntries =
+                    if Set.member entry model.outputStrings then
+                        Set.remove entry model.outputStrings
+
+                    else
+                        Set.insert entry model.outputStrings
+            in
+            ( { model | outputStrings = outputEntries }
             , Cmd.none
             )
 
@@ -142,9 +153,9 @@ view : Model -> Html Msg
 view model =
     let
         params value =
-            { currentSelection = model.filteringValue
+            { selectedValues = Set.fromList model.filteringValues
             , emptyLabel = localize Label.empty model.labels
-            , filterString = Just ("=" ++ value)
+            , outputStrings = model.outputStrings
             , isCommand = False
             , label = value
             }
@@ -208,8 +219,8 @@ viewEllipsis totalNumber actualNumber =
 
 type alias ViewQuickFilterEntryParams =
     { emptyLabel : String
-    , filterString : Maybe String
-    , currentSelection : Maybe String
+    , outputStrings : Set String
+    , selectedValues : Set String
     , isCommand : Bool
     , label : String
     }
@@ -226,12 +237,7 @@ viewQuickFilterEntry params =
                 "eag-quick-filter-entry"
 
         isSelected =
-            case params.currentSelection of
-                Just value ->
-                    value == Maybe.withDefault "" params.filterString || value == (params.filterString |> Maybe.withDefault "")
-
-                Nothing ->
-                    False
+            Set.member params.label params.selectedValues
 
         selectionSymbol =
             if isSelected then
@@ -242,7 +248,7 @@ viewQuickFilterEntry params =
     in
     div
         [ class className
-        , onClick <| UserSelectedEntry params.filterString
+        , onClick <| UserToggledEntry params.label
         ]
         [ selectionSymbol
         , text params.label

@@ -68,7 +68,7 @@ import Dict exposing (Dict)
 import Grid.Colors exposing (black)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Grid.Html exposing (getElementInfo, noContent, stopPropagationOnClick, viewIf)
-import Grid.Icons as Icons exposing (checkIcon, drawClickableDarkSvg, drawClickableLightSvg, filterIcon)
+import Grid.Icons as Icons exposing (drawClickableDarkSvg, drawClickableLightSvg, filterIcon)
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
 import Grid.List exposing (appendIf)
@@ -85,8 +85,8 @@ import Html.Styled.Lazy exposing (lazy, lazy2, lazy3)
 import InfiniteList as IL
 import List
 import List.Extra exposing (findIndex, unique)
+import Set
 import String
-import Task
 
 
 {-| The configuration for the grid. The grid content is described
@@ -571,7 +571,7 @@ init config data =
             StringEditor.init config.labels
 
         quickFilterModel =
-            QuickFilter.init [] Nothing config.labels 0
+            QuickFilter.init [] [] config.labels 0
     in
     ( Model { initialState | columnsX = columnsX initialState } stringEditorModel quickFilterModel
     , getElementInfo config.containerId GotParentContainerInfo
@@ -690,11 +690,18 @@ update msg model =
                 columnWidth =
                     toFloat columnConfig.properties.width
 
-                filteringValue =
+                orKeyword =
+                    --TODO mutualize
+                    " " ++ Label.localize Label.or state.config.labels ++ " "
+
+                filteringValues =
                     columnConfig.filteringValue
+                        |> Maybe.withDefault ""
+                        |> String.split orKeyword
+                        |> List.filter (not << String.isEmpty)
 
                 updatedQuickFilterModel =
-                    QuickFilter.init allValuesInColumn filteringValue state.labels columnWidth
+                    QuickFilter.init allValuesInColumn filteringValues state.labels columnWidth
             in
             ( Model
                 { state
@@ -1027,14 +1034,29 @@ updateQuickFilter msg model =
 
         ( updatedQuickFilterModel, cmd ) =
             QuickFilter.update msg quickFilterModel
+
+        orKeyword =
+            --TODO mutualize
+            " " ++ Label.localize Label.or state.config.labels ++ " "
+
+        selectedEntries =
+            updatedQuickFilterModel.outputStrings
+                |> Set.toList
+
+        concatenatedEntries =
+            if List.length selectedEntries > 1 then
+                String.join orKeyword selectedEntries
+
+            else
+                List.head selectedEntries |> Maybe.withDefault ""
     in
     case msg of
-        QuickFilter.UserSelectedEntry filteringValue ->
+        QuickFilter.UserToggledEntry _ ->
             case state.quickFilteredColumn of
                 Just column ->
                     let
                         updatedState =
-                            applyFilter state column filteringValue
+                            applyFilter state column (Just concatenatedEntries)
                     in
                     ( Model updatedState stringEditorModel quickFilterModel
                     , Cmd.map QuickFilterMsg cmd
