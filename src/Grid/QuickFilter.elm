@@ -101,14 +101,9 @@ init allValuesInColumn filteringString labels columnWidth =
 -}
 inputValues : Dict String String -> Maybe String -> Set String
 inputValues labels filteringValue =
-    let
-        orKeyword =
-            --TODO mutualize
-            " " ++ Label.localize Label.or labels ++ " "
-    in
     filteringValue
         |> Maybe.withDefault ""
-        |> String.split orKeyword
+        |> String.split (orKeyword labels)
         |> List.filter (not << String.isEmpty)
         |> Set.fromList
 

@@ -16,6 +16,7 @@ module Grid.Parsers exposing
     , greaterThanParser
     , lessThanParser
     , orExpression
+    , orKeyword
     , stringParser
     )
 
@@ -55,13 +56,9 @@ greaterThanParser =
 
 orExpression : Dict String String -> Parser a -> Parser (List a)
 orExpression labels valueParser =
-    let
-        orKeyword =
-            " " ++ localize Labels.or labels ++ " "
-    in
     Parser.sequence
         { start = ""
-        , separator = orKeyword
+        , separator = orKeyword labels
         , end = ""
         , spaces = Parser.succeed ()
         , item = valueParser
@@ -71,18 +68,19 @@ orExpression labels valueParser =
 
 stringParser : Dict String String -> Parser String
 stringParser labels =
-    let
-        orKeyword =
-            " " ++ Labels.localize Labels.or labels ++ " "
-    in
     succeed identity
-        |= oneOrMoreWords orKeyword
+        |= oneOrMoreWords labels
 
 
-oneOrMoreWords : String -> Parser String
-oneOrMoreWords orKeyword =
+orKeyword : Dict String String -> String
+orKeyword labels =
+    " " ++ Labels.localize Labels.or labels ++ " "
+
+
+oneOrMoreWords : Dict String String -> Parser String
+oneOrMoreWords labels =
     succeed identity
-        |. chompUntilEndOr orKeyword
+        |. chompUntilEndOr (orKeyword labels)
         |> getChompedString
 
 

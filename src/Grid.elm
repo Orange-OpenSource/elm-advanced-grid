@@ -72,6 +72,7 @@ import Grid.Icons as Icons exposing (drawClickableDarkSvg, drawClickableLightSvg
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
 import Grid.List exposing (appendIf)
+import Grid.Parsers exposing (orKeyword)
 import Grid.QuickFilter as QuickFilter
 import Grid.Scroll exposing (HorizontalScrollInfo, VerticalScrollInfo, onVerticalScroll)
 import Grid.StringEditor as StringEditor
@@ -1025,17 +1026,13 @@ updateQuickFilter msg model =
         ( updatedQuickFilterModel, cmd ) =
             QuickFilter.update msg quickFilterModel
 
-        orKeyword =
-            --TODO mutualize
-            " " ++ Label.localize Label.or state.config.labels ++ " "
-
         selectedEntries =
             updatedQuickFilterModel.outputStrings
                 |> Set.toList
 
         concatenatedEntries =
             if List.length selectedEntries > 1 then
-                String.join orKeyword selectedEntries
+                String.join (orKeyword state.config.labels) selectedEntries
 
             else
                 List.head selectedEntries |> Maybe.withDefault ""
