@@ -192,10 +192,13 @@ describeFilterParsing =
                 testStringComparisonParsingSucceeds "BAR or FOO or BAZ or EM" item2
         , test "should detect strict equality in or expression" <|
             \_ ->
-                testStringComparisonParsingSucceeds "=ZIG or ITEM2" item2
+                testStringComparisonParsingSucceeds "=ZIG or =ITEM2" item2
         , test "should detect strict inequality in or expression" <|
             \_ ->
-                testStringComparisonParsingFails "=Baz or =ITEM3" item2
+                testStringComparisonParsingFails "=Baz or =ITEM" item2
+        , test "should detect a string contains an or expression operand" <|
+            \_ ->
+                testStringComparisonParsingSucceeds "=Baz or ITEM" item2
         ]
     ]
 

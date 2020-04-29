@@ -10,7 +10,8 @@
 
 
 module Grid.Parsers exposing
-    ( boolParser
+    ( ParsedValue(..)
+    , boolParser
     , containsParser
     , equalityParser
     , greaterThanParser
@@ -22,8 +23,13 @@ module Grid.Parsers exposing
     )
 
 import Dict exposing (Dict)
-import Grid.Labels as Labels exposing (localize)
-import Parser exposing ((|.), (|=), Parser, Step(..), Trailing(..), andThen, chompIf, chompUntilEndOr, chompWhile, end, getChompedString, keyword, lazy, loop, map, oneOf, problem, sequence, spaces, succeed, symbol)
+import Grid.Labels as Labels
+import Parser exposing ((|.), (|=), Parser, Step(..), Trailing(..), andThen, chompUntilEndOr, getChompedString, keyword, oneOf, problem, spaces, succeed, symbol)
+
+
+type ParsedValue a
+    = Equals a
+    | Contains a
 
 
 equalityParser : Parser (a -> a)
@@ -55,7 +61,7 @@ greaterThanParser =
         |. spaces
 
 
-orExpression : Dict String String -> Parser a -> Parser (List a)
+orExpression : Dict String String -> Parser (ParsedValue a) -> Parser (List (ParsedValue a))
 orExpression labels valueParser =
     Parser.sequence
         { start = ""
@@ -75,12 +81,16 @@ orExpression labels valueParser =
             )
 
 
-operandParser : Parser a -> Parser a
+operandParser : Parser a -> Parser (ParsedValue a)
 operandParser valueParser =
     succeed identity
         |= oneOf
-            [ equalityParser |= valueParser
-            , containsParser |= valueParser
+            [ succeed Equals
+                |. equalityParser
+                |= valueParser
+            , succeed Contains
+                |. containsParser
+                |= valueParser
             ]
 
 

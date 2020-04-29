@@ -30,7 +30,7 @@ module Grid.Filters exposing
 
 import Dict exposing (Dict)
 import Grid.Labels as Label
-import Grid.Parsers exposing (boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, operandParser, orExpression, stringParser)
+import Grid.Parsers as Parsers exposing (ParsedValue, boolParser, containsParser, equalityParser, greaterThanParser, lessThanParser, operandParser, orExpression, stringParser)
 import Parser exposing ((|=), DeadEnd, Parser)
 
 
@@ -62,8 +62,8 @@ type alias TypedFilter a b =
         , parser : Parser b
         }
     , verifiesExpression :
-        { filter : List b -> a -> Bool
-        , parser : Parser (List b)
+        { filter : List (ParsedValue b) -> a -> Bool
+        , parser : Parser (List (ParsedValue b))
         }
     }
 
@@ -168,15 +168,24 @@ stringFilter getter labels =
         , lessThan = \a b -> String.toLower a < String.toLower b
         , greaterThan = \a b -> String.toLower a > String.toLower b
         , contains = containsString
-        , verifiesExpression = containsOneStringOf
+        , verifiesExpression = matchesOneStringOf
         , typedParser = stringParser labels
         , labels = labels
         }
 
 
-containsOneStringOf : String -> List String -> Bool
-containsOneStringOf referenceString substrings =
-    List.any (\substring -> containsString referenceString substring) substrings
+matchesOneStringOf : String -> List (ParsedValue String) -> Bool
+matchesOneStringOf referenceString operands =
+    List.any
+        (\parsedValue ->
+            case parsedValue of
+                Parsers.Equals operandValue ->
+                    String.toLower referenceString == operandValue
+
+                Parsers.Contains operandValue ->
+                    containsString referenceString operandValue
+        )
+        operands
 
 
 {-| Returns true when the given string are the same
@@ -189,8 +198,8 @@ stringEquals labels valueInCell valueInFilter =
 
 
 containsString : String -> String -> Bool
-containsString a b =
-    String.contains (String.toLower b) (String.toLower a)
+containsString referenceString searchedString =
+    String.contains (String.toLower searchedString) (String.toLower referenceString)
 
 
 {-| Filters integers.
@@ -209,7 +218,7 @@ intFilter getter labels =
         , lessThan = \a b -> a < b
         , greaterThan = \a b -> a > b
         , contains = containsInt
-        , verifiesExpression = containsOneIntOf
+        , verifiesExpression = matchesOneIntOf
         , typedParser = Parser.int
         , labels = labels
         }
@@ -220,9 +229,18 @@ containsInt a b =
     String.contains (String.fromInt b) (String.fromInt a)
 
 
-containsOneIntOf : Int -> List Int -> Bool
-containsOneIntOf referenceInt values =
-    List.any (\value -> containsInt referenceInt value) values
+matchesOneIntOf : Int -> List (ParsedValue Int) -> Bool
+matchesOneIntOf referenceInt operands =
+    List.any
+        (\parsedValue ->
+            case parsedValue of
+                Parsers.Equals integer ->
+                    referenceInt == integer
+
+                Parsers.Contains integer ->
+                    containsInt referenceInt integer
+        )
+        operands
 
 
 {-| Filters floating point numbers.
@@ -241,7 +259,7 @@ floatFilter getter labels =
         , lessThan = \a b -> a < b
         , greaterThan = \a b -> a > b
         , contains = containsFloat
-        , verifiesExpression = containsOneFloatOf
+        , verifiesExpression = matchesOneFloatOf
         , typedParser = Parser.float
         , labels = labels
         }
@@ -252,9 +270,18 @@ containsFloat a b =
     String.contains (String.fromFloat b) (String.fromFloat a)
 
 
-containsOneFloatOf : Float -> List Float -> Bool
-containsOneFloatOf referenceFloat values =
-    List.any (\value -> containsFloat referenceFloat value) values
+matchesOneFloatOf : Float -> List (ParsedValue Float) -> Bool
+matchesOneFloatOf referenceFloat operands =
+    List.any
+        (\parsedValue ->
+            case parsedValue of
+                Parsers.Equals float ->
+                    referenceFloat == float
+
+                Parsers.Contains float ->
+                    containsFloat referenceFloat float
+        )
+        operands
 
 
 {-| Filters booleans.
@@ -273,15 +300,24 @@ boolFilter getter labels =
         , lessThan = boolLessThan
         , greaterThan = boolGreaterThan
         , contains = (==)
-        , verifiesExpression = containsOneBoolOf
+        , verifiesExpression = matchesOneBoolOf
         , typedParser = boolParser
         , labels = labels
         }
 
 
-containsOneBoolOf : Bool -> List Bool -> Bool
-containsOneBoolOf referenceBool values =
-    List.any (\value -> value == referenceBool) values
+matchesOneBoolOf : Bool -> List (ParsedValue Bool) -> Bool
+matchesOneBoolOf referenceBool operands =
+    List.any
+        (\parsedValue ->
+            case parsedValue of
+                Parsers.Equals bool ->
+                    referenceBool == bool
+
+                Parsers.Contains bool ->
+                    referenceBool == bool
+        )
+        operands
 
 
 boolLessThan : Bool -> Bool -> Bool
@@ -300,7 +336,7 @@ makeFilter :
     , lessThan : b -> b -> Bool
     , greaterThan : b -> b -> Bool
     , contains : b -> b -> Bool
-    , verifiesExpression : b -> List b -> Bool
+    , verifiesExpression : b -> List (ParsedValue b) -> Bool
     , typedParser : Parser b
     , labels : Dict String String
     }
