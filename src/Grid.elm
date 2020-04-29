@@ -1032,10 +1032,14 @@ updateQuickFilter msg model =
 
         concatenatedEntries =
             if List.length selectedEntries > 1 then
-                String.join (orKeyword state.config.labels) selectedEntries
+                selectedEntries
+                    |> List.map ((++) "=")
+                    |> String.join (orKeyword state.config.labels)
 
             else
-                List.head selectedEntries |> Maybe.withDefault ""
+                List.head selectedEntries
+                    |> Maybe.map ((++) "=")
+                    |> Maybe.withDefault ""
     in
     case msg of
         QuickFilter.UserToggledEntry _ ->
