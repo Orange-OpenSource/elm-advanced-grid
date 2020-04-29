@@ -45,26 +45,8 @@ type Filter a
 
 
 type alias TypedFilter a b =
-    { equal :
-        { filter : b -> a -> Bool
-        , parser : Parser b
-        }
-    , lessThan :
-        { filter : b -> a -> Bool
-        , parser : Parser b
-        }
-    , greaterThan :
-        { filter : b -> a -> Bool
-        , parser : Parser b
-        }
-    , contains :
-        { filter : b -> a -> Bool
-        , parser : Parser b
-        }
-    , verifiesExpression :
-        { filter : List (ParsedValue b) -> a -> Bool
-        , parser : Parser (List (ParsedValue b))
-        }
+    { filter : List (ParsedValue b) -> a -> Bool
+    , parser : Parser (List (ParsedValue b))
     }
 
 
@@ -97,42 +79,12 @@ parseFilteringString filteringValue filter =
 
 validateFilter : String -> TypedFilter a b -> Maybe (a -> Bool)
 validateFilter filteringString filters =
-    let
-        validators =
-            [ validateExpressionFilter, validateEqualFilter, validateLessThanFilter, validateGreaterThanFilter, validateContainsFilter ]
+    case validateExpressionFilter filters filteringString of
+        Ok value ->
+            Just value
 
-        -- validateContainsFilter must be tested last because it accepts any string
-    in
-    -- find first OK value returned by a validator, change it into a Maybe
-    findFirstOK <| List.map (\validator -> validator filters filteringString) validators
-
-
-findFirstOK : List (Result (List DeadEnd) (a -> Bool)) -> Maybe (a -> Bool)
-findFirstOK results =
-    case results of
-        [] ->
+        Err _ ->
             Nothing
-
-        (Ok result) :: _ ->
-            Just result
-
-        (Err _) :: tail ->
-            findFirstOK tail
-
-
-validateEqualFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
-validateEqualFilter filters filteringString =
-    Result.map filters.equal.filter (Parser.run filters.equal.parser filteringString)
-
-
-validateLessThanFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
-validateLessThanFilter filters filteringString =
-    Result.map filters.lessThan.filter (Parser.run filters.lessThan.parser filteringString)
-
-
-validateGreaterThanFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
-validateGreaterThanFilter filters filteringString =
-    Result.map filters.greaterThan.filter (Parser.run filters.greaterThan.parser filteringString)
 
 
 validateExpressionFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
@@ -141,12 +93,7 @@ validateExpressionFilter filters filteringString =
         lowerCaseFilteringString =
             String.toLower filteringString
     in
-    Result.map filters.verifiesExpression.filter (Parser.run filters.verifiesExpression.parser lowerCaseFilteringString)
-
-
-validateContainsFilter : TypedFilter a b -> String -> Result (List DeadEnd) (a -> Bool)
-validateContainsFilter filters filteringString =
-    Result.map filters.contains.filter (Parser.run filters.contains.parser filteringString)
+    Result.map filters.filter (Parser.run filters.parser lowerCaseFilteringString)
 
 
 {-| Filters strings.
@@ -164,26 +111,28 @@ stringFilter : (a -> String) -> Dict String String -> TypedFilter a String
 stringFilter getter labels =
     makeFilter
         { getter = getter
-        , equal = stringEquals labels
-        , lessThan = \a b -> String.toLower a < String.toLower b
-        , greaterThan = \a b -> String.toLower a > String.toLower b
-        , contains = containsString
-        , verifiesExpression = matchesOneStringOf
+        , verifiesExpression = matchesOneStringOf labels
         , typedParser = stringParser labels
         , labels = labels
         }
 
 
-matchesOneStringOf : String -> List (ParsedValue String) -> Bool
-matchesOneStringOf referenceString operands =
+matchesOneStringOf : Dict String String -> String -> List (ParsedValue String) -> Bool
+matchesOneStringOf labels referenceString operands =
     List.any
         (\parsedValue ->
             case parsedValue of
                 Parsers.Equals operandValue ->
-                    String.toLower referenceString == operandValue
+                    stringEquals labels referenceString operandValue
 
                 Parsers.Contains operandValue ->
                     containsString referenceString operandValue
+
+                Parsers.GreaterThan operandValue ->
+                    String.toLower referenceString > String.toLower operandValue
+
+                Parsers.LessThan operandValue ->
+                    String.toLower referenceString < String.toLower operandValue
         )
         operands
 
@@ -192,9 +141,9 @@ matchesOneStringOf referenceString operands =
 or when the first one is empty and the second one is the quick filter label for selecting empty cells
 -}
 stringEquals : Dict String String -> String -> String -> Bool
-stringEquals labels valueInCell valueInFilter =
-    (String.toLower valueInCell == String.toLower valueInFilter)
-        || (valueInCell == "" && valueInFilter == Label.localize Label.empty labels)
+stringEquals labels referenceString searchedValue =
+    (String.toLower referenceString == String.toLower searchedValue)
+        || (referenceString == "" && searchedValue == (String.toLower <| Label.localize Label.empty labels))
 
 
 containsString : String -> String -> Bool
@@ -214,10 +163,6 @@ intFilter : (a -> Int) -> Dict String String -> TypedFilter a Int
 intFilter getter labels =
     makeFilter
         { getter = getter
-        , equal = (==)
-        , lessThan = \a b -> a < b
-        , greaterThan = \a b -> a > b
-        , contains = containsInt
         , verifiesExpression = matchesOneIntOf
         , typedParser = Parser.int
         , labels = labels
@@ -225,8 +170,8 @@ intFilter getter labels =
 
 
 containsInt : Int -> Int -> Bool
-containsInt a b =
-    String.contains (String.fromInt b) (String.fromInt a)
+containsInt referenceInt searchedInt =
+    String.contains (String.fromInt searchedInt) (String.fromInt referenceInt)
 
 
 matchesOneIntOf : Int -> List (ParsedValue Int) -> Bool
@@ -234,11 +179,17 @@ matchesOneIntOf referenceInt operands =
     List.any
         (\parsedValue ->
             case parsedValue of
-                Parsers.Equals integer ->
-                    referenceInt == integer
+                Parsers.Equals operandValue ->
+                    referenceInt == operandValue
 
-                Parsers.Contains integer ->
-                    containsInt referenceInt integer
+                Parsers.Contains operandValue ->
+                    containsInt referenceInt operandValue
+
+                Parsers.GreaterThan operandValue ->
+                    referenceInt > operandValue
+
+                Parsers.LessThan operandValue ->
+                    referenceInt < operandValue
         )
         operands
 
@@ -255,10 +206,6 @@ floatFilter : (a -> Float) -> Dict String String -> TypedFilter a Float
 floatFilter getter labels =
     makeFilter
         { getter = getter
-        , equal = (==)
-        , lessThan = \a b -> a < b
-        , greaterThan = \a b -> a > b
-        , contains = containsFloat
         , verifiesExpression = matchesOneFloatOf
         , typedParser = Parser.float
         , labels = labels
@@ -266,8 +213,8 @@ floatFilter getter labels =
 
 
 containsFloat : Float -> Float -> Bool
-containsFloat a b =
-    String.contains (String.fromFloat b) (String.fromFloat a)
+containsFloat referenceFloat searchedFloat =
+    String.contains (String.fromFloat searchedFloat) (String.fromFloat referenceFloat)
 
 
 matchesOneFloatOf : Float -> List (ParsedValue Float) -> Bool
@@ -275,11 +222,17 @@ matchesOneFloatOf referenceFloat operands =
     List.any
         (\parsedValue ->
             case parsedValue of
-                Parsers.Equals float ->
-                    referenceFloat == float
+                Parsers.Equals operandValue ->
+                    referenceFloat == operandValue
 
-                Parsers.Contains float ->
-                    containsFloat referenceFloat float
+                Parsers.Contains operandValue ->
+                    containsFloat referenceFloat operandValue
+
+                Parsers.GreaterThan operandValue ->
+                    referenceFloat > operandValue
+
+                Parsers.LessThan operandValue ->
+                    referenceFloat < operandValue
         )
         operands
 
@@ -296,10 +249,6 @@ boolFilter : (a -> Bool) -> Dict String String -> TypedFilter a Bool
 boolFilter getter labels =
     makeFilter
         { getter = getter
-        , equal = (==)
-        , lessThan = boolLessThan
-        , greaterThan = boolGreaterThan
-        , contains = (==)
         , verifiesExpression = matchesOneBoolOf
         , typedParser = boolParser
         , labels = labels
@@ -311,57 +260,41 @@ matchesOneBoolOf referenceBool operands =
     List.any
         (\parsedValue ->
             case parsedValue of
-                Parsers.Equals bool ->
-                    referenceBool == bool
+                Parsers.Equals operandValue ->
+                    referenceBool == operandValue
 
-                Parsers.Contains bool ->
-                    referenceBool == bool
+                Parsers.Contains operandValue ->
+                    referenceBool == operandValue
+
+                Parsers.GreaterThan operandValue ->
+                    boolGreaterThan referenceBool operandValue
+
+                Parsers.LessThan operandValue ->
+                    boolLessThan referenceBool operandValue
         )
         operands
 
 
 boolLessThan : Bool -> Bool -> Bool
-boolLessThan a b =
-    (not <| a) && b
+boolLessThan referenceBool otherBool =
+    (not <| referenceBool) && otherBool
 
 
 boolGreaterThan : Bool -> Bool -> Bool
-boolGreaterThan a b =
-    a && not b
+boolGreaterThan referenceBool otherBool =
+    referenceBool && not otherBool
 
 
 makeFilter :
     { getter : a -> b
-    , equal : b -> b -> Bool
-    , lessThan : b -> b -> Bool
-    , greaterThan : b -> b -> Bool
-    , contains : b -> b -> Bool
     , verifiesExpression : b -> List (ParsedValue b) -> Bool
     , typedParser : Parser b
     , labels : Dict String String
     }
     -> TypedFilter a b
-makeFilter { getter, equal, lessThan, greaterThan, contains, verifiesExpression, typedParser, labels } =
-    { equal =
-        { filter = \value item -> equal (getter item) value
-        , parser = equalityParser |= typedParser
-        }
-    , lessThan =
-        { filter = \value item -> lessThan (getter item) value
-        , parser = lessThanParser |= typedParser
-        }
-    , greaterThan =
-        { filter = \value item -> greaterThan (getter item) value
-        , parser = greaterThanParser |= typedParser
-        }
-    , contains =
-        { filter = \value item -> contains (getter item) value
-        , parser = containsParser |= typedParser
-        }
-    , verifiesExpression =
-        { filter =
-            \value item ->
-                verifiesExpression (getter item) value
-        , parser = orExpression labels (operandParser typedParser)
-        }
+makeFilter { getter, verifiesExpression, typedParser, labels } =
+    { filter =
+        \value item ->
+            verifiesExpression (getter item) value
+    , parser = orExpression labels (operandParser typedParser)
     }

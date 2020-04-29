@@ -30,6 +30,8 @@ import Parser exposing ((|.), (|=), Parser, Step(..), Trailing(..), andThen, cho
 type ParsedValue a
     = Equals a
     | Contains a
+    | GreaterThan a
+    | LessThan a
 
 
 equalityParser : Parser (a -> a)
@@ -71,14 +73,6 @@ orExpression labels valueParser =
         , item = valueParser
         , trailing = Forbidden
         }
-        |> andThen
-            (\values ->
-                if List.length values > 1 then
-                    succeed values
-
-                else
-                    problem "not enough operands to be an OR expression"
-            )
 
 
 operandParser : Parser a -> Parser (ParsedValue a)
@@ -88,6 +82,14 @@ operandParser valueParser =
             [ succeed Equals
                 |. equalityParser
                 |= valueParser
+            , succeed GreaterThan
+                |. greaterThanParser
+                |= valueParser
+            , succeed LessThan
+                |. lessThanParser
+                |= valueParser
+
+            -- Contains must be tested last because it accepts any string
             , succeed Contains
                 |. containsParser
                 |= valueParser
