@@ -200,8 +200,9 @@ type Msg a
     | UserClickedHeader (ColumnConfig a)
     | UserClickedQuickFilterButton (ColumnConfig a)
     | UserClickedFilter
-    | UserClickedLine (Item a)
     | UserClickedDragHandle (ColumnConfig a) Position
+    | UserClickedLine (Item a)
+    | UserClickedOutsideOfQuickFilter
     | UserClickedPreferenceCloseButton
     | UserClickedResizeHandle (ColumnConfig a) Position
     | UserDoubleClickedEditableCell (Item a) (Item a -> String) String String
@@ -881,6 +882,9 @@ updateState msg state =
         UserClickedFilter ->
             { state | filterHasFocus = True }
 
+        UserClickedOutsideOfQuickFilter ->
+            { state | quickFilteredColumn = Nothing }
+
         UserClickedQuickFilterButton _ ->
             -- This message is handled in the `update` function
             state
@@ -1033,12 +1037,12 @@ updateQuickFilter msg model =
         concatenatedEntries =
             if List.length selectedEntries > 1 then
                 selectedEntries
-                    |> List.map ((++) "=")
+                    |> List.map prependEqualOperator
                     |> String.join (orKeyword state.config.labels)
 
             else
                 List.head selectedEntries
-                    |> Maybe.map ((++) "=")
+                    |> Maybe.map prependEqualOperator
                     |> Maybe.withDefault ""
     in
     case msg of
@@ -1062,6 +1066,26 @@ updateQuickFilter msg model =
             ( Model state stringEditorModel updatedQuickFilterModel
             , Cmd.map QuickFilterMsg cmd
             )
+
+
+prependEqualOperator : String -> String
+prependEqualOperator operandValue =
+    let
+        firstChar =
+            String.left 1 operandValue
+    in
+    case firstChar of
+        ">" ->
+            operandValue
+
+        "<" ->
+            operandValue
+
+        "=" ->
+            operandValue
+
+        _ ->
+            "=" ++ operandValue
 
 
 updateStringEditor : StringEditor.Msg a -> Model a -> ( Model a, Cmd (Msg a) )
@@ -1510,6 +1534,7 @@ viewGrid state =
                 , fromUnstyled <| Mouse.onLeave (\_ -> UserEndedMouseInteraction)
                 ]
             |> appendIf editionInProgress [ onVerticalScroll UserScrolledRowsVertically ]
+            |> appendIf (state.quickFilteredColumn /= Nothing) [ onClick UserClickedOutsideOfQuickFilter ]
         )
         [ viewHeaderContainer state
         , viewRows state
