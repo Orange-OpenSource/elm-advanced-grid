@@ -3,11 +3,11 @@ module Grid.QuickFilter exposing (..)
 import Css exposing (..)
 import Dict exposing (Dict)
 import Grid.Colors exposing (white)
-import Grid.Html exposing (focusOn)
+import Grid.Html exposing (focusOn, noContent)
 import Grid.Icons as Icons exposing (checkIcon, drawDarkSvg)
 import Grid.Labels as Label exposing (localize)
 import Grid.Parsers as Parsers exposing (orKeyword)
-import Html.Styled exposing (Attribute, Html, div, span, text)
+import Html.Styled exposing (Attribute, Html, button, div, span, text)
 import Html.Styled.Attributes exposing (class, css, id, tabindex)
 import Html.Styled.Events exposing (onBlur, onClick)
 import List exposing (take)
@@ -42,6 +42,7 @@ type Msg
     | NoOp
     | SetOrigin Position Float -- the second parameter is the X value above which the quick filter view would be outside of the grid container
     | SetPosition Position
+    | UserClickedClear
     | UserClosedQuickFilter
     | UserOpenedQuickFilter
     | UserToggledEntry String
@@ -180,6 +181,11 @@ update msg model =
             , Cmd.none
             )
 
+        UserClickedClear ->
+            ( { model | outputStrings = Set.empty }
+            , Cmd.none
+            )
+
 
 
 -- VIEW --
@@ -188,14 +194,6 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
-        params value =
-            { selectedValues = model.filteringValues
-            , emptyLabel = localize Label.empty model.labels
-            , outputStrings = model.outputStrings
-            , isCommand = False
-            , label = value
-            }
-
         x =
             model.position.x - model.origin.x
 
@@ -219,9 +217,39 @@ view model =
         , id openedQuickFilterHtmlId
         ]
     <|
-        List.map (\value -> viewQuickFilterEntry (params value))
-            model.propositions
+        viewClearButton model
+            ++ viewEntries model
             ++ viewEllipsis (List.length model.propositions) maxQuickFilterPropositions
+
+
+viewClearButton : Model -> List (Html Msg)
+viewClearButton model =
+    [ if Set.isEmpty model.filteringValues then
+        noContent
+
+      else
+        button
+            [ class "eag-primary-button"
+            , onClick UserClickedClear
+            ]
+            [ text <| localize Label.clear model.labels
+            ]
+    ]
+
+
+viewEntries model =
+    let
+        params value =
+            { selectedValues = model.filteringValues
+            , emptyLabel = localize Label.empty model.labels
+            , outputStrings = model.outputStrings
+            , isCommand = False
+            , label = value
+            }
+    in
+    List.map
+        (\value -> viewQuickFilterEntry (params value))
+        model.propositions
 
 
 quickFilterPopupStyles : Position -> Float -> Attribute Msg

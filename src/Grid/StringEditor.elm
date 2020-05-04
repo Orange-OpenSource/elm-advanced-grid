@@ -19,7 +19,7 @@ import Grid.Html exposing (focusOn, getElementInfo)
 import Grid.Item exposing (Item)
 import Grid.Labels as Labels exposing (localize)
 import Html.Styled exposing (Attribute, Html, button, div, form, input, text, textarea)
-import Html.Styled.Attributes exposing (css, id, maxlength, rows, type_, value)
+import Html.Styled.Attributes exposing (class, css, id, maxlength, rows, type_, value)
 import Html.Styled.Events exposing (keyCode, on, onBlur, onClick, onInput, onSubmit)
 import Json.Decode
 
@@ -258,32 +258,13 @@ viewButtons model =
         ]
         [ button
             [ type_ "button"
-            , css
-                [ backgroundColor lightGrey
-                , borderRadius (px 3)
-                , cursor pointer
-                , fontSize (rem 0.75)
-                , margin (px 5)
-                , paddingLeft (px 10)
-                , paddingRight (px 10)
-                ]
+            , class "eag-button"
             , onClick UserClickedCancel
             ]
             [ text <| localize Labels.cancel model.labels ]
         , button
             [ type_ "submit"
-            , css
-                [ backgroundColor white2
-                , borderRadius (px 3)
-                , cursor pointer
-                , fontSize (rem 0.75)
-                , fontWeight bold
-                , marginLeft (px 15)
-                , marginTop (px 5)
-                , marginBottom (px 5)
-                , paddingLeft (px 10)
-                , paddingRight (px 10)
-                ]
+            , class "eag-primary-button"
             ]
             [ text <| localize Labels.submit model.labels ]
         ]

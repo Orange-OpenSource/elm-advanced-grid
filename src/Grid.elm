@@ -1029,9 +1029,37 @@ updateQuickFilter msg model =
 
         ( updatedQuickFilterModel, cmd ) =
             QuickFilter.update msg quickFilterModel
+    in
+    case msg of
+        QuickFilter.UserClickedClear ->
+            let
+                updatedState =
+                    applyQuickFilter state updatedQuickFilterModel
+            in
+            ( Model updatedState stringEditorModel quickFilterModel
+            , Cmd.map QuickFilterMsg cmd
+            )
 
+        QuickFilter.UserToggledEntry _ ->
+            let
+                updatedState =
+                    applyQuickFilter state updatedQuickFilterModel
+            in
+            ( Model updatedState stringEditorModel quickFilterModel
+            , Cmd.map QuickFilterMsg cmd
+            )
+
+        _ ->
+            ( Model state stringEditorModel updatedQuickFilterModel
+            , Cmd.map QuickFilterMsg cmd
+            )
+
+
+applyQuickFilter : State a -> QuickFilter.Model -> State a
+applyQuickFilter state quickFilterModel =
+    let
         selectedEntries =
-            updatedQuickFilterModel.outputStrings
+            quickFilterModel.outputStrings
                 |> Set.toList
 
         concatenatedEntries =
@@ -1045,27 +1073,12 @@ updateQuickFilter msg model =
                     |> Maybe.map prependEqualOperator
                     |> Maybe.withDefault ""
     in
-    case msg of
-        QuickFilter.UserToggledEntry _ ->
-            case state.quickFilteredColumn of
-                Just column ->
-                    let
-                        updatedState =
-                            applyFilter state column (Just concatenatedEntries)
-                    in
-                    ( Model updatedState stringEditorModel quickFilterModel
-                    , Cmd.map QuickFilterMsg cmd
-                    )
+    case state.quickFilteredColumn of
+        Just column ->
+            applyFilter state column (Just concatenatedEntries)
 
-                Nothing ->
-                    ( model
-                    , Cmd.map QuickFilterMsg cmd
-                    )
-
-        _ ->
-            ( Model state stringEditorModel updatedQuickFilterModel
-            , Cmd.map QuickFilterMsg cmd
-            )
+        Nothing ->
+            state
 
 
 prependEqualOperator : String -> String
