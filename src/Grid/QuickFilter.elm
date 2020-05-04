@@ -6,6 +6,7 @@ import Grid.Colors exposing (white)
 import Grid.Html exposing (focusOn, noContent)
 import Grid.Icons as Icons exposing (checkIcon, drawDarkSvg)
 import Grid.Labels as Label exposing (localize)
+import Grid.List exposing (appendIf)
 import Grid.Parsers as Parsers exposing (orKeyword)
 import Html.Styled exposing (Attribute, Html, button, div, span, text)
 import Html.Styled.Attributes exposing (class, css, id, tabindex)
@@ -263,7 +264,7 @@ quickFilterPopupStyles popupPosition columnWidth =
         , margin auto
         , padding (px 5)
         , opacity (int 1)
-        , width <| px <| max columnWidth 100
+        , width <| px <| max columnWidth 115
         , maxHeight <| px <| toFloat 400
         , backgroundColor white
         , overflowX hidden
@@ -308,12 +309,14 @@ viewQuickFilterEntry params =
                 drawDarkSvg Icons.width checkIcon
 
             else
-                Icons.placeHolder
+                noContent
     in
     div
-        [ class className
-        , onClick <| UserToggledEntry params.label
-        ]
+        ([ class className
+         , onClick <| UserToggledEntry params.label
+         ]
+            |> appendIf (not isSelected) [ css [ paddingLeft (px 15) ] ]
+        )
         [ selectionSymbol
         , text params.label
         ]

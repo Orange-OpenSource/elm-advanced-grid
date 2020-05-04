@@ -1,4 +1,4 @@
-module Grid.Icons exposing (checkIcon, drawClickableDarkSvg, drawClickableLightSvg, drawDarkSvg, drawLightSvg, filterIcon, placeHolder, width)
+module Grid.Icons exposing (checkIcon, drawClickableDarkSvg, drawClickableLightSvg, drawDarkSvg, drawLightSvg, filterIcon, width)
 
 import Color exposing (Color)
 import Grid.Colors exposing (darkGreyRgb, lightGreyRgb)
@@ -82,10 +82,3 @@ checkIcon =
 width : Float
 width =
     15
-
-
-placeHolder : Html msg
-placeHolder =
-    div
-        [ class "eag-placeHolder" ]
-        [ text " " ]

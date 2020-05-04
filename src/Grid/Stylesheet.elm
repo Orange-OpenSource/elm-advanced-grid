@@ -1,6 +1,6 @@
 module Grid.Stylesheet exposing (grid, preferences, resizingHandleWidth)
 
-import Css exposing (Style, absolute, after, alignItems, alignSelf, auto, backgroundColor, backgroundImage, before, bold, bolder, border, border3, borderBottom3, borderLeft3, borderRadius, borderRight3, boxSizing, center, colResize, column, contentBox, cursor, deg, display, displayFlex, firstOfType, flexDirection, flexEnd, flexGrow, flexShrink, flexStart, float, fontSize, fontStyle, fontWeight, height, hidden, hover, inlineFlex, int, italic, justifyContent, left, lineHeight, linearGradient, margin, marginBottom, marginLeft, marginRight, marginTop, minHeight, move, noWrap, none, num, opacity, overflow, overflowX, overflowY, padding, paddingLeft, paddingRight, paddingTop, pct, pointer, pointerEvents, position, property, px, relative, rem, right, rotate, row, solid, spaceAround, spaceBetween, stop, stretch, top, transform, transparent, visibility, visible, whiteSpace, width, zIndex)
+import Css exposing (Style, absolute, after, alignItems, alignSelf, auto, backgroundColor, backgroundImage, before, bold, bolder, border, border3, borderBottom3, borderLeft3, borderRadius, borderRight3, boxSizing, center, colResize, column, contentBox, cursor, deg, display, displayFlex, firstOfType, flexDirection, flexEnd, flexGrow, flexShrink, flexStart, float, fontSize, fontStyle, fontWeight, height, hidden, hover, inlineFlex, int, italic, justifyContent, left, lineHeight, linearGradient, margin, marginBottom, marginLeft, marginRight, marginTop, minHeight, minWidth, move, noWrap, none, num, opacity, overflow, overflowX, overflowY, padding, paddingLeft, paddingRight, paddingTop, pct, pointer, pointerEvents, position, property, px, relative, rem, right, rotate, row, solid, spaceAround, spaceBetween, stop, stretch, top, transform, transparent, visibility, visible, whiteSpace, width, zIndex)
 import Css.Global exposing (Snippet, class, descendants, global, typeSelector)
 import Grid.Colors exposing (black, darkGrey, darkGrey2, darkGrey3, lightGreen, lightGrey, lightGrey2, lightGrey3, white, white2)
 import Html.Styled
@@ -142,11 +142,6 @@ gridStyles =
         , margin (px 5)
         , paddingLeft (px 10)
         , paddingRight (px 10)
-        ]
-    , class "eag-placeHolder"
-        [ display inlineFlex
-        , width (px 15)
-        , height (px 15)
         ]
     , class "eag-progress-bar-background"
         [ displayFlex
