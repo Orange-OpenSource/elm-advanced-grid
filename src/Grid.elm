@@ -1072,10 +1072,17 @@ applyQuickFilter state quickFilterModel =
                 List.head selectedEntries
                     |> Maybe.map prependEqualOperator
                     |> Maybe.withDefault ""
+
+        newFilteringValue =
+            if concatenatedEntries == "" then
+                Nothing
+
+            else
+                Just concatenatedEntries
     in
     case state.quickFilteredColumn of
         Just column ->
-            applyFilter state column (Just concatenatedEntries)
+            applyFilter state column newFilteringValue
 
         Nothing ->
             state
