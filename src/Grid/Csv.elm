@@ -9,7 +9,10 @@
 -}
 
 
-module Grid.Csv exposing (visibleItemsToCsv)
+module Grid.Csv exposing
+    ( visibleItemsToCsv
+    , bom, csvEndOfLine
+    )
 
 {-| The CSV module provides a function to export the visible rows and columns as CSV.
 
@@ -20,7 +23,7 @@ module Grid.Csv exposing (visibleItemsToCsv)
 
 -}
 
-import Grid exposing (ColumnConfig, Model, isSelectionColumn, visibleColumns, visibleData)
+import Grid exposing (ColumnConfig, Model, isAnyItemSelected, isSelectionColumn, selectedAndVisibleItems, visibleColumns, visibleData)
 import Grid.Item exposing (Item)
 import List.Extra
 
@@ -30,15 +33,19 @@ csvEndOfLine =
     "\u{000D}\n"
 
 
+
+--Prepend the csv content with a Byte Order Mark (BOM) specifying that encoding is UTF-8.
+
+
+bom =
+    "\u{FEFF}"
+
+
 {-| Converts the list of visible items and properties to a Comma Separated Values string
 -}
 visibleItemsToCsv : String -> Model a -> String
 visibleItemsToCsv separator model =
     let
-        --Prepend the csv content with a Byte Order Mark (BOM) specifying that encoding is UTF-8.
-        bom =
-            "\u{FEFF}"
-
         columnsToBeExported =
             visibleColumns model
                 |> List.Extra.filterNot isSelectionColumn
@@ -51,8 +58,16 @@ visibleItemsToCsv separator model =
             )
                 ++ csvEndOfLine
 
+        data =
+            if isAnyItemSelected model then
+                selectedAndVisibleItems model
+                    |> List.map .data
+
+            else
+                visibleData model
+
         dataLines =
-            visibleData model
+            data
                 |> List.map (dataToCsv columnsToBeExported separator)
                 |> String.join csvEndOfLine
     in

@@ -34,7 +34,7 @@ data1 =
 
 item1 : Item Data
 item1 =
-    Item.create data1 1
+    Item.create data1 0
 
 
 data2 : Data
@@ -48,7 +48,7 @@ data2 =
 
 item2 : Item Data
 item2 =
-    Item.create data2 2
+    Item.create data2 1
 
 
 data3 : Data
@@ -62,7 +62,7 @@ data3 =
 
 item3SpaceInTitle : Item Data
 item3SpaceInTitle =
-    Item.create data3 3
+    Item.create data3 2
 
 
 data4 : Data
@@ -76,7 +76,7 @@ data4 =
 
 item4WithSymbols : Item Data
 item4WithSymbols =
-    Item.create data4 4
+    Item.create data4 3
 
 
 data5 : Data

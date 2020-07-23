@@ -17,7 +17,7 @@ module Grid exposing
     , Model, Msg(..), init, update, view
     , selectedAndVisibleItems, visibleData
     , visibleColumns, isColumn, isSelectionColumn, isSelectionColumnProperties
-    , currentOrder, getEditedValue, sortedBy
+    , currentOrder, getEditedValue, isAnyItemSelected, sortedBy
     )
 
 {-| This module allows to create dynamically configurable data grid.
@@ -2486,3 +2486,11 @@ columnValues columnConfig state =
         |> List.sortWith columnConfig.comparator
         |> List.map columnConfig.toString
         |> unique
+
+
+isAnyItemSelected : Model a -> Bool
+isAnyItemSelected model =
+    model
+        |> selectedAndVisibleItems
+        |> List.isEmpty
+        |> not
