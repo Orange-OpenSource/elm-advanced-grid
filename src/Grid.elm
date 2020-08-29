@@ -336,9 +336,6 @@ type alias State a =
     { areFilterVisible : Bool
     , clickedItem : Maybe (Item a)
     , config : Config a
-
-    -- TODO: seems to be written but never read. Confirm and delete if this is true
-    , columnsX : List Int
     , containerHeight : Float
     , containerWidth : Float
     , content : List a -- all data, visible or not
@@ -413,12 +410,6 @@ withColumnsState columns state =
     in
     state
         |> withConfigState { config | columns = sanitizedColumns columns }
-        |> withColumnsXState
-
-
-withColumnsXState : State a -> State a
-withColumnsXState state =
-    { state | columnsX = columnsX state }
 
 
 {-| Sets the data in the grid
@@ -544,7 +535,6 @@ init config data =
         initialState =
             { areFilterVisible = config.hasFilters
             , clickedItem = Nothing
-            , columnsX = []
             , config = sanitizedConfig
             , containerHeight = 0
             , containerWidth = 0
@@ -575,17 +565,9 @@ init config data =
         quickFilterModel =
             QuickFilter.init [] Nothing config.labels 0
     in
-    ( Model { initialState | columnsX = columnsX initialState } stringEditorModel quickFilterModel
+    ( Model initialState stringEditorModel quickFilterModel
     , getElementInfo config.containerId GotParentContainerInfo
     )
-
-
-{-| The list of X coordinates of columns; coordinates are expressed in pixels. The first one is at 0.
--}
-columnsX : State a -> List Int
-columnsX state =
-    visibleColumns_ state
-        |> List.Extra.scanl (\col x -> x + col.properties.width) 0
 
 
 {-| Updates the grid model
@@ -1364,13 +1346,8 @@ resizeColumn state x =
 
                     else
                         state.config.columns
-
-                newState =
-                    state |> withColumnsState newColumns
             in
-            { newState
-                | columnsX = columnsX state
-            }
+            state |> withColumnsState newColumns
 
         _ ->
             state
