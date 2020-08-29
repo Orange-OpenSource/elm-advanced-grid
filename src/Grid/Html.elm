@@ -21,7 +21,7 @@ noContent =
     text ""
 
 
-{-| focus on an HTML element, and sends an msg when done (even if the element is not found)
+{-| Sets focus on an HTML element, then sends a msg when done (even if the element is not found)
 -}
 focusOn : String -> msg -> Cmd msg
 focusOn elementId msg =

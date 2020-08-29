@@ -9,7 +9,7 @@ import Grid.Labels as Label exposing (localize)
 import Grid.List exposing (appendIf)
 import Grid.Parsers as Parsers exposing (orKeyword)
 import Html.Styled exposing (Attribute, Html, button, div, span, text)
-import Html.Styled.Attributes exposing (class, css, id, tabindex)
+import Html.Styled.Attributes exposing (attribute, class, css, id, tabindex)
 import Html.Styled.Events exposing (onBlur, onClick)
 import List exposing (take)
 import Parser exposing ((|.), (|=), succeed)
@@ -230,7 +230,8 @@ viewClearButton model =
 
       else
         button
-            [ class "eag-primary-button"
+            [ attribute "data-testid" "clearQuickFilterButton"
+            , class "eag-primary-button"
             , onClick UserClickedClear
             ]
             [ text <| localize Label.clear model.labels
@@ -312,7 +313,8 @@ viewQuickFilterEntry params =
                 noContent
     in
     div
-        ([ class className
+        ([ attribute "data-testid" "quickFilterEntry"
+         , class className
          , onClick <| UserToggledEntry params.label
          ]
             |> appendIf (not isSelected) [ css [ paddingLeft (px 15) ] ]

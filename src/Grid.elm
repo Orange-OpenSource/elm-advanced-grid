@@ -2284,7 +2284,8 @@ viewTitle state columnConfig =
                     ""
     in
     span
-        [ class "eag-header-title"
+        [ attribute "data-testid" "columnTitle"
+        , class "eag-header-title"
         , class classIfSorted
         , class classIfFiltered
         ]
