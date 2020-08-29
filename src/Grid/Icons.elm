@@ -2,11 +2,10 @@ module Grid.Icons exposing (checkIcon, drawClickableDarkSvg, drawClickableLightS
 
 import Color exposing (Color)
 import Grid.Colors exposing (darkGreyRgb, lightGreyRgb)
-import Html.Styled exposing (Html, div, text)
-import Html.Styled.Attributes exposing (class)
-import Svg.Styled exposing (fromUnstyled, styled)
+import Html.Styled exposing (Html)
+import Svg.Styled exposing (fromUnstyled)
 import TypedSvg exposing (g, path, svg)
-import TypedSvg.Attributes exposing (fill, transform, viewBox)
+import TypedSvg.Attributes exposing (fill, viewBox)
 import TypedSvg.Attributes.InPx as InPx
 import TypedSvg.Events exposing (onClick)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
