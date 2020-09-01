@@ -6342,6 +6342,526 @@ var $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $rtfeldman$elm_css$Html$Styled$Attributes$class = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('className');
+var $rtfeldman$elm_css$Html$Styled$Attributes$id = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('id');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $rtfeldman$elm_css$VirtualDom$Styled$on = F2(
+	function (eventName, handler) {
+		return A3(
+			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
+			A2($elm$virtual_dom$VirtualDom$on, eventName, handler),
+			_List_Nil,
+			'');
+	});
+var $rtfeldman$elm_css$Html$Styled$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$rtfeldman$elm_css$VirtualDom$Styled$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $rtfeldman$elm_css$Html$Styled$Events$onClick = function (msg) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes = F2(
+	function (properties, item) {
+		return A3(
+			$Orange_OpenSource$elm_advanced_grid$Grid$List$appendIf,
+			_Utils_eq(properties.c$, $elm$core$Maybe$Nothing),
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Events$onClick(
+					$Orange_OpenSource$elm_advanced_grid$Grid$UserClickedLine(item))
+				]),
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Attributes$id(
+					A2($Orange_OpenSource$elm_advanced_grid$Grid$cellId, properties, item)),
+					A2($rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', properties.n),
+					$rtfeldman$elm_css$Html$Styled$Attributes$class('eag-cell')
+				]));
+	});
+var $rtfeldman$elm_css$VirtualDom$Styled$Node = F3(
+	function (a, b, c) {
+		return {$: 0, a: a, b: b, c: c};
+	});
+var $rtfeldman$elm_css$VirtualDom$Styled$node = $rtfeldman$elm_css$VirtualDom$Styled$Node;
+var $rtfeldman$elm_css$Html$Styled$node = $rtfeldman$elm_css$VirtualDom$Styled$node;
+var $rtfeldman$elm_css$Html$Styled$div = $rtfeldman$elm_css$Html$Styled$node('div');
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $rtfeldman$elm_css$Html$Styled$Events$onDoubleClick = function (msg) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$Events$on,
+		'dblclick',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $rtfeldman$elm_css$VirtualDom$Styled$Unstyled = function (a) {
+	return {$: 4, a: a};
+};
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $rtfeldman$elm_css$VirtualDom$Styled$text = function (str) {
+	return $rtfeldman$elm_css$VirtualDom$Styled$Unstyled(
+		$elm$virtual_dom$VirtualDom$text(str));
+};
+var $rtfeldman$elm_css$Html$Styled$text = $rtfeldman$elm_css$VirtualDom$Styled$text;
+var $rtfeldman$elm_css$Html$Styled$Attributes$title = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('title');
+var $Orange_OpenSource$elm_advanced_grid$Grid$viewString = F3(
+	function (field, properties, item) {
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$div,
+			A3(
+				$Orange_OpenSource$elm_advanced_grid$Grid$List$appendIf,
+				!_Utils_eq(properties.c$, $elm$core$Maybe$Nothing),
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Events$onDoubleClick(
+						A4(
+							$Orange_OpenSource$elm_advanced_grid$Grid$UserDoubleClickedEditableCell,
+							item,
+							field,
+							properties.n,
+							A2($Orange_OpenSource$elm_advanced_grid$Grid$cellId, properties, item))),
+						$rtfeldman$elm_css$Html$Styled$Attributes$title(
+						field(item))
+					]),
+				A2($Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes, properties, item)),
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$text(
+					field(item))
+				]));
+	});
+var $Orange_OpenSource$elm_advanced_grid$Grid$stringColumnConfig = F2(
+	function (properties, labels) {
+		var nestedDataGetter = A2(
+			$elm$core$Basics$composeR,
+			function ($) {
+				return $.ba;
+			},
+			properties.u);
+		var columnProperties = {
+			c$: properties.c$,
+			n: properties.n,
+			F: 0,
+			x: properties.v(properties.x),
+			y: properties.v(properties.y),
+			R: true,
+			z: properties.z
+		};
+		return {
+			P: $Orange_OpenSource$elm_advanced_grid$Grid$compareFields(nestedDataGetter),
+			A: $elm$core$Maybe$Nothing,
+			at: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$StringFilter(
+				A2($Orange_OpenSource$elm_advanced_grid$Grid$Filters$stringFilter, properties.u, labels)),
+			aw: true,
+			b: columnProperties,
+			aB: $Orange_OpenSource$elm_advanced_grid$Grid$viewString(nestedDataGetter),
+			aG: nestedDataGetter
+		};
+	});
+var $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$cityColumn = function (labels) {
+	return A2(
+		$Orange_OpenSource$elm_advanced_grid$Grid$stringColumnConfig,
+		{
+			c$: $elm$core$Maybe$Nothing,
+			u: function ($) {
+				return $.bF;
+			},
+			n: 'City',
+			v: $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$localize,
+			w: F2(
+				function (item, _v0) {
+					return item;
+				}),
+			x: 'Ville',
+			y: 'Une indication pour la colonne Ville',
+			z: 300
+		},
+		labels);
+};
+var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$IntFilter = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$parser$Parser$ExpectingInt = {$: 1};
+var $elm$parser$Parser$Advanced$consumeBase = _Parser_consumeBase;
+var $elm$parser$Parser$Advanced$consumeBase16 = _Parser_consumeBase16;
+var $elm$parser$Parser$Advanced$bumpOffset = F2(
+	function (newOffset, s) {
+		return {cW: s.cW + (newOffset - s.bh), f: s.f, i: s.i, bh: newOffset, dE: s.dE, a: s.a};
+	});
+var $elm$parser$Parser$Advanced$chompBase10 = _Parser_chompBase10;
+var $elm$parser$Parser$Advanced$isAsciiCode = _Parser_isAsciiCode;
+var $elm$parser$Parser$Advanced$consumeExp = F2(
+	function (offset, src) {
+		if (A3($elm$parser$Parser$Advanced$isAsciiCode, 101, offset, src) || A3($elm$parser$Parser$Advanced$isAsciiCode, 69, offset, src)) {
+			var eOffset = offset + 1;
+			var expOffset = (A3($elm$parser$Parser$Advanced$isAsciiCode, 43, eOffset, src) || A3($elm$parser$Parser$Advanced$isAsciiCode, 45, eOffset, src)) ? (eOffset + 1) : eOffset;
+			var newOffset = A2($elm$parser$Parser$Advanced$chompBase10, expOffset, src);
+			return _Utils_eq(expOffset, newOffset) ? (-newOffset) : newOffset;
+		} else {
+			return offset;
+		}
+	});
+var $elm$parser$Parser$Advanced$consumeDotAndExp = F2(
+	function (offset, src) {
+		return A3($elm$parser$Parser$Advanced$isAsciiCode, 46, offset, src) ? A2(
+			$elm$parser$Parser$Advanced$consumeExp,
+			A2($elm$parser$Parser$Advanced$chompBase10, offset + 1, src),
+			src) : A2($elm$parser$Parser$Advanced$consumeExp, offset, src);
+	});
+var $elm$parser$Parser$Advanced$finalizeInt = F5(
+	function (invalid, handler, startOffset, _v0, s) {
+		var endOffset = _v0.a;
+		var n = _v0.b;
+		if (handler.$ === 1) {
+			var x = handler.a;
+			return A2(
+				$elm$parser$Parser$Advanced$Bad,
+				true,
+				A2($elm$parser$Parser$Advanced$fromState, s, x));
+		} else {
+			var toValue = handler.a;
+			return _Utils_eq(startOffset, endOffset) ? A2(
+				$elm$parser$Parser$Advanced$Bad,
+				_Utils_cmp(s.bh, startOffset) < 0,
+				A2($elm$parser$Parser$Advanced$fromState, s, invalid)) : A3(
+				$elm$parser$Parser$Advanced$Good,
+				true,
+				toValue(n),
+				A2($elm$parser$Parser$Advanced$bumpOffset, endOffset, s));
+		}
+	});
+var $elm$parser$Parser$Advanced$fromInfo = F4(
+	function (row, col, x, context) {
+		return A2(
+			$elm$parser$Parser$Advanced$AddRight,
+			$elm$parser$Parser$Advanced$Empty,
+			A4($elm$parser$Parser$Advanced$DeadEnd, row, col, x, context));
+	});
+var $elm$core$String$toFloat = _String_toFloat;
+var $elm$parser$Parser$Advanced$finalizeFloat = F6(
+	function (invalid, expecting, intSettings, floatSettings, intPair, s) {
+		var intOffset = intPair.a;
+		var floatOffset = A2($elm$parser$Parser$Advanced$consumeDotAndExp, intOffset, s.a);
+		if (floatOffset < 0) {
+			return A2(
+				$elm$parser$Parser$Advanced$Bad,
+				true,
+				A4($elm$parser$Parser$Advanced$fromInfo, s.dE, s.cW - (floatOffset + s.bh), invalid, s.f));
+		} else {
+			if (_Utils_eq(s.bh, floatOffset)) {
+				return A2(
+					$elm$parser$Parser$Advanced$Bad,
+					false,
+					A2($elm$parser$Parser$Advanced$fromState, s, expecting));
+			} else {
+				if (_Utils_eq(intOffset, floatOffset)) {
+					return A5($elm$parser$Parser$Advanced$finalizeInt, invalid, intSettings, s.bh, intPair, s);
+				} else {
+					if (floatSettings.$ === 1) {
+						var x = floatSettings.a;
+						return A2(
+							$elm$parser$Parser$Advanced$Bad,
+							true,
+							A2($elm$parser$Parser$Advanced$fromState, s, invalid));
+					} else {
+						var toValue = floatSettings.a;
+						var _v1 = $elm$core$String$toFloat(
+							A3($elm$core$String$slice, s.bh, floatOffset, s.a));
+						if (_v1.$ === 1) {
+							return A2(
+								$elm$parser$Parser$Advanced$Bad,
+								true,
+								A2($elm$parser$Parser$Advanced$fromState, s, invalid));
+						} else {
+							var n = _v1.a;
+							return A3(
+								$elm$parser$Parser$Advanced$Good,
+								true,
+								toValue(n),
+								A2($elm$parser$Parser$Advanced$bumpOffset, floatOffset, s));
+						}
+					}
+				}
+			}
+		}
+	});
+var $elm$parser$Parser$Advanced$number = function (c) {
+	return function (s) {
+		if (A3($elm$parser$Parser$Advanced$isAsciiCode, 48, s.bh, s.a)) {
+			var zeroOffset = s.bh + 1;
+			var baseOffset = zeroOffset + 1;
+			return A3($elm$parser$Parser$Advanced$isAsciiCode, 120, zeroOffset, s.a) ? A5(
+				$elm$parser$Parser$Advanced$finalizeInt,
+				c.ez,
+				c.et,
+				baseOffset,
+				A2($elm$parser$Parser$Advanced$consumeBase16, baseOffset, s.a),
+				s) : (A3($elm$parser$Parser$Advanced$isAsciiCode, 111, zeroOffset, s.a) ? A5(
+				$elm$parser$Parser$Advanced$finalizeInt,
+				c.ez,
+				c.$7,
+				baseOffset,
+				A3($elm$parser$Parser$Advanced$consumeBase, 8, baseOffset, s.a),
+				s) : (A3($elm$parser$Parser$Advanced$isAsciiCode, 98, zeroOffset, s.a) ? A5(
+				$elm$parser$Parser$Advanced$finalizeInt,
+				c.ez,
+				c.cN,
+				baseOffset,
+				A3($elm$parser$Parser$Advanced$consumeBase, 2, baseOffset, s.a),
+				s) : A6(
+				$elm$parser$Parser$Advanced$finalizeFloat,
+				c.ez,
+				c.c1,
+				c.de,
+				c.c3,
+				_Utils_Tuple2(zeroOffset, 0),
+				s)));
+		} else {
+			return A6(
+				$elm$parser$Parser$Advanced$finalizeFloat,
+				c.ez,
+				c.c1,
+				c.de,
+				c.c3,
+				A3($elm$parser$Parser$Advanced$consumeBase, 10, s.bh, s.a),
+				s);
+		}
+	};
+};
+var $elm$parser$Parser$Advanced$int = F2(
+	function (expecting, invalid) {
+		return $elm$parser$Parser$Advanced$number(
+			{
+				cN: $elm$core$Result$Err(invalid),
+				c1: expecting,
+				c3: $elm$core$Result$Err(invalid),
+				et: $elm$core$Result$Err(invalid),
+				de: $elm$core$Result$Ok($elm$core$Basics$identity),
+				ez: invalid,
+				$7: $elm$core$Result$Err(invalid)
+			});
+	});
+var $elm$parser$Parser$int = A2($elm$parser$Parser$Advanced$int, $elm$parser$Parser$ExpectingInt, $elm$parser$Parser$ExpectingInt);
+var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$containsInt = F2(
+	function (referenceInt, searchedInt) {
+		return A2(
+			$elm$core$String$contains,
+			$elm$core$String$fromInt(searchedInt),
+			$elm$core$String$fromInt(referenceInt));
+	});
+var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$matchesOneIntOf = F2(
+	function (referenceInt, operands) {
+		return A2(
+			$elm$core$List$any,
+			function (parsedValue) {
+				switch (parsedValue.$) {
+					case 0:
+						var operandValue = parsedValue.a;
+						return _Utils_eq(referenceInt, operandValue);
+					case 1:
+						var operandValue = parsedValue.a;
+						return A2($Orange_OpenSource$elm_advanced_grid$Grid$Filters$containsInt, referenceInt, operandValue);
+					case 2:
+						var operandValue = parsedValue.a;
+						return _Utils_cmp(referenceInt, operandValue) > 0;
+					default:
+						var operandValue = parsedValue.a;
+						return _Utils_cmp(referenceInt, operandValue) < 0;
+				}
+			},
+			operands);
+	});
+var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$intFilter = F2(
+	function (getter, labels) {
+		return $Orange_OpenSource$elm_advanced_grid$Grid$Filters$makeFilter(
+			{u: getter, eI: labels, bs: $elm$parser$Parser$int, bB: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$matchesOneIntOf});
+	});
+var $Orange_OpenSource$elm_advanced_grid$Grid$viewInt = F3(
+	function (field, properties, item) {
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$div,
+			A2($Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes, properties, item),
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$text(
+					$elm$core$String$fromInt(
+						field(item)))
+				]));
+	});
+var $Orange_OpenSource$elm_advanced_grid$Grid$intColumnConfig = F2(
+	function (properties, labels) {
+		var nestedDataGetter = A2(
+			$elm$core$Basics$composeR,
+			function ($) {
+				return $.ba;
+			},
+			properties.u);
+		var columnProperties = {
+			c$: $elm$core$Maybe$Nothing,
+			n: properties.n,
+			F: 0,
+			x: properties.v(properties.x),
+			y: properties.v(properties.y),
+			R: true,
+			z: properties.z
+		};
+		return {
+			P: $Orange_OpenSource$elm_advanced_grid$Grid$compareFields(nestedDataGetter),
+			A: $elm$core$Maybe$Nothing,
+			at: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$IntFilter(
+				A2($Orange_OpenSource$elm_advanced_grid$Grid$Filters$intFilter, properties.u, labels)),
+			aw: true,
+			b: columnProperties,
+			aB: $Orange_OpenSource$elm_advanced_grid$Grid$viewInt(nestedDataGetter),
+			aG: A2($elm$core$Basics$composeR, nestedDataGetter, $elm$core$String$fromInt)
+		};
+	});
+var $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$idColumn = function (labels) {
+	return A2(
+		$Orange_OpenSource$elm_advanced_grid$Grid$intColumnConfig,
+		{
+			u: function ($) {
+				return $.n;
+			},
+			n: 'Id',
+			v: $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$localize,
+			w: F2(
+				function (item, _v0) {
+					return item;
+				}),
+			x: 'Id',
+			y: 'Une indication pour la colonne Id',
+			z: 50
+		},
+		labels);
+};
+var $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$setName = F2(
+	function (item, name) {
+		var oldData = item.ba;
+		var newData = _Utils_update(
+			oldData,
+			{bf: name});
+		return _Utils_update(
+			item,
+			{ba: newData});
+	});
+var $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$nameColumn = function (labels) {
+	return A2(
+		$Orange_OpenSource$elm_advanced_grid$Grid$stringColumnConfig,
+		{
+			c$: $elm$core$Maybe$Just(
+				{eq: $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$setName, eL: 20}),
+			u: function ($) {
+				return $.bf;
+			},
+			n: 'Name',
+			v: $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$localize,
+			w: $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$setName,
+			x: 'Nom',
+			y: 'Une indication pour la colonne Nom',
+			z: 100
+		},
+		labels);
+};
+var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$FloatFilter = function (a) {
+	return {$: 2, a: a};
+};
+var $elm$parser$Parser$ExpectingFloat = {$: 5};
+var $elm$parser$Parser$Advanced$float = F2(
+	function (expecting, invalid) {
+		return $elm$parser$Parser$Advanced$number(
+			{
+				cN: $elm$core$Result$Err(invalid),
+				c1: expecting,
+				c3: $elm$core$Result$Ok($elm$core$Basics$identity),
+				et: $elm$core$Result$Err(invalid),
+				de: $elm$core$Result$Ok($elm$core$Basics$toFloat),
+				ez: invalid,
+				$7: $elm$core$Result$Err(invalid)
+			});
+	});
+var $elm$parser$Parser$float = A2($elm$parser$Parser$Advanced$float, $elm$parser$Parser$ExpectingFloat, $elm$parser$Parser$ExpectingFloat);
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$containsFloat = F2(
+	function (referenceFloat, searchedFloat) {
+		return A2(
+			$elm$core$String$contains,
+			$elm$core$String$fromFloat(searchedFloat),
+			$elm$core$String$fromFloat(referenceFloat));
+	});
+var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$matchesOneFloatOf = F2(
+	function (referenceFloat, operands) {
+		return A2(
+			$elm$core$List$any,
+			function (parsedValue) {
+				switch (parsedValue.$) {
+					case 0:
+						var operandValue = parsedValue.a;
+						return _Utils_eq(referenceFloat, operandValue);
+					case 1:
+						var operandValue = parsedValue.a;
+						return A2($Orange_OpenSource$elm_advanced_grid$Grid$Filters$containsFloat, referenceFloat, operandValue);
+					case 2:
+						var operandValue = parsedValue.a;
+						return _Utils_cmp(referenceFloat, operandValue) > 0;
+					default:
+						var operandValue = parsedValue.a;
+						return _Utils_cmp(referenceFloat, operandValue) < 0;
+				}
+			},
+			operands);
+	});
+var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$floatFilter = F2(
+	function (getter, labels) {
+		return $Orange_OpenSource$elm_advanced_grid$Grid$Filters$makeFilter(
+			{u: getter, eI: labels, bs: $elm$parser$Parser$float, bB: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$matchesOneFloatOf});
+	});
+var $Orange_OpenSource$elm_advanced_grid$Grid$viewFloat = F3(
+	function (field, properties, item) {
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$div,
+			A2($Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes, properties, item),
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$text(
+					$elm$core$String$fromFloat(
+						field(item)))
+				]));
+	});
+var $Orange_OpenSource$elm_advanced_grid$Grid$floatColumnConfig = F2(
+	function (properties, labels) {
+		var nestedDataGetter = A2(
+			$elm$core$Basics$composeR,
+			function ($) {
+				return $.ba;
+			},
+			properties.u);
+		var columnProperties = {
+			c$: $elm$core$Maybe$Nothing,
+			n: properties.n,
+			F: 0,
+			x: properties.v(properties.x),
+			y: properties.v(properties.y),
+			R: true,
+			z: properties.z
+		};
+		return {
+			P: $Orange_OpenSource$elm_advanced_grid$Grid$compareFields(nestedDataGetter),
+			A: $elm$core$Maybe$Nothing,
+			at: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$FloatFilter(
+				A2($Orange_OpenSource$elm_advanced_grid$Grid$Filters$floatFilter, properties.u, labels)),
+			aw: true,
+			b: columnProperties,
+			aB: $Orange_OpenSource$elm_advanced_grid$Grid$viewFloat(nestedDataGetter),
+			aG: A2($elm$core$Basics$composeR, nestedDataGetter, $elm$core$String$fromFloat)
+		};
+	});
 var $rtfeldman$elm_css$Css$Structure$UniversalSelectorSequence = function (a) {
 	return {$: 1, a: a};
 };
@@ -7197,7 +7717,6 @@ var $Skinney$murmur3$Murmur3$multiplyBy = F2(
 	function (b, a) {
 		return ((a & 65535) * b) + ((((a >>> 16) * b) & 65535) << 16);
 	});
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$Bitwise$or = _Bitwise_or;
 var $Skinney$murmur3$Murmur3$rotlBy = F2(
 	function (b, a) {
@@ -8064,35 +8583,20 @@ var $rtfeldman$elm_css$Html$Styled$Internal$css = function (styles) {
 };
 var $rtfeldman$elm_css$Html$Styled$Attributes$css = $rtfeldman$elm_css$Html$Styled$Internal$css;
 var $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth = 6;
-var $rtfeldman$elm_css$Html$Styled$Attributes$id = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('id');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+var $rtfeldman$elm_css$Css$Preprocess$AppendProperty = function (a) {
 	return {$: 0, a: a};
 };
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $rtfeldman$elm_css$VirtualDom$Styled$on = F2(
-	function (eventName, handler) {
-		return A3(
-			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
-			A2($elm$virtual_dom$VirtualDom$on, eventName, handler),
-			_List_Nil,
-			'');
+var $rtfeldman$elm_css$Css$property = F2(
+	function (key, value) {
+		return $rtfeldman$elm_css$Css$Preprocess$AppendProperty(key + (':' + value));
 	});
-var $rtfeldman$elm_css$Html$Styled$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$rtfeldman$elm_css$VirtualDom$Styled$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
+var $rtfeldman$elm_css$Css$prop1 = F2(
+	function (key, arg) {
+		return A2($rtfeldman$elm_css$Css$property, key, arg.dR);
 	});
-var $rtfeldman$elm_css$Html$Styled$Events$onClick = function (msg) {
-	return A2(
-		$rtfeldman$elm_css$Html$Styled$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
+var $rtfeldman$elm_css$Css$height = $rtfeldman$elm_css$Css$prop1('height');
 var $rtfeldman$elm_css$Css$PxUnits = 0;
 var $rtfeldman$elm_css$Css$Structure$Compatible = 0;
-var $elm$core$String$fromFloat = _String_fromNumber;
 var $rtfeldman$elm_css$Css$Internal$lengthConverter = F3(
 	function (units, unitLabel, numericValue) {
 		return {
@@ -8118,517 +8622,7 @@ var $rtfeldman$elm_css$Css$Internal$lengthConverter = F3(
 		};
 	});
 var $rtfeldman$elm_css$Css$px = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, 0, 'px');
-var $rtfeldman$elm_css$Css$Preprocess$AppendProperty = function (a) {
-	return {$: 0, a: a};
-};
-var $rtfeldman$elm_css$Css$property = F2(
-	function (key, value) {
-		return $rtfeldman$elm_css$Css$Preprocess$AppendProperty(key + (':' + value));
-	});
-var $rtfeldman$elm_css$Css$prop1 = F2(
-	function (key, arg) {
-		return A2($rtfeldman$elm_css$Css$property, key, arg.dR);
-	});
 var $rtfeldman$elm_css$Css$width = $rtfeldman$elm_css$Css$prop1('width');
-var $Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes = F2(
-	function (properties, item) {
-		return A3(
-			$Orange_OpenSource$elm_advanced_grid$Grid$List$appendIf,
-			_Utils_eq(properties.c$, $elm$core$Maybe$Nothing),
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$Events$onClick(
-					$Orange_OpenSource$elm_advanced_grid$Grid$UserClickedLine(item))
-				]),
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$Attributes$id(
-					A2($Orange_OpenSource$elm_advanced_grid$Grid$cellId, properties, item)),
-					A2($rtfeldman$elm_css$Html$Styled$Attributes$attribute, 'data-testid', properties.n),
-					$rtfeldman$elm_css$Html$Styled$Attributes$class('eag-cell'),
-					$rtfeldman$elm_css$Html$Styled$Attributes$css(
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$width(
-							$rtfeldman$elm_css$Css$px(properties.z - $Orange_OpenSource$elm_advanced_grid$Grid$cumulatedBorderWidth))
-						]))
-				]));
-	});
-var $rtfeldman$elm_css$VirtualDom$Styled$Node = F3(
-	function (a, b, c) {
-		return {$: 0, a: a, b: b, c: c};
-	});
-var $rtfeldman$elm_css$VirtualDom$Styled$node = $rtfeldman$elm_css$VirtualDom$Styled$Node;
-var $rtfeldman$elm_css$Html$Styled$node = $rtfeldman$elm_css$VirtualDom$Styled$node;
-var $rtfeldman$elm_css$Html$Styled$div = $rtfeldman$elm_css$Html$Styled$node('div');
-var $rtfeldman$elm_css$Html$Styled$Events$onDoubleClick = function (msg) {
-	return A2(
-		$rtfeldman$elm_css$Html$Styled$Events$on,
-		'dblclick',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $rtfeldman$elm_css$VirtualDom$Styled$Unstyled = function (a) {
-	return {$: 4, a: a};
-};
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $rtfeldman$elm_css$VirtualDom$Styled$text = function (str) {
-	return $rtfeldman$elm_css$VirtualDom$Styled$Unstyled(
-		$elm$virtual_dom$VirtualDom$text(str));
-};
-var $rtfeldman$elm_css$Html$Styled$text = $rtfeldman$elm_css$VirtualDom$Styled$text;
-var $rtfeldman$elm_css$Html$Styled$Attributes$title = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('title');
-var $Orange_OpenSource$elm_advanced_grid$Grid$viewString = F3(
-	function (field, properties, item) {
-		return A2(
-			$rtfeldman$elm_css$Html$Styled$div,
-			A3(
-				$Orange_OpenSource$elm_advanced_grid$Grid$List$appendIf,
-				!_Utils_eq(properties.c$, $elm$core$Maybe$Nothing),
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$Events$onDoubleClick(
-						A4(
-							$Orange_OpenSource$elm_advanced_grid$Grid$UserDoubleClickedEditableCell,
-							item,
-							field,
-							properties.n,
-							A2($Orange_OpenSource$elm_advanced_grid$Grid$cellId, properties, item))),
-						$rtfeldman$elm_css$Html$Styled$Attributes$title(
-						field(item))
-					]),
-				A2($Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes, properties, item)),
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$text(
-					field(item))
-				]));
-	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$stringColumnConfig = F2(
-	function (properties, labels) {
-		var nestedDataGetter = A2(
-			$elm$core$Basics$composeR,
-			function ($) {
-				return $.ba;
-			},
-			properties.u);
-		var columnProperties = {
-			c$: properties.c$,
-			n: properties.n,
-			F: 0,
-			x: properties.v(properties.x),
-			y: properties.v(properties.y),
-			R: true,
-			z: properties.z
-		};
-		return {
-			P: $Orange_OpenSource$elm_advanced_grid$Grid$compareFields(nestedDataGetter),
-			A: $elm$core$Maybe$Nothing,
-			at: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$StringFilter(
-				A2($Orange_OpenSource$elm_advanced_grid$Grid$Filters$stringFilter, properties.u, labels)),
-			aw: true,
-			b: columnProperties,
-			aB: $Orange_OpenSource$elm_advanced_grid$Grid$viewString(nestedDataGetter),
-			aG: nestedDataGetter
-		};
-	});
-var $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$cityColumn = function (labels) {
-	return A2(
-		$Orange_OpenSource$elm_advanced_grid$Grid$stringColumnConfig,
-		{
-			c$: $elm$core$Maybe$Nothing,
-			u: function ($) {
-				return $.bF;
-			},
-			n: 'City',
-			v: $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$localize,
-			w: F2(
-				function (item, _v0) {
-					return item;
-				}),
-			x: 'Ville',
-			y: 'Une indication pour la colonne Ville',
-			z: 300
-		},
-		labels);
-};
-var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$IntFilter = function (a) {
-	return {$: 1, a: a};
-};
-var $elm$parser$Parser$ExpectingInt = {$: 1};
-var $elm$parser$Parser$Advanced$consumeBase = _Parser_consumeBase;
-var $elm$parser$Parser$Advanced$consumeBase16 = _Parser_consumeBase16;
-var $elm$parser$Parser$Advanced$bumpOffset = F2(
-	function (newOffset, s) {
-		return {cW: s.cW + (newOffset - s.bh), f: s.f, i: s.i, bh: newOffset, dE: s.dE, a: s.a};
-	});
-var $elm$parser$Parser$Advanced$chompBase10 = _Parser_chompBase10;
-var $elm$parser$Parser$Advanced$isAsciiCode = _Parser_isAsciiCode;
-var $elm$parser$Parser$Advanced$consumeExp = F2(
-	function (offset, src) {
-		if (A3($elm$parser$Parser$Advanced$isAsciiCode, 101, offset, src) || A3($elm$parser$Parser$Advanced$isAsciiCode, 69, offset, src)) {
-			var eOffset = offset + 1;
-			var expOffset = (A3($elm$parser$Parser$Advanced$isAsciiCode, 43, eOffset, src) || A3($elm$parser$Parser$Advanced$isAsciiCode, 45, eOffset, src)) ? (eOffset + 1) : eOffset;
-			var newOffset = A2($elm$parser$Parser$Advanced$chompBase10, expOffset, src);
-			return _Utils_eq(expOffset, newOffset) ? (-newOffset) : newOffset;
-		} else {
-			return offset;
-		}
-	});
-var $elm$parser$Parser$Advanced$consumeDotAndExp = F2(
-	function (offset, src) {
-		return A3($elm$parser$Parser$Advanced$isAsciiCode, 46, offset, src) ? A2(
-			$elm$parser$Parser$Advanced$consumeExp,
-			A2($elm$parser$Parser$Advanced$chompBase10, offset + 1, src),
-			src) : A2($elm$parser$Parser$Advanced$consumeExp, offset, src);
-	});
-var $elm$parser$Parser$Advanced$finalizeInt = F5(
-	function (invalid, handler, startOffset, _v0, s) {
-		var endOffset = _v0.a;
-		var n = _v0.b;
-		if (handler.$ === 1) {
-			var x = handler.a;
-			return A2(
-				$elm$parser$Parser$Advanced$Bad,
-				true,
-				A2($elm$parser$Parser$Advanced$fromState, s, x));
-		} else {
-			var toValue = handler.a;
-			return _Utils_eq(startOffset, endOffset) ? A2(
-				$elm$parser$Parser$Advanced$Bad,
-				_Utils_cmp(s.bh, startOffset) < 0,
-				A2($elm$parser$Parser$Advanced$fromState, s, invalid)) : A3(
-				$elm$parser$Parser$Advanced$Good,
-				true,
-				toValue(n),
-				A2($elm$parser$Parser$Advanced$bumpOffset, endOffset, s));
-		}
-	});
-var $elm$parser$Parser$Advanced$fromInfo = F4(
-	function (row, col, x, context) {
-		return A2(
-			$elm$parser$Parser$Advanced$AddRight,
-			$elm$parser$Parser$Advanced$Empty,
-			A4($elm$parser$Parser$Advanced$DeadEnd, row, col, x, context));
-	});
-var $elm$core$String$toFloat = _String_toFloat;
-var $elm$parser$Parser$Advanced$finalizeFloat = F6(
-	function (invalid, expecting, intSettings, floatSettings, intPair, s) {
-		var intOffset = intPair.a;
-		var floatOffset = A2($elm$parser$Parser$Advanced$consumeDotAndExp, intOffset, s.a);
-		if (floatOffset < 0) {
-			return A2(
-				$elm$parser$Parser$Advanced$Bad,
-				true,
-				A4($elm$parser$Parser$Advanced$fromInfo, s.dE, s.cW - (floatOffset + s.bh), invalid, s.f));
-		} else {
-			if (_Utils_eq(s.bh, floatOffset)) {
-				return A2(
-					$elm$parser$Parser$Advanced$Bad,
-					false,
-					A2($elm$parser$Parser$Advanced$fromState, s, expecting));
-			} else {
-				if (_Utils_eq(intOffset, floatOffset)) {
-					return A5($elm$parser$Parser$Advanced$finalizeInt, invalid, intSettings, s.bh, intPair, s);
-				} else {
-					if (floatSettings.$ === 1) {
-						var x = floatSettings.a;
-						return A2(
-							$elm$parser$Parser$Advanced$Bad,
-							true,
-							A2($elm$parser$Parser$Advanced$fromState, s, invalid));
-					} else {
-						var toValue = floatSettings.a;
-						var _v1 = $elm$core$String$toFloat(
-							A3($elm$core$String$slice, s.bh, floatOffset, s.a));
-						if (_v1.$ === 1) {
-							return A2(
-								$elm$parser$Parser$Advanced$Bad,
-								true,
-								A2($elm$parser$Parser$Advanced$fromState, s, invalid));
-						} else {
-							var n = _v1.a;
-							return A3(
-								$elm$parser$Parser$Advanced$Good,
-								true,
-								toValue(n),
-								A2($elm$parser$Parser$Advanced$bumpOffset, floatOffset, s));
-						}
-					}
-				}
-			}
-		}
-	});
-var $elm$parser$Parser$Advanced$number = function (c) {
-	return function (s) {
-		if (A3($elm$parser$Parser$Advanced$isAsciiCode, 48, s.bh, s.a)) {
-			var zeroOffset = s.bh + 1;
-			var baseOffset = zeroOffset + 1;
-			return A3($elm$parser$Parser$Advanced$isAsciiCode, 120, zeroOffset, s.a) ? A5(
-				$elm$parser$Parser$Advanced$finalizeInt,
-				c.ez,
-				c.et,
-				baseOffset,
-				A2($elm$parser$Parser$Advanced$consumeBase16, baseOffset, s.a),
-				s) : (A3($elm$parser$Parser$Advanced$isAsciiCode, 111, zeroOffset, s.a) ? A5(
-				$elm$parser$Parser$Advanced$finalizeInt,
-				c.ez,
-				c.$7,
-				baseOffset,
-				A3($elm$parser$Parser$Advanced$consumeBase, 8, baseOffset, s.a),
-				s) : (A3($elm$parser$Parser$Advanced$isAsciiCode, 98, zeroOffset, s.a) ? A5(
-				$elm$parser$Parser$Advanced$finalizeInt,
-				c.ez,
-				c.cN,
-				baseOffset,
-				A3($elm$parser$Parser$Advanced$consumeBase, 2, baseOffset, s.a),
-				s) : A6(
-				$elm$parser$Parser$Advanced$finalizeFloat,
-				c.ez,
-				c.c1,
-				c.de,
-				c.c3,
-				_Utils_Tuple2(zeroOffset, 0),
-				s)));
-		} else {
-			return A6(
-				$elm$parser$Parser$Advanced$finalizeFloat,
-				c.ez,
-				c.c1,
-				c.de,
-				c.c3,
-				A3($elm$parser$Parser$Advanced$consumeBase, 10, s.bh, s.a),
-				s);
-		}
-	};
-};
-var $elm$parser$Parser$Advanced$int = F2(
-	function (expecting, invalid) {
-		return $elm$parser$Parser$Advanced$number(
-			{
-				cN: $elm$core$Result$Err(invalid),
-				c1: expecting,
-				c3: $elm$core$Result$Err(invalid),
-				et: $elm$core$Result$Err(invalid),
-				de: $elm$core$Result$Ok($elm$core$Basics$identity),
-				ez: invalid,
-				$7: $elm$core$Result$Err(invalid)
-			});
-	});
-var $elm$parser$Parser$int = A2($elm$parser$Parser$Advanced$int, $elm$parser$Parser$ExpectingInt, $elm$parser$Parser$ExpectingInt);
-var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$containsInt = F2(
-	function (referenceInt, searchedInt) {
-		return A2(
-			$elm$core$String$contains,
-			$elm$core$String$fromInt(searchedInt),
-			$elm$core$String$fromInt(referenceInt));
-	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$matchesOneIntOf = F2(
-	function (referenceInt, operands) {
-		return A2(
-			$elm$core$List$any,
-			function (parsedValue) {
-				switch (parsedValue.$) {
-					case 0:
-						var operandValue = parsedValue.a;
-						return _Utils_eq(referenceInt, operandValue);
-					case 1:
-						var operandValue = parsedValue.a;
-						return A2($Orange_OpenSource$elm_advanced_grid$Grid$Filters$containsInt, referenceInt, operandValue);
-					case 2:
-						var operandValue = parsedValue.a;
-						return _Utils_cmp(referenceInt, operandValue) > 0;
-					default:
-						var operandValue = parsedValue.a;
-						return _Utils_cmp(referenceInt, operandValue) < 0;
-				}
-			},
-			operands);
-	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$intFilter = F2(
-	function (getter, labels) {
-		return $Orange_OpenSource$elm_advanced_grid$Grid$Filters$makeFilter(
-			{u: getter, eI: labels, bs: $elm$parser$Parser$int, bB: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$matchesOneIntOf});
-	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$viewInt = F3(
-	function (field, properties, item) {
-		return A2(
-			$rtfeldman$elm_css$Html$Styled$div,
-			A2($Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes, properties, item),
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$text(
-					$elm$core$String$fromInt(
-						field(item)))
-				]));
-	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$intColumnConfig = F2(
-	function (properties, labels) {
-		var nestedDataGetter = A2(
-			$elm$core$Basics$composeR,
-			function ($) {
-				return $.ba;
-			},
-			properties.u);
-		var columnProperties = {
-			c$: $elm$core$Maybe$Nothing,
-			n: properties.n,
-			F: 0,
-			x: properties.v(properties.x),
-			y: properties.v(properties.y),
-			R: true,
-			z: properties.z
-		};
-		return {
-			P: $Orange_OpenSource$elm_advanced_grid$Grid$compareFields(nestedDataGetter),
-			A: $elm$core$Maybe$Nothing,
-			at: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$IntFilter(
-				A2($Orange_OpenSource$elm_advanced_grid$Grid$Filters$intFilter, properties.u, labels)),
-			aw: true,
-			b: columnProperties,
-			aB: $Orange_OpenSource$elm_advanced_grid$Grid$viewInt(nestedDataGetter),
-			aG: A2($elm$core$Basics$composeR, nestedDataGetter, $elm$core$String$fromInt)
-		};
-	});
-var $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$idColumn = function (labels) {
-	return A2(
-		$Orange_OpenSource$elm_advanced_grid$Grid$intColumnConfig,
-		{
-			u: function ($) {
-				return $.n;
-			},
-			n: 'Id',
-			v: $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$localize,
-			w: F2(
-				function (item, _v0) {
-					return item;
-				}),
-			x: 'Id',
-			y: 'Une indication pour la colonne Id',
-			z: 50
-		},
-		labels);
-};
-var $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$setName = F2(
-	function (item, name) {
-		var oldData = item.ba;
-		var newData = _Utils_update(
-			oldData,
-			{bf: name});
-		return _Utils_update(
-			item,
-			{ba: newData});
-	});
-var $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$nameColumn = function (labels) {
-	return A2(
-		$Orange_OpenSource$elm_advanced_grid$Grid$stringColumnConfig,
-		{
-			c$: $elm$core$Maybe$Just(
-				{eq: $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$setName, eL: 20}),
-			u: function ($) {
-				return $.bf;
-			},
-			n: 'Name',
-			v: $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$localize,
-			w: $Orange_OpenSource$elm_advanced_grid$Examples$LargeList$setName,
-			x: 'Nom',
-			y: 'Une indication pour la colonne Nom',
-			z: 100
-		},
-		labels);
-};
-var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$FloatFilter = function (a) {
-	return {$: 2, a: a};
-};
-var $elm$parser$Parser$ExpectingFloat = {$: 5};
-var $elm$parser$Parser$Advanced$float = F2(
-	function (expecting, invalid) {
-		return $elm$parser$Parser$Advanced$number(
-			{
-				cN: $elm$core$Result$Err(invalid),
-				c1: expecting,
-				c3: $elm$core$Result$Ok($elm$core$Basics$identity),
-				et: $elm$core$Result$Err(invalid),
-				de: $elm$core$Result$Ok($elm$core$Basics$toFloat),
-				ez: invalid,
-				$7: $elm$core$Result$Err(invalid)
-			});
-	});
-var $elm$parser$Parser$float = A2($elm$parser$Parser$Advanced$float, $elm$parser$Parser$ExpectingFloat, $elm$parser$Parser$ExpectingFloat);
-var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$containsFloat = F2(
-	function (referenceFloat, searchedFloat) {
-		return A2(
-			$elm$core$String$contains,
-			$elm$core$String$fromFloat(searchedFloat),
-			$elm$core$String$fromFloat(referenceFloat));
-	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$matchesOneFloatOf = F2(
-	function (referenceFloat, operands) {
-		return A2(
-			$elm$core$List$any,
-			function (parsedValue) {
-				switch (parsedValue.$) {
-					case 0:
-						var operandValue = parsedValue.a;
-						return _Utils_eq(referenceFloat, operandValue);
-					case 1:
-						var operandValue = parsedValue.a;
-						return A2($Orange_OpenSource$elm_advanced_grid$Grid$Filters$containsFloat, referenceFloat, operandValue);
-					case 2:
-						var operandValue = parsedValue.a;
-						return _Utils_cmp(referenceFloat, operandValue) > 0;
-					default:
-						var operandValue = parsedValue.a;
-						return _Utils_cmp(referenceFloat, operandValue) < 0;
-				}
-			},
-			operands);
-	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$Filters$floatFilter = F2(
-	function (getter, labels) {
-		return $Orange_OpenSource$elm_advanced_grid$Grid$Filters$makeFilter(
-			{u: getter, eI: labels, bs: $elm$parser$Parser$float, bB: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$matchesOneFloatOf});
-	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$viewFloat = F3(
-	function (field, properties, item) {
-		return A2(
-			$rtfeldman$elm_css$Html$Styled$div,
-			A2($Orange_OpenSource$elm_advanced_grid$Grid$cellAttributes, properties, item),
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$text(
-					$elm$core$String$fromFloat(
-						field(item)))
-				]));
-	});
-var $Orange_OpenSource$elm_advanced_grid$Grid$floatColumnConfig = F2(
-	function (properties, labels) {
-		var nestedDataGetter = A2(
-			$elm$core$Basics$composeR,
-			function ($) {
-				return $.ba;
-			},
-			properties.u);
-		var columnProperties = {
-			c$: $elm$core$Maybe$Nothing,
-			n: properties.n,
-			F: 0,
-			x: properties.v(properties.x),
-			y: properties.v(properties.y),
-			R: true,
-			z: properties.z
-		};
-		return {
-			P: $Orange_OpenSource$elm_advanced_grid$Grid$compareFields(nestedDataGetter),
-			A: $elm$core$Maybe$Nothing,
-			at: $Orange_OpenSource$elm_advanced_grid$Grid$Filters$FloatFilter(
-				A2($Orange_OpenSource$elm_advanced_grid$Grid$Filters$floatFilter, properties.u, labels)),
-			aw: true,
-			b: columnProperties,
-			aB: $Orange_OpenSource$elm_advanced_grid$Grid$viewFloat(nestedDataGetter),
-			aG: A2($elm$core$Basics$composeR, nestedDataGetter, $elm$core$String$fromFloat)
-		};
-	});
-var $rtfeldman$elm_css$Css$height = $rtfeldman$elm_css$Css$prop1('height');
 var $Orange_OpenSource$elm_advanced_grid$Grid$viewProgressBar = F4(
 	function (barHeight, getter, properties, item) {
 		var nestedDataGetter = A2(
@@ -9691,6 +9685,17 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$visibleColumns_ = function (state)
 		},
 		state.g.d4);
 };
+var $Orange_OpenSource$elm_advanced_grid$Grid$gridTemplateColumns = function (state) {
+	return A2(
+		$elm$core$String$join,
+		' ',
+		A2(
+			$elm$core$List$map,
+			function (columnConfig) {
+				return $elm$core$String$fromInt(columnConfig.b.z) + 'px';
+			},
+			$Orange_OpenSource$elm_advanced_grid$Grid$visibleColumns_(state)));
+};
 var $Orange_OpenSource$elm_advanced_grid$Grid$gridWidth = function (state) {
 	return A3(
 		$elm$core$List$foldl,
@@ -10214,7 +10219,12 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewRow = F4(
 								$rtfeldman$elm_css$Css$px(state.g.eJ)),
 								$rtfeldman$elm_css$Css$width(
 								$rtfeldman$elm_css$Css$px(
-									$Orange_OpenSource$elm_advanced_grid$Grid$gridWidth(state)))
+									$Orange_OpenSource$elm_advanced_grid$Grid$gridWidth(state))),
+								A2($rtfeldman$elm_css$Css$property, 'display', 'grid'),
+								A2(
+								$rtfeldman$elm_css$Css$property,
+								'grid-template-columns',
+								$Orange_OpenSource$elm_advanced_grid$Grid$gridTemplateColumns(state))
 							]))
 					])),
 			A2(
@@ -13259,8 +13269,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$gridStyles = _List_from
 		_List_fromArray(
 			[
 				$rtfeldman$elm_css$Css$backgroundColor($Orange_OpenSource$elm_advanced_grid$Grid$Colors$darkGrey),
-				$rtfeldman$elm_css$Css$displayFlex,
-				$Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$noShrink
+				A2($rtfeldman$elm_css$Css$property, 'display', 'grid')
 			])),
 		A2(
 		$rtfeldman$elm_css$Css$Global$class,
@@ -13486,7 +13495,7 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$Stylesheet$gridStyles = _List_from
 				$rtfeldman$elm_css$Css$px(1),
 				$rtfeldman$elm_css$Css$solid,
 				$Orange_OpenSource$elm_advanced_grid$Grid$Colors$lightGrey),
-				$rtfeldman$elm_css$Css$displayFlex,
+				A2($rtfeldman$elm_css$Css$property, 'display', 'grid'),
 				A2($rtfeldman$elm_css$Css$property, 'direction', 'ltr')
 			])),
 		A2(
@@ -14427,7 +14436,11 @@ var $Orange_OpenSource$elm_advanced_grid$Grid$viewHeaderContainer = function (st
 				_List_fromArray(
 					[
 						$rtfeldman$elm_css$Css$height(
-						$rtfeldman$elm_css$Css$px(state.g.es))
+						$rtfeldman$elm_css$Css$px(state.g.es)),
+						A2(
+						$rtfeldman$elm_css$Css$property,
+						'grid-template-columns',
+						$Orange_OpenSource$elm_advanced_grid$Grid$gridTemplateColumns(state))
 					])),
 				$rtfeldman$elm_css$Html$Styled$Attributes$id($Orange_OpenSource$elm_advanced_grid$Grid$headerContainerId)
 			]));

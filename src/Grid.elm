@@ -1611,8 +1611,10 @@ visibleData (Model state _ _) =
 
 
 {-| Renders the row for a given item
-idx is the index of the visible line; if there are 25 visible lines, 0 <= idx < 25
-listIdx is the index in the data source; if the total number of items is 1000, 0 <= listidx < 1000
+idx is the index of the visible line;
+For 25 visible lines, 0 <= idx < 25
+listIdx is the index in the data source;
+For 1000 items, 0 <= listidx < 1000
 -}
 viewRow : State a -> Int -> Int -> Item a -> Html.Html (Msg a)
 viewRow state idx listIdx item =
@@ -1638,6 +1640,8 @@ viewRow state idx listIdx item =
             , css
                 [ height (px <| toFloat state.config.lineHeight)
                 , width (px <| toFloat <| gridWidth state)
+                , Css.property "display" "grid"
+                , Css.property "grid-template-columns" <| gridTemplateColumns state
                 ]
             ]
     <|
@@ -1647,6 +1651,15 @@ viewRow state idx listIdx item =
 gridWidth : State a -> Int
 gridWidth state =
     List.foldl (\columnConfig -> (+) columnConfig.properties.width) 0 (visibleColumns_ state)
+
+
+{-| the value of the CSS grid property defining column widths
+-}
+gridTemplateColumns : State a -> String
+gridTemplateColumns state =
+    visibleColumns_ state
+        |> List.map (\columnConfig -> String.fromInt columnConfig.properties.width ++ "px")
+        |> String.join " "
 
 
 viewCell : ColumnConfig a -> Item a -> Html (Msg a)
@@ -2073,6 +2086,7 @@ viewHeaderContainer state =
             [ class "eag-header-container"
             , css
                 [ height (px <| toFloat state.config.headerHeight)
+                , Css.property "grid-template-columns" <| gridTemplateColumns state
                 ]
             , id headerContainerId
             ]
@@ -2433,9 +2447,10 @@ cellAttributes properties item =
     [ id (cellId properties item)
     , attribute "data-testid" properties.id
     , class "eag-cell"
-    , css
-        [ width (px <| toFloat (properties.width - cumulatedBorderWidth))
-        ]
+
+    --, css
+    --    [ width (px <| toFloat (properties.width - cumulatedBorderWidth))
+    --    ]
     ]
         |> appendIf (properties.editor == Nothing)
             [ onClick (UserClickedLine item)

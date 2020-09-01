@@ -87,8 +87,7 @@ gridStyles =
         ]
     , class "eag-header-container"
         [ backgroundColor darkGrey
-        , displayFlex
-        , noShrink
+        , property "display" "grid"
         ]
     , class "eag-header-title"
         [ lineHeight (num 1.2)
@@ -195,7 +194,7 @@ gridStyles =
         ]
     , class "eag-row"
         [ borderBottom3 (px 1) solid lightGrey
-        , displayFlex
+        , property "display" "grid"
 
         -- restore reading order, while preserving the left position of the scrollbar
         , property "direction" "ltr"
