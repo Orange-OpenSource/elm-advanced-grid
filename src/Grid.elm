@@ -123,7 +123,7 @@ type alias Config a =
     , headerHeight : Int
     , labels : Dict String String
     , lineHeight : Int
-    , rowClass : Item a -> String
+    , rowAttributes : Item a -> List (Attribute (Msg a))
     }
 
 
@@ -1633,17 +1633,17 @@ viewRow state idx listIdx item =
     in
     toUnstyled
         << div
-            [ attribute "data-testid" "row"
-            , class editedRowClass
-            , class (state.config.rowClass item)
-            , class "eag-row"
-            , css
+            ([ class editedRowClass
+             , class "eag-row"
+             , css
                 [ height (px <| toFloat state.config.lineHeight)
                 , width (px <| toFloat <| gridWidth state)
                 , Css.property "display" "grid"
                 , Css.property "grid-template-columns" <| gridTemplateColumns state
                 ]
-            ]
+             ]
+                ++ state.config.rowAttributes item
+            )
     <|
         List.map (\columnConfig -> viewCell columnConfig item) (visibleColumns_ state)
 

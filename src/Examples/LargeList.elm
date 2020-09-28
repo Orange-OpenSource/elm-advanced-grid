@@ -18,6 +18,7 @@ import Grid.Item exposing (Item)
 import Html exposing (Html, button, div, input, label, li, text, ul)
 import Html.Attributes exposing (attribute, id, style)
 import Html.Events exposing (onClick, onInput)
+import Html.Styled.Attributes
 import List.Extra
 
 
@@ -382,7 +383,11 @@ gridConfig =
     , headerHeight = 60
     , labels = Dict.empty
     , lineHeight = 25
-    , rowClass = rowClass
+    , rowAttributes =
+        \item ->
+            [ Html.Styled.Attributes.class (rowClass item)
+            , Html.Styled.Attributes.attribute "data-testid" "row"
+            ]
     }
 
 

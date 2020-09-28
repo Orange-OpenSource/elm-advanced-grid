@@ -13,6 +13,7 @@ module Fixtures exposing (Data, columns, data, dataOrderedByAscendingScore, data
 import Dict
 import Grid exposing (ColumnConfig, Model, Sorting(..), boolColumnConfig, floatColumnConfig, stringColumnConfig)
 import Grid.Item as Item exposing (Item)
+import Html.Styled.Attributes
 
 
 type alias Data =
@@ -190,7 +191,7 @@ gridConfig =
     , headerHeight = 60
     , lineHeight = 20
     , labels = Dict.empty
-    , rowClass = rowClass
+    , rowAttributes = \item -> [ Html.Styled.Attributes.class (rowClass item) ]
     }
 
 

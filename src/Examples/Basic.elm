@@ -18,6 +18,7 @@ import Grid.Item exposing (Item)
 import Html exposing (Html, button, div, input, label, li, text, ul)
 import Html.Attributes exposing (attribute, id, style)
 import Html.Events exposing (onClick, onInput)
+import Html.Styled.Attributes exposing (class)
 import List.Extra
 
 
@@ -361,7 +362,11 @@ gridConfig =
     , headerHeight = 60
     , labels = translations -- use default texts, which are in English; you could use "translations", which is provided below as an example
     , lineHeight = 25
-    , rowClass = rowClass
+    , rowAttributes =
+        \item ->
+            [ class (rowClass item)
+            , Html.Styled.Attributes.attribute "data-testid" "row"
+            ]
     }
 
 
