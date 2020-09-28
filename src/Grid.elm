@@ -1486,7 +1486,7 @@ view model =
                 [ id rootContainerId
                 , class "eag-root"
                 , css
-                    [ width (px (state.containerWidth + toFloat cumulatedBorderWidth))
+                    [ width (px state.containerWidth)
                     , height (px state.containerHeight)
                     ]
                 ]
@@ -2437,7 +2437,7 @@ Useful to take into account the borders when calculating the total grid width
 -}
 cumulatedBorderWidth : Int
 cumulatedBorderWidth =
-    6
+    1
 
 
 {-| Common attributes for cell renderers
