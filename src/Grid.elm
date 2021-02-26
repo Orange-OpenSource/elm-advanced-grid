@@ -17,7 +17,7 @@ module Grid exposing
     , Model, Msg(..), init, update, view
     , selectedAndVisibleItems, visibleData
     , visibleColumns, isColumn, isSelectionColumn, isSelectionColumnProperties
-    , currentOrder, getEditedValue, isAnyItemSelected, sortedBy
+    , currentOrder, getEditedValue, isAnyItemSelected, sortedBy, stringWithTooltipColumnConfig
     )
 
 {-| This module allows to create dynamically configurable data grid.
@@ -68,7 +68,7 @@ import Dict exposing (Dict)
 import Grid.Colors exposing (black)
 import Grid.Filters exposing (Filter(..), boolFilter, floatFilter, intFilter, parseFilteringString, stringFilter)
 import Grid.Html exposing (getElementInfo, noContent, stopPropagationOnClick, viewIf)
-import Grid.Icons as Icons exposing (drawClickableDarkSvg, drawClickableLightSvg, filterIcon)
+import Grid.Icons as Icons exposing (checkIcon, drawClickableDarkSvg, drawClickableLightSvg, drawDarkSvg, filterIcon, informationIcon)
 import Grid.Item as Item exposing (Item)
 import Grid.Labels as Label exposing (localize)
 import Grid.List exposing (appendIf)
@@ -197,6 +197,7 @@ type Msg a
     | StringEditorMsg (StringEditor.Msg a)
     | UpdateContent (a -> a)
     | UpdateContentPreservingSelection (a -> a)
+    | UserClickedCell String (Item a) -- column ID and item
     | UserClickedHeader (ColumnConfig a)
     | UserClickedQuickFilterButton (ColumnConfig a)
     | UserClickedFilter
@@ -450,6 +451,11 @@ withEditedColumnId id state =
 withEditedItem : Maybe (Item a) -> State a -> State a
 withEditedItem maybeItem state =
     { state | editedItem = maybeItem }
+
+
+withIsAllSelected : Bool -> State a -> State a
+withIsAllSelected isAllSelected state =
+    { state | isAllSelected = isAllSelected }
 
 
 {-| Sets the filtered data
@@ -797,7 +803,9 @@ updateState msg state =
                     List.map (setFilter filterValues) state.config.columns
 
                 newState =
-                    state |> withColumnsState newColumns
+                    state
+                        |> withColumnsState newColumns
+                        |> withIsAllSelected False
             in
             updateVisibleItems newState
 
@@ -848,6 +856,9 @@ updateState msg state =
             state
                 |> withContent updatedData
                 |> withVisibleItems updatedVisibleItems
+
+        UserClickedCell columnId item ->
+            state
 
         UserClickedDragHandle columnConfig mousePosition ->
             let
@@ -998,7 +1009,9 @@ applyFilter state columnConfig filteringValue =
             List.Extra.setIf (isColumn columnConfig) newColumnconfig state.config.columns
 
         newState =
-            state |> withColumnsState newColumns
+            state
+                |> withColumnsState newColumns
+                |> withIsAllSelected False
     in
     updateVisibleItems newState |> closeQuickFilter
 
@@ -1065,9 +1078,11 @@ applyQuickFilter state quickFilterModel =
     case state.quickFilteredColumn of
         Just column ->
             applyFilter state column newFilteringValue
+                |> withIsAllSelected False
 
         Nothing ->
             state
+                |> withIsAllSelected False
 
 
 prependEqualOperator : String -> String
@@ -1750,6 +1765,51 @@ stringColumnConfig properties labels =
     }
 
 
+{-| Create a ColumnConfig for a column containing a string value, and a tooltip for each cell
+
+getter is usually a simple field access function, like ".age" to get the age field of a Person record.
+
+localize takes the title or the tooltip of the column as a parameter, and returns its translation, if you need internationalization.
+If you don't need it, just use [identity](https://package.elm-lang.org/packages/elm/core/latest/Basics#identity).
+
+-}
+stringWithTooltipColumnConfig :
+    { id : String
+    , editor : Maybe (EditorConfig a)
+    , title : String
+    , tooltip : String
+    , width : Int
+    , getter : a -> ( String, String )
+    , setter : Item a -> String -> Item a
+    , localize : String -> String
+    }
+    -> Dict String String
+    -> ColumnConfig a
+stringWithTooltipColumnConfig properties labels =
+    let
+        columnProperties =
+            { id = properties.id
+            , editor = properties.editor
+            , order = Unsorted
+            , title = properties.localize properties.title
+            , tooltip = properties.localize properties.tooltip
+            , visible = True
+            , width = properties.width
+            }
+
+        nestedDataGetter =
+            .data >> properties.getter
+    in
+    { properties = columnProperties
+    , filters = StringFilter <| stringFilter (properties.getter >> Tuple.first) labels
+    , filteringValue = Nothing
+    , toString = nestedDataGetter >> Tuple.first
+    , renderer = viewStringWithInfo nestedDataGetter
+    , comparator = compareFields (nestedDataGetter >> Tuple.first)
+    , hasQuickFilter = True
+    }
+
+
 {-| Create a ColumnConfig for a column containing a float value
 
 getter is usually a simple field access function, like ".age" to get the age field of a Person record.
@@ -1929,6 +1989,35 @@ viewString field properties item =
                 ]
         )
         [ text <| field item
+        ]
+
+
+{-| Renders a cell containing a string, and having an info icon which displays a tooltip
+when hovered. Use this function in a ColumnConfig
+to define how the values in a given column should be rendered.
+The unique parameter to be provided is a lambda which
+returns the field to be displayed in this column.
+
+    renderer =
+        viewStringWithInfo (\item -> item.name)
+
+-}
+viewStringWithInfo : (Item a -> ( String, String )) -> ColumnProperties a -> Item a -> Html (Msg a)
+viewStringWithInfo stringValues properties item =
+    let
+        ( cellContent, tooltipText ) =
+            stringValues item
+    in
+    div
+        (cellAttributes properties item)
+        [ text cellContent
+        , viewIf (cellContent /= "" && tooltipText /= "")
+            (span
+                [ title tooltipText
+                , class "eag-cell-icon"
+                ]
+                [ drawDarkSvg 200 Icons.width informationIcon ]
+            )
         ]
 
 
@@ -2423,7 +2512,7 @@ viewQuickFilterButton state columnConfig =
         , onClick UserClickedFilter
         , title <| localize Label.openQuickFilter state.labels
         ]
-        [ draw Icons.width filterIcon (UserClickedQuickFilterButton columnConfig)
+        [ draw Icons.width Icons.width filterIcon (UserClickedQuickFilterButton columnConfig)
         ]
 
 

@@ -307,7 +307,7 @@ viewQuickFilterEntry params =
 
         selectionSymbol =
             if isSelected then
-                drawDarkSvg Icons.width checkIcon
+                drawDarkSvg Icons.width Icons.width checkIcon
 
             else
                 noContent

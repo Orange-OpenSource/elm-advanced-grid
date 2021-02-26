@@ -37,6 +37,9 @@ gridStyles =
         , overflow hidden
         , whiteSpace noWrap
         ]
+    , class "eag-cell-icon"
+        [ displayFlex
+        ]
     , class "eag-drag-handle"
         [ displayFlex
         , flexDirection row
